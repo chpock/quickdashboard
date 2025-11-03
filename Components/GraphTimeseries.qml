@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import QtGraphs
 import qs
+import '../utils.js' as Utils
 
 Item {
     id: root
@@ -14,6 +15,7 @@ Item {
     property bool maxValueAuto: false
 
 	property int maxPoints: 50
+    readonly property var calculateMax: Utils.calculateMax(() => maxPoints)
 
     implicitHeight: Theme.graph.height
 
@@ -31,15 +33,7 @@ Item {
             // Set the leftmost value to 0
             points.replace(0, minX, 0)
         }
-        if (maxValueAuto) {
-            let maxValueCalc = value
-            for (let i = 0; i < points.count - 1; ++i) {
-                const curValue = points.at(i).y
-                if (curValue > maxValueCalc)
-                    maxValueCalc = curValue
-            }
-            axisY.maxValueCalc = maxValueCalc
-        }
+        if (maxValueAuto) axisY.maxValueCalc = calculateMax.push(value)
         // Visible area should be minX+1 as we keep 1 invisible point with 0 value
         axisX.min = minX + 1
         axisX.max = graph.counter

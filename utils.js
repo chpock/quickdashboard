@@ -51,3 +51,21 @@ function movingAverage(getWindowSize) {
         },
     }
 }
+
+function calculateMax(getWindowSize) {
+    let size = Math.max(1, getWindowSize ? getWindowSize() : 5)
+    let buf = []
+    let max_queue = []
+    return {
+        push(v) {
+            buf.push(v)
+            while (max_queue.length && max_queue[max_queue.length - 1] < v) max_queue.pop()
+            max_queue.push(v)
+            while (buf.length > size) {
+                let old = buf.shift()
+                if (max_queue.length && max_queue[0] === old) max_queue.shift()
+            }
+            return max_queue[0]
+        },
+    }
+}
