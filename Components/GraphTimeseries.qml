@@ -17,25 +17,32 @@ Item {
 
     implicitHeight: Theme.graph.height
 
+    // In my Qt version, AreaSeries doesn't fill correctly areas when the first
+    // value has non-zero value. To avoid this problem, we will leave the leftmost
+    // point out of the graph and set its value to 0.
     function pushValue(value) {
         graph.counter += 1
-        axisX.min = graph.counter - maxPoints
-        axisX.max = graph.counter
+        const minX = graph.counter - maxPoints - 2
+        points.append(graph.counter, value)
+        // Remove unused points from graph. We want only maxPoints (visible area)
+        // points + 1 invisible point with 0 value.
         if (points.count > maxPoints + 1) {
             points.removeMultiple(0, points.count - maxPoints - 1)
-            // axisX.max = counter
-            // axisX.min = counter - maxPoints
+            // Set the leftmost value to 0
+            points.replace(0, minX, 0)
         }
         if (maxValueAuto) {
             let maxValueCalc = value
-            for (let i = 0; i < points.count; ++i) {
-                let curValue = points.at(i).y
+            for (let i = 0; i < points.count - 1; ++i) {
+                const curValue = points.at(i).y
                 if (curValue > maxValueCalc)
                     maxValueCalc = curValue
             }
             axisY.maxValueCalc = maxValueCalc
         }
-        points.append(graph.counter, value)
+        // Visible area should be minX+1 as we keep 1 invisible point with 0 value
+        axisX.min = minX + 1
+        axisX.max = graph.counter
     }
 
     Component.onCompleted: {
@@ -58,10 +65,10 @@ Item {
 
             property int counter: -1
 
-            marginBottom: 0
-            marginTop: 0
-            marginLeft: 0
-            marginRight: 0
+            marginBottom: Theme.graph.border.width
+            marginTop: Theme.graph.border.width
+            marginLeft: Theme.graph.border.width
+            marginRight: Theme.graph.border.width
 
             theme: GraphsTheme {
                 backgroundVisible: false
@@ -90,6 +97,11 @@ Item {
                 subGridVisible: false
                 max: root.maxValueAuto && maxValueCalc > root.maxValue ? maxValueCalc : root.maxValue
                 min: root.minValue
+                Behavior on max {
+                    NumberAnimation {
+                        duration: 200
+                    }
+                }
             }
 
             AreaSeries {
