@@ -17,7 +17,7 @@ Item {
 
     property int horizontalAlignment: Text.AlignLeft
 
-    readonly property var parsedValue: Utils.formatBytesSplit(value, precision)
+    readonly property var formatedValue: Utils.formatBytes(value, precision)
 
     implicitHeight: Math.max(valueObj.implicitHeight, unitObj.implicitHeight, suffix.implicitHeight)
     implicitWidth: valueObj.implicitWidth + valueObj.wordSpacing + unitObj.implicitWidth + suffix.implicitWidth
@@ -25,7 +25,7 @@ Item {
     E.Text {
         id: valueObj
         preset: root.preset
-        text: root.prefix + root.parsedValue[0] + ' '
+        text: root.prefix + root.formatedValue[0] + ' '
         color: root.color
         anchors.left: root.horizontalAlignment === Text.AlignLeft ? parent.left : undefined
         anchors.right: root.horizontalAlignment === Text.AlignRight ? unitObj.left : undefined
@@ -34,9 +34,9 @@ Item {
     E.Text {
         id: unitObj
         preset: root.preset
-        text: root.parsedValue[1]
+        text: root.formatedValue[1]
         color: {
-            const unitLowercase = root.parsedValue[1].toLowerCase()
+            const unitLowercase = root.formatedValue[1].toLowerCase()
             const color = root.unitColors[unitLowercase]
             return color ? color : root.color
         }

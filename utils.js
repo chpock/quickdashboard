@@ -1,4 +1,4 @@
-function formatBytesSplit(value, precision) {
+function formatBytes(value, precision) {
     let suffix = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
     let div = 1024.0
     let divcount
@@ -22,11 +22,6 @@ function formatBytesSplit(value, precision) {
         }
     }
     return [result, suffix[divcount]]
-}
-
-function formatBytes(value, precision) {
-    const data = formatBytesSplit(value, precision)
-    return data[0] + ' ' + data[1] + 'b'
 }
 
 function roundPercent(value) {
