@@ -35,7 +35,7 @@ Singleton {
             root.swap.total = data.swaptotal * 1024
             root.swap.isInstalled = data.swaptotal !== 0
             if (root.swap.isInstalled) {
-                root.swap.free = data.swapfree
+                root.swap.free = data.swapfree * 1024
             } else {
                 root.swap.free = 0
                 root.swap.freePercent = 0
