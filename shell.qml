@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Wayland
-import QtGraphs
 import qs.Widgets as Widget
 
 ShellRoot {
@@ -16,28 +14,14 @@ ShellRoot {
             property var modelData
             screen: modelData
 
-            property int paddingTop: 43
-
+            implicitWidth: 212
             anchors {
                 right: true
-                // top: true
-                // bottom: true
+                top: true
+                bottom: true
             }
 
-            margins {
-                top: paddingTop
-                // bottom: 50
-            }
-
-            implicitWidth: 212
-            implicitHeight: w.screen.height - paddingTop
-
-            color: "transparent"
-
-            // WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.layer: WlrLayer.Top
-            // exclusionMode: ExclusionMode.Normal
-            // exclusiveZone: 212
+            color: 'transparent'
 
             ColumnLayout {
 
