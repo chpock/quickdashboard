@@ -12,12 +12,12 @@ E.Text {
 
     text: Utils.roundPercent(value) + "\u2103"
     color: {
+        const calcValue = Math.floor(value)
         for (const name in levels) {
-            if (root.value >= levels[name][0] && root.value <= levels[name][1]) {
+            if (calcValue >= levels[name][0] && calcValue <= levels[name][1]) {
                 return colors[name]
             }
         }
         return undefined
     }
-    // capitalOnly: true
 }

@@ -21,7 +21,7 @@ E.Text {
 
     text: Utils.roundPercent(calcValue) + '%'
     color: {
-        const calcValue = root.calcValue
+        const calcValue = Math.floor(root.calcValue)
         for (const name in levels) {
             if (calcValue >= levels[name][0] && calcValue <= levels[name][1]) {
                 return colors[name]
