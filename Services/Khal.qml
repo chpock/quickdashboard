@@ -12,6 +12,7 @@ Singleton {
     // In QML/JS 'yy' is parsed incorrectly. I.e. '25' is translated to 1925, but not to 2025.
     // This flag indicates whether the epoch in the dates needs to be corrected.
     property bool correctDatetimeEpoch: false
+    property bool vdirsyncerAvailable: false
 
     signal updateEvents(var data)
     signal available()
@@ -23,6 +24,14 @@ Singleton {
         running: true
         repeat: false
         onTriggered: startupProc.running = true
+    }
+
+    Timer {
+        id: checkVdirsyncerTimer
+        interval: 500
+        running: true
+        repeat: false
+        onTriggered: checkVdirsyncerProc.running = true
     }
 
     Timer {
@@ -39,6 +48,14 @@ Singleton {
         enabled: root.running
         precision: SystemClock.Hours
         onHoursChanged: {
+            checkProc.running = true
+        }
+    }
+
+    function refresh() {
+        if (root.vdirsyncerAvailable) {
+            refreshVdirsyncerProc.running = true
+        } else {
             checkProc.running = true
         }
     }
@@ -242,4 +259,58 @@ Singleton {
         }
     }
 
+    Process {
+        id: checkVdirsyncerProc
+        command: ['vdirsyncer', 'showconfig']
+        running: false
+        onExited: exitCode => {
+            if (exitCode !== 0) {
+                console.info('[Service.Khal/checkVdirsyncerProc]', 'vdirsyncer: unavailable')
+                root.vdirsyncerAvailable = false
+            } else {
+                console.info('[Service.Khal/checkVdirsyncerProc]', 'vdirsyncer: available')
+                root.vdirsyncerAvailable = true
+            }
+        }
+    }
+
+    Process {
+        id: refreshVdirsyncerProc
+        property string output: ""
+        command: ['vdirsyncer', 'sync']
+        running: false
+        stdout: SplitParser {
+            splitMarker: "\n"
+            onRead: line => {
+                refreshVdirsyncerProc.output += line + "\n"
+            }
+        }
+        stderr: SplitParser {
+            splitMarker: "\n"
+            onRead: line => {
+                refreshVdirsyncerProc.output += '[stderr] ' + line + "\n"
+            }
+        }
+        onExited: exitCode => {
+            if (exitCode !== 0) {
+                Quickshell.execDetached([
+                    "notify-send",
+                    "-u", "critical",
+                    "-a", "ck.dashboard",
+                    "-i", "error",
+                    "vdirsyncer refresh failed",
+                    refreshVdirsyncerProc.output,
+                ])
+            } else {
+                Quickshell.execDetached([
+                    "notify-send", "-e",
+                    "-u", "normal",
+                    "-a", "ck.dashboard",
+                    "vdirsyncer sucessfully refreshed",
+                ])
+                checkProc.running = true
+            }
+            refreshVdirsyncerProc.output = ""
+        }
+    }
 }

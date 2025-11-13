@@ -44,6 +44,10 @@ Singleton {
         }
     }
 
+    function refresh() {
+        return Service.Khal.refresh()
+    }
+
     function updateModels() {
         const currentDateObj = systemClock.date
         const currentDate = currentDateObj.toDateString()

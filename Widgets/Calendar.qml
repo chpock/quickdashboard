@@ -301,6 +301,28 @@ Base {
         }
 
         E.Text {
+            id: headerEventIconRefresh
+            anchors.right: headerEventIconToggleVisibility.left
+            anchors.rightMargin: wordSpacing * 3
+            anchors.top: parent.top
+            anchors.topMargin: root.theme.events.header.padding.top
+            text: "\u21BB"
+            color:
+                headerEventIconRefreshHover.hovered
+                    ? root.theme.heading.buttons.colorHover
+                    : root.theme.heading.buttons.color
+            visible: root.isHovered
+            HoverHandler {
+                id: headerEventIconRefreshHover
+                acceptedButtons: Qt.NoButton
+                cursorShape: Qt.PointingHandCursor
+            }
+            TapHandler {
+                onTapped: Provider.Calendar.refresh()
+            }
+        }
+
+        E.Text {
             id: headerEventIconToggleVisibility
             anchors.right: headerEventIconPlus.left
             anchors.rightMargin: wordSpacing * 3
