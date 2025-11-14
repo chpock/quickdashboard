@@ -120,6 +120,11 @@ Base {
         implicitHeight: Math.max(headerIconLeft.implicitHeight, headerText.implicitHeight, headerIconCurrent.implicitHeight, headerIconRight.implicitHeight)
         implicitWidth: parent.width
 
+        readonly property alias isHovered: headerHH.hovered
+        HoverHandler {
+            id: headerHH
+        }
+
         E.Text {
             id: headerIconLeft
             anchors.left: parent.left
@@ -128,7 +133,7 @@ Base {
                 headerIconLeftHover.hovered
                     ? root.theme.heading.buttons.colorHover
                     : root.theme.heading.buttons.color
-            visible: root.isHovered
+            visible: header.isHovered
             HoverHandler {
                 id: headerIconLeftHover
                 acceptedButtons: Qt.NoButton
@@ -158,7 +163,7 @@ Base {
                 headerIconCurrentHover.hovered
                     ? root.theme.heading.buttons.colorHover
                     : root.theme.heading.buttons.color
-            visible: root.isHovered
+            visible: header.isHovered
             HoverHandler {
                 id: headerIconCurrentHover
                 acceptedButtons: Qt.NoButton
@@ -177,7 +182,7 @@ Base {
                 headerIconRightHover.hovered
                     ? root.theme.heading.buttons.colorHover
                     : root.theme.heading.buttons.color
-            visible: root.isHovered
+            visible: header.isHovered
             HoverHandler {
                 id: headerIconRightHover
                 acceptedButtons: Qt.NoButton
@@ -316,6 +321,11 @@ Base {
         implicitWidth: parent.width
         visible: Provider.Calendar.running
 
+        readonly property alias isHovered: headerEventHH.hovered
+        HoverHandler {
+            id: headerEventHH
+        }
+
         E.TextTitle {
             id: headerEventText
             text: 'Events'
@@ -337,7 +347,7 @@ Base {
                 headerEventIconRefreshHover.hovered
                     ? root.theme.heading.buttons.colorHover
                     : root.theme.heading.buttons.color
-            visible: root.isHovered
+            visible: headerEvent.isHovered
             HoverHandler {
                 id: headerEventIconRefreshHover
                 acceptedButtons: Qt.NoButton
@@ -361,7 +371,7 @@ Base {
                     : Provider.Calendar.eventUpcomingShowHidden
                         ? root.theme.heading.buttons.colorActive
                         : root.theme.heading.buttons.color
-            visible: root.isHovered
+            visible: headerEvent.isHovered
             HoverHandler {
                 id: headerEventIconToggleVisibilityHover
                 acceptedButtons: Qt.NoButton
@@ -383,7 +393,7 @@ Base {
                 headerEventIconPlusHover.hovered
                     ? root.theme.heading.buttons.colorHover
                     : root.theme.heading.buttons.color
-            visible: root.isHovered
+            visible: headerEvent.isHovered
             HoverHandler {
                 id: headerEventIconPlusHover
                 acceptedButtons: Qt.NoButton
@@ -404,7 +414,7 @@ Base {
                 headerEventIconMinusHover.hovered
                     ? root.theme.heading.buttons.colorHover
                     : root.theme.heading.buttons.color
-            visible: root.isHovered
+            visible: headerEvent.isHovered
             HoverHandler {
                 id: headerEventIconMinusHover
                 acceptedButtons: Qt.NoButton
@@ -432,6 +442,11 @@ Base {
                 root.theme.events.padding.bottom
             anchors.left: parent.left
             anchors.right: parent.right
+
+            readonly property alias isHovered: eventHH.hovered
+            HoverHandler {
+                id: eventHH
+            }
 
             // ⏰ U+23F0 - Alarm Clock
             // ⏳ U+23F3 - Hourglass Not Done
@@ -464,7 +479,7 @@ Base {
                 implicitHeight: Math.max(titleText.implicitHeight, titleIcon.implicitHeight)
                 implicitWidth: titleText.implicitWidth + titleIcon.implicitWidth
                 anchors.left: icon.right
-                anchors.right: root.isHovered ? hideIcon.left : parent.right
+                anchors.right: event.isHovered ? hideIcon.left : parent.right
                 anchors.verticalCenter: icon.verticalCenter
 
                 E.Text {
@@ -490,7 +505,7 @@ Base {
                         event.modelData.calendarId in root.calendarColors
                             ? Theme.palette[root.calendarColors[event.modelData.calendarId]]
                             : titleText.color
-                    visible: (event.modelData.calendarId in root.calendarColors) || root.isHovered
+                    visible: (event.modelData.calendarId in root.calendarColors) || event.isHovered
                     HoverHandler {
                         acceptedButtons: Qt.NoButton
                         cursorShape: Qt.PointingHandCursor
@@ -511,7 +526,7 @@ Base {
                     hideIconHover.hovered
                         ? root.theme.heading.buttons.colorHover
                         : root.theme.heading.buttons.color
-                visible: root.isHovered && event.modelData.eventId !== ''
+                visible: event.isHovered && event.modelData.eventId !== ''
                 HoverHandler {
                     id: hideIconHover
                     acceptedButtons: Qt.NoButton
