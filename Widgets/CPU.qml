@@ -96,7 +96,6 @@ Base {
 
         E.Bar {
             id: cpuUsageBar
-            color: Theme.palette.belizehole
             value: Provider.CPU.cpu.usage
             anchors.left: parent.left
             anchors.right: parent.right

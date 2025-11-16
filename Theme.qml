@@ -124,8 +124,10 @@ Singleton {
     }
 
     readonly property var bar: QtObject {
-        property color active: root.palette.belizehole
-        property color inactive: Qt.rgba(1.0, 1.0, 1.0, 0.15)
+        readonly property var color: QtObject {
+            property color active: root.palette.belizehole
+            property color inactive: Qt.rgba(1.0, 1.0, 1.0, 0.15)
+        }
         property int height: 4
     }
 

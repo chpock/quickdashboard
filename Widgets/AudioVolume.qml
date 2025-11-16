@@ -123,7 +123,6 @@ Base {
             E.Bar {
                 id: bar
                 value: volumeObj.calcValue
-                color: Theme.palette.belizehole
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: root.theme.bar.padding.bottom
                 anchors.left: parent.left

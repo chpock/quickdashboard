@@ -125,7 +125,6 @@ Base {
 
                 E.Bar {
                     id: fsUsageBar
-                    color: Theme.palette.belizehole
                     anchors.left: parent.left
                     anchors.top: parent.top
                     anchors.topMargin: root.theme.mount.bar.padding.top

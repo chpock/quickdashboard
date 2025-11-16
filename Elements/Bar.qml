@@ -6,7 +6,7 @@ import qs
 Item {
     id: root
 
-    required property color color
+    property color color: Theme.bar.color.active
 
     property real maxValue: 100.0
     property real value: 0
@@ -17,7 +17,7 @@ Item {
     Rectangle {
         id: background
         anchors.fill: parent
-        color: Theme.bar.inactive
+        color: Theme.bar.color.inactive
         height: Theme.bar.height
     }
 

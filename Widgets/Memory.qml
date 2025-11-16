@@ -1,9 +1,7 @@
-import Quickshell
 import QtQuick
 import qs
 import qs.Elements as E
 import qs.Providers as Provider
-import '../utils.js' as Utils
 
 Base {
     id: root
@@ -94,7 +92,6 @@ Base {
         E.Bar {
             id: ramUsageBar
             value: ramUsageValue.calcValue
-            color: Theme.palette.belizehole
             anchors.bottom: parent.bottom
             anchors.bottomMargin: root.theme.meter.bar.padding.bottom
             anchors.left: parent.left
@@ -147,7 +144,6 @@ Base {
         E.Bar {
             id: swapUsageBar
             value: swapUsageValue.calcValue
-            color: Theme.palette.belizehole
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
