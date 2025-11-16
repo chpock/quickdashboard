@@ -19,6 +19,8 @@ Currently available components:
 - Memory monitor (RAM and swap) with a list of top memory-consuming processes
 - CPU usage monitor with a list of active processes
 - Disk usage and activity monitor with available space per mount point
+- Audio input/output volume
+- Clock
 
 ## Dependencies
 
