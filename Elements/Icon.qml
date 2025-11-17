@@ -17,6 +17,7 @@ E.Text {
 
     text: icon
     fontFamily: Theme.symbolsFont.name
+    fontFamilySpacing: Theme.normalFont.name
     fontWeight: root.weight
     // heightMode: E.Text.Content
     antialiasing: true

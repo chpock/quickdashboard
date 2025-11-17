@@ -14,7 +14,7 @@ Item {
 
     property string preset: ""
 
-    readonly property int wordSpacing: Math.round(spaceMetrics.boundingRect.width - textMetrics.boundingRect.width)
+    readonly property int wordSpacing: Math.round(spaceMetrics2.boundingRect.width - spaceMetrics1.boundingRect.width)
 
     property alias text: textObj.text
     property var color: undefined
@@ -22,6 +22,7 @@ Item {
     property int fontSize: -1
     property bool fontStrikeout: false
     property var fontFamily: Theme.normalFont.name
+    property var fontFamilySpacing: textObj.font.family
     property var fontVariableAxes: ({})
     property alias horizontalAlignment: textObj.horizontalAlignment
     property var verticalAlignment: undefined
@@ -77,12 +78,15 @@ Item {
     }
 
     TextMetrics {
-        id: spaceMetrics
-        font: textObj.font
-        text: {
-            const s = textMetrics.text
-            return s[0] + ' ' + s.slice(1)
-        }
+        id: spaceMetrics1
+        font: root.fontFamilySpacing
+        text: 'AA'
+    }
+
+    TextMetrics {
+        id: spaceMetrics2
+        font: root.fontFamilySpacing
+        text: 'A A'
     }
 
     FontMetrics {
