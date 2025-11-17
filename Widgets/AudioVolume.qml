@@ -20,7 +20,7 @@ Base {
         readonly property var bar: QtObject {
             readonly property var padding: QtObject {
                 property int top: 2
-                property int bottom: 2
+                property int bottom: 0
             }
         }
     }
