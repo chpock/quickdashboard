@@ -131,6 +131,20 @@ Singleton {
         property int height: 4
     }
 
+    readonly property var slider: QtObject {
+        readonly property var color: QtObject {
+            property color active: root.bar.color.active
+            property color inactive: root.bar.color.inactive
+        }
+        readonly property var thumb: QtObject {
+            property int padding: 2
+            property color color: root.slider.color.active
+            property int height: 4
+            property int width: 4
+        }
+        property int height: root.bar.height + root.slider.thumb.height
+    }
+
     readonly property var graph: QtObject {
         property int height: 40
         readonly property var border: QtObject {

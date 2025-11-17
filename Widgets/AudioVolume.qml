@@ -77,6 +77,15 @@ Base {
                         : ''
             readonly property color iconSecondColor: root.theme.icon.color.second
 
+            function setVolume(newVolume) {
+                device.audio.volume = newVolume
+                if (newVolume > 0.0001 && device.audio.muted) {
+                    device.audio.muted = false
+                } else if (newVolume <= 0.0001 && !device.audio.muted) {
+                    device.audio.muted = true
+                }
+            }
+
             implicitWidth: icon.implicitWidth + name.implicitWidth
             implicitHeight: Math.max(icon.implicitHeight, name.implicitHeight, volumeObj.implicitHeight) +
                 root.theme.bar.padding.top + bar.implicitHeight + root.theme.bar.padding.bottom
@@ -115,51 +124,32 @@ Base {
 
             E.TextPercent {
                 id: volumeObj
-                value: parent.volume * 100
+                valueCurrent: parent.volume
+                valueMax: 1.0
                 colors: []
                 anchors.right: parent.right
             }
 
-            E.Bar {
+            E.Slider {
                 id: bar
-                value: volumeObj.calcValue
+                value: parent.volume
+                maxValue: 1.0
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: root.theme.bar.padding.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
+                onSlide: offset => {
+                    item.setVolume(offset)
+                }
             }
 
             TapHandler {
+                gesturePolicy: TapHandler.WithinBounds
                 onTapped: {
                     parent.device.audio.muted = !parent.device.audio.muted
                     if (!parent.device.audio.muted && parent.volume === 0) {
                         parent.device.audio.volume = 0.01
                     }
-                }
-            }
-
-            WheelHandler {
-                id: wheel
-                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-                property real mouseWheelResolution: 5
-                property real touchpadResolution: 0.03
-                onWheel: event => {
-                    const deltaY = event.angleDelta.y
-                    const isMouseWheel = Math.abs(deltaY) >= 120 && deltaY % 120 === 0
-                    let diff
-                    if (isMouseWheel) {
-                        diff = mouseWheelResolution * deltaY / 120
-                    } else {
-                        diff = touchpadResolution * deltaY
-                    }
-                    const newVolume = Math.max(0, Math.min(1, parent.volume + diff / 100))
-                    parent.device.audio.volume = newVolume
-                    if (newVolume > 0.0001 && parent.device.audio.muted) {
-                        parent.device.audio.muted = false
-                    } else if (newVolume <= 0.0001 && !parent.device.audio.muted) {
-                        parent.device.audio.muted = true
-                    }
-                    event.accepted = true
                 }
             }
 
