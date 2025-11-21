@@ -627,7 +627,11 @@ Base {
                 text: {
                     if (event.modelData.eventId === '') return ''
                     const sign = isInProgress && eventTimeDiff > 0 ? '-' : ''
-                    const hours = Math.floor(eventTimeDiff / 3600)
+                    const days = Math.floor(eventTimeDiff / 86400)
+                    const hours = Math.floor((eventTimeDiff % 86400) / 3600)
+                    if (days > 0) {
+                        return `${sign}${days}d ${hours}h`
+                    }
                     const minutes = Math.floor((eventTimeDiff % 3600) / 60)
                     if (hours > 0) {
                         return `${sign}${hours}h ${minutes}m`
