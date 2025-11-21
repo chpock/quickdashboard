@@ -504,7 +504,7 @@ Base {
                 E.Text {
                     id: titleText
                     text: event.modelData.title
-                    elide: Text.ElideRight
+                    overflow: E.Text.OverflowElide
                     anchors.left: parent.left
                     width: Math.min(implicitWidth, parent.width - titleIcon.implicitWidth)
                     fontStrikeout: event.isHidden
@@ -598,7 +598,7 @@ Base {
                         event.modelData.end.toLocaleTimeString(Qt.locale(), Locale.ShortFormat)
                 }
                 anchors.left: title.left
-                elide: Text.ElideRight
+                overflow: E.Text.OverflowElide
                 anchors.right: leftTime.left
                 anchors.bottom: leftTime.bottom
             }

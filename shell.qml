@@ -46,6 +46,9 @@ ShellRoot {
                 Widget.Disk {
                 }
 
+                Widget.Media {
+                }
+
                 Item {
                     Layout.fillHeight: true
                 }

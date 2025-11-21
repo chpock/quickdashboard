@@ -90,7 +90,7 @@ Base {
                     anchors.left: ifaceObj.right
                     anchors.right: parent.right
                     color: modelData.isConnected ? root.theme.ifaceList.details.color.normal : root.theme.ifaceList.details.color.error
-                    elide: Text.ElideRight
+                    overflow: E.Text.OverflowElide
                     horizontalAlignment: Text.AlignLeft
                 }
 

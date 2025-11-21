@@ -119,7 +119,7 @@ Base {
                 anchors.top: parent.top
                 anchors.bottom: icon.bottom
                 preset: 'details'
-                elide: Text.ElideRight
+                overflow: E.Text.OverflowElide
             }
 
             E.TextPercent {

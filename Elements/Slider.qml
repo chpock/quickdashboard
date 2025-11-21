@@ -10,6 +10,7 @@ Item {
 
     property real maxValue: 100.0
     property real value: 0
+    property bool canSeek: true
 
     signal slide(real offset)
 
@@ -59,6 +60,7 @@ Item {
 
     HoverHandler {
         id: hoverHandler
+        enabled: root.canSeek
         acceptedButtons: Qt.NoButton
         cursorShape: Qt.PointingHandCursor
         onHoveredChanged: {
@@ -72,24 +74,27 @@ Item {
     }
 
     TapHandler {
+        enabled: root.canSeek
         acceptedButtons: Qt.LeftButton
         gesturePolicy: TapHandler.WithinBounds
         onTapped: point => {
             const slide = parent.width === 0 ? 0 : point.position.x / parent.width
-            root.slide(slide)
+            root.slide(slide * root.maxValue)
         }
     }
 
     DragHandler {
         id: drag
+        enabled: root.canSeek
         target: null
         onTranslationChanged: {
             const slide = parent.width === 0 ? 0 : Math.max(0, Math.min(parent.width, centroid.position.x)) / parent.width
-            root.slide(slide)
+            root.slide(slide * root.maxValue)
         }
     }
 
     WheelHandler {
+        enabled: root.canSeek
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         property real mouseWheelResolution: 5
         property real touchpadResolution: 0.03

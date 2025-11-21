@@ -88,7 +88,7 @@ Item {
                     text: item.model.command
                     preset: Theme.processList.preset
                     color: Theme.processList.colors.command
-                    elide: Text.ElideRight
+                    overflow: E.Text.OverflowElide
                     horizontalAlignment: Text.AlignLeft
                 }
 
@@ -97,7 +97,7 @@ Item {
                     text: item.model.args
                     preset: Theme.processList.preset
                     color: Theme.processList.colors.args
-                    elide: Text.ElideRight
+                    overflow: E.Text.OverflowElide
                     width: parent.width - colCommand.implicitWidth - lv.colValueWidth - parent.spacing * 2
                     horizontalAlignment: Text.AlignLeft
                 }
