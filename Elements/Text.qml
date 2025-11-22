@@ -36,7 +36,7 @@ Item {
     property int heightMode: 1
     property int overflow: 0
 
-    property int animScrollDuration: 60
+    property int animScrollDuration: 7
     property int animPauseStartDuration: 6000
     property int animPauseEndDuration: 2000
 
@@ -74,14 +74,24 @@ Item {
         id: textObj
 
         property real scrollOffset: 0
-        readonly property bool needsScrolling: root.overflow === 2 && root.width < implicitWidth
+        readonly property bool needsScrolling:
+            root.overflow === 2 && root.visible && root.width > 0 && root.width < implicitWidth
 
         height: textMetrics.tightBoundingRect.height
         textFormat: Text.PlainText
         wrapMode: Text.NoWrap
-        color: root.color !== undefined ? root.color : Theme.preset[root.preset !== '' ? root.preset : 'normal'].color
-        font.pixelSize: root.fontSize !== -1 ? root.fontSize : Theme.preset[root.preset !== '' ? root.preset : 'normal'].fontSize
-        font.weight: root.fontWeight !== -1 ? root.fontWeight : Theme.preset[root.preset !== '' ? root.preset : 'normal'].fontWeight
+        color:
+            root.color !== undefined
+                ? root.color
+                : Theme.preset[root.preset !== '' ? root.preset : 'normal'].color
+        font.pixelSize:
+            root.fontSize !== -1
+                ? root.fontSize
+                : Theme.preset[root.preset !== '' ? root.preset : 'normal'].fontSize
+        font.weight:
+            root.fontWeight !== -1
+                ? root.fontWeight
+                : Theme.preset[root.preset !== '' ? root.preset : 'normal'].fontWeight
         font.strikeout: root.fontStrikeout
         font.family: root.fontFamily
         font.variableAxes: root.fontVariableAxes
@@ -99,13 +109,13 @@ Item {
 
         SequentialAnimation {
             id: animation
-            running: textObj.needsScrolling && root.visible
+            running: textObj.needsScrolling
             loops: Animation.Infinite
 
             readonly property real duration:
                 textObj.implicitWidth === 0
                     ? 1000
-                    : Math.max(1000, 1000 * root.animScrollDuration * root.width / textObj.implicitWidth)
+                    : Math.max(1000, 1000 * root.animScrollDuration * (textObj.implicitWidth - root.width) / root.width)
 
             PauseAnimation {
                 duration: root.animPauseStartDuration

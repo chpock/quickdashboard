@@ -341,6 +341,7 @@ Base {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 visible: Provider.Mpris.hasPlayer
+                overflow: E.Text.OverflowAnimate
             }
 
         }
