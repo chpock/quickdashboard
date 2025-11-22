@@ -88,7 +88,7 @@ Base {
 
             implicitWidth: icon.implicitWidth + name.implicitWidth
             implicitHeight: Math.max(icon.implicitHeight, name.implicitHeight, volumeObj.implicitHeight) +
-                root.theme.bar.padding.top + bar.implicitHeight + root.theme.bar.padding.bottom
+                root.theme.bar.padding.top + slider.implicitHeight + root.theme.bar.padding.bottom
             anchors.left: parent.left
             anchors.right: parent.right
 
@@ -131,7 +131,7 @@ Base {
             }
 
             E.Slider {
-                id: bar
+                id: slider
                 value: parent.volume
                 maxValue: 1.0
                 anchors.bottom: parent.bottom
@@ -141,6 +141,16 @@ Base {
                 onSlide: offset => {
                     item.setVolume(offset)
                 }
+            }
+
+            HoverHandler {
+                acceptedButtons: Qt.NoButton
+                cursorShape: Qt.PointingHandCursor
+            }
+
+            WheelHandler {
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                onWheel: event => slider.wheelHandler(event)
             }
 
             TapHandler {

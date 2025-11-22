@@ -11,6 +11,8 @@ Item {
     property real maxValue: 100.0
     property real value: 0
     property bool canSeek: true
+    property real mouseWheelResolution: 5
+    property real touchpadResolution: 0.03
 
     signal slide(real offset)
 
@@ -96,20 +98,7 @@ Item {
     WheelHandler {
         enabled: root.canSeek
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-        property real mouseWheelResolution: 5
-        property real touchpadResolution: 0.03
-        onWheel: event => {
-            const deltaY = event.angleDelta.y
-            const isMouseWheel = Math.abs(deltaY) >= 120 && deltaY % 120 === 0
-            const deltaRel =
-                isMouseWheel
-                    ? mouseWheelResolution * deltaY / 120
-                    : touchpadResolution * deltaY
-            const deltaAbs = root.maxValue * deltaRel / 100
-            const slide = Math.max(0, Math.min(root.maxValue, root.value + deltaAbs))
-            event.accepted = true
-            root.slide(slide)
-        }
+        onWheel: event => root.wheelHandler(event)
     }
 
     Timer {
@@ -120,6 +109,19 @@ Item {
         onTriggered: {
             root.isHovered = false
         }
+    }
+
+    function wheelHandler(event) {
+        const deltaY = event.angleDelta.y
+        const isMouseWheel = Math.abs(deltaY) >= 120 && deltaY % 120 === 0
+        const deltaRel =
+            isMouseWheel
+                ? mouseWheelResolution * deltaY / 120
+                : touchpadResolution * deltaY
+        const deltaAbs = root.maxValue * deltaRel / 100
+        const slide = Math.max(0, Math.min(root.maxValue, root.value + deltaAbs))
+        event.accepted = true
+        root.slide(slide)
     }
 
 }
