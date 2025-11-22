@@ -29,7 +29,7 @@ ShellRoot {
 
                 id: content
                 anchors.fill: parent
-                spacing: 3
+                spacing: 2
 
                 Widget.Calendar {
                 }
