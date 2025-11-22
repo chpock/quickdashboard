@@ -100,7 +100,7 @@ Base {
                 id: albumArtBoxImage
                 anchors.fill: parent
                 asynchronous: true
-                // Don't cashe to not waste RAM
+                // Don't cache to not waste RAM
                 cache: false
                 fillMode: Image.PreserveAspectCrop
                 retainWhileLoading: true
