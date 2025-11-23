@@ -34,13 +34,13 @@ ShellRoot {
                 Widget.Calendar {
                 }
 
-                Widget.Network {
-                }
-
                 Widget.Memory {
                 }
 
                 Widget.CPU {
+                }
+
+                Widget.Network {
                 }
 
                 Widget.Disk {
