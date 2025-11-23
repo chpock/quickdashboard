@@ -15,7 +15,10 @@ Currently available components:
 
 - Calendar
 - List of the nearest events from **khal** calendar (optional, only if **khal** is installed and configured)
-- Network activity monitor
+- Network monitor that includes:
+  - Current WiFi network and its level
+  - Latency (ping time) for well-known hosts
+  - Download/upload rates
 - Memory monitor (RAM and swap) with a list of top memory-consuming processes
 - CPU usage monitor with a list of active processes
 - Disk usage and activity monitor with available space per mount point

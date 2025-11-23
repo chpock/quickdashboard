@@ -26,6 +26,32 @@ Base {
                 })
             }
         }
+        readonly property var latency: QtObject {
+            readonly property var title: QtObject {
+                readonly property var padding: QtObject {
+                    property int bottom: 4
+                }
+            }
+            readonly property var marks: QtObject {
+                readonly property int width: 8
+                readonly property var padding: QtObject {
+                    property int top: 3
+                    property int bottom: 1
+                    property int left: 0
+                    property int right: 0
+                }
+                readonly property int spacing: 5
+                readonly property int border: 1
+            }
+            readonly property var thresholds: QtObject {
+                property real good: 40
+            }
+            readonly property var color: QtObject {
+                property color good: Theme.color.ok
+                property color warning: Theme.color.warning
+                property color error: Theme.color.error
+            }
+        }
         readonly property var rate: QtObject {
             readonly property var preset: QtObject {
                 property var label: "normal"
@@ -89,7 +115,10 @@ Base {
                     preset: root.theme.ifaceList.details.preset
                     anchors.left: ifaceObj.right
                     anchors.right: parent.right
-                    color: modelData.isConnected ? root.theme.ifaceList.details.color.normal : root.theme.ifaceList.details.color.error
+                    color:
+                        parent.modelData.isConnected
+                            ? root.theme.ifaceList.details.color.normal
+                            : root.theme.ifaceList.details.color.error
                     overflow: E.Text.OverflowElide
                     horizontalAlignment: Text.AlignLeft
                 }
@@ -104,6 +133,111 @@ Base {
                 }
             }
         }
+    }
+
+    Item {
+        id: latency
+
+        property string hoveredMarkName: ''
+        property real hoveredMarkTime: Infinity
+
+        function timeToColor(value) {
+            if (!Number.isFinite(value)) return root.theme.latency.color.error
+            return value <= root.theme.latency.thresholds.good
+                ? root.theme.latency.color.good
+                : root.theme.latency.color.warning
+        }
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        implicitHeight:
+        Math.max(latencyTitle.implicitHeight, latencyValue.implicitHeight) +
+            root.theme.latency.title.padding.bottom +
+            latencyDetails.implicitHeight
+
+        E.TextTitle {
+            id: latencyTitle
+            text: 'Latency'
+            anchors.left: parent.left
+        }
+
+        E.Text {
+            id: latencyValue
+            readonly property real time: latencyDotsHover.hovered ? latency.hoveredMarkTime : Provider.Network.latency.time
+            text: Number.isFinite(time) ? Math.round(time) + ' ms' : 'ERR'
+            color: latency.timeToColor(time)
+            anchors.right: parent.right
+            // color: modelData.isConnected ? root.theme.ifaceList.details.color.normal : root.theme.ifaceList.details.color.error
+        }
+
+        E.Text {
+            id: latencyDetails
+            text: latencyDotsHover.hovered ? latency.hoveredMarkName : Provider.Network.latency.name
+            anchors.top: latencyTitle.bottom
+            anchors.topMargin: root.theme.latency.title.padding.bottom
+            anchors.left: parent.left
+            anchors.right: latencyDots.left
+            preset: 'details'
+            overflow: E.Text.OverflowElide
+        }
+
+        Row {
+            id: latencyDots
+
+            anchors.top: latencyDetails.top
+            anchors.bottom: latencyDetails.bottom
+            anchors.right: parent.right
+            spacing: root.theme.latency.marks.spacing
+
+            Repeater {
+                model: Provider.Network.latencyHostsModel
+
+                Item {
+                    id: item
+
+                    required property var modelData
+
+                    readonly property bool isActive:
+                        hover.hovered || (!latencyDotsHover.hovered && modelData.host === Provider.Network.latency.host)
+                    readonly property color color: latency.timeToColor(modelData.time)
+
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    implicitWidth: mark.implicitWidth + root.theme.latency.marks.padding.left + root.theme.latency.marks.padding.right
+
+                    Rectangle {
+                        id: mark
+                        implicitWidth: root.theme.latency.marks.width
+                        anchors.top: parent.top
+                        anchors.topMargin: root.theme.latency.marks.padding.top
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: root.theme.latency.marks.padding.bottom
+                        anchors.right: parent.right
+                        anchors.rightMargin: root.theme.latency.marks.padding.right
+
+                        color: parent.isActive ? parent.color : 'transparent'
+                        border.width: root.theme.latency.marks.border
+                        border.color: parent.color
+                    }
+
+                    HoverHandler {
+                        id: hover
+                        onHoveredChanged: {
+                            if (hovered) {
+                                latency.hoveredMarkName = Qt.binding(() => item.modelData.name)
+                                latency.hoveredMarkTime = Qt.binding(() => item.modelData.time)
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            HoverHandler {
+                id: latencyDotsHover
+            }
+        }
+
     }
 
     Row {
