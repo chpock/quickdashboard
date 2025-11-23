@@ -58,6 +58,16 @@ Base {
                 property color error: Theme.color.error
             }
         }
+        readonly property var gateway: QtObject {
+            readonly property var thresholds: QtObject {
+                property real good: 10
+            }
+            readonly property var color: QtObject {
+                property color good: Theme.color.ok
+                property color warning: Theme.color.warning
+                property color error: Theme.color.error
+            }
+        }
         readonly property var rate: QtObject {
             readonly property var preset: QtObject {
                 property var label: "normal"
@@ -272,6 +282,43 @@ Base {
             id: dnsValue
             text: dns.isOk ? 'Ok' : 'ERR'
             color: dns.isOk ? root.theme.dns.color.ok : root.theme.dns.color.error
+            anchors.right: parent.right
+        }
+    }
+
+    Item {
+        id: gateway
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        implicitHeight: Math.max(gatewayTitle.implicitHeight, gatewayValue.implicitHeight)
+
+        E.TextTitle {
+            id: gatewayTitle
+            text: 'Gateway'
+            anchors.left: parent.left
+        }
+
+        E.Text {
+            id: gatewayDetails
+            text: Provider.Network.gatewayDefault.host
+            preset: 'details'
+            anchors.left: gatewayTitle.right
+            anchors.right: gatewayValue.left
+            anchors.bottom: gatewayTitle.bottom
+            overflow: E.Text.OverflowElide
+        }
+
+        E.Text {
+            id: gatewayValue
+            readonly property bool isOk: Number.isFinite(Provider.Network.gatewayDefault.latency)
+            text: isOk ? Math.round(Provider.Network.gatewayDefault.latency) + ' ms' : 'ERR'
+            color:
+                !isOk
+                    ? root.theme.gateway.color.error
+                    : Provider.Network.gatewayDefault.latency <= root.theme.gateway.thresholds.good
+                        ? root.theme.gateway.color.good
+                        : root.theme.gateway.color.warning
             anchors.right: parent.right
         }
     }

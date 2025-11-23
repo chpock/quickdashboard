@@ -4,22 +4,48 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.Services as Service
 
 Singleton {
     id: root
 
     signal updateInfoPing(var data, real value)
-    signal updateListHost(var data)
+    signal updateListPing(var data)
+    signal updateListPingGateway(var data)
 
     // ping interval in seconds
     property int interval: 3
     // timeout for ping in milliseconds
     property int timeout: 3000
-    property var hostsList: [
-        { name: 'Google DNS',     host: '8.8.8.8', },
-        { name: 'Cloudflare DNS', host: '1.1.1.1', },
-        { name: 'Quad9 DNS',      host: '9.9.9.9', },
+
+    property var pingHostsList: [
+        { name: 'Google DNS',     host: '8.8.8.8', isGateway: false, },
+        { name: 'Cloudflare DNS', host: '1.1.1.1', isGateway: false, },
+        { name: 'Quad9 DNS',      host: '9.9.9.9', isGateway: false, },
     ]
+    property var gatewayHostsList: []
+    readonly property var hostsList: [
+        ...pingHostsList,
+        ...gatewayHostsList,
+    ]
+
+    Connections {
+        target: Service.Ip
+        function onUpdateListGateway(data) {
+            const gatewayHostsList = []
+            let isDefault = true
+            for (const gateway of data) {
+                gatewayHostsList.push({
+                    name: '',
+                    host: gateway,
+                    isGateway: true,
+                    isDefault: isDefault,
+                })
+                isDefault = false
+            }
+            root.gatewayHostsList = gatewayHostsList
+        }
+    }
 
     Instantiator {
         model: root.hostsList
@@ -120,8 +146,12 @@ Singleton {
         }
     }
 
-    onHostsListChanged: {
-        root.updateListHost(root.hostsList)
+    onPingHostsListChanged: {
+        root.updateListPing(root.pingHostsList)
+    }
+
+    onGatewayHostsListChanged: {
+        root.updateListPingGateway(root.gatewayHostsList)
     }
 
 }

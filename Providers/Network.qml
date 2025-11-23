@@ -19,6 +19,11 @@ Singleton {
         property real time: Infinity
     }
 
+    readonly property var gatewayDefault: QtObject {
+        property string host: ''
+        property real latency: Infinity
+    }
+
     readonly property alias latencyHostsModel: latencyHostsModelObj
 
     readonly property real dnsCheckTime: Service.Getent.dnsCheckTime
@@ -45,14 +50,27 @@ Singleton {
     Connections {
         target: Service.Ping
         function onUpdateInfoPing(data, value) {
+            if (data.isGateway) {
+                if (data.isDefault) {
+                    root.gatewayDefault.host = data.host
+                    root.gatewayDefault.latency = value
+                }
+                return
+            }
             const idx = latencyHostsModelObj.knownHosts.indexOf(data.host)
             if (idx === -1) return
             latencyHostsModelObj.latencyValues[idx] = value
             latencyHostsModelObj.setProperty(idx, 'time', value)
             root.refreshLatency()
         }
-        function onUpdateListHost(data) {
+        function onUpdateListPing(data) {
             latencyHostsModelObj.updateElements(data)
+        }
+        function onUpdateListPingGateway(data) {
+            if (!data.length) {
+                root.gatewayDefault.host = ''
+                root.gatewayDefault.latency = Infinity
+            }
         }
     }
 
