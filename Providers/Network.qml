@@ -21,6 +21,8 @@ Singleton {
 
     readonly property alias latencyHostsModel: latencyHostsModelObj
 
+    readonly property real dnsCheckTime: Service.Getent.dnsCheckTime
+
     signal updateNetworkRate(var info)
 
     Component.onCompleted: {

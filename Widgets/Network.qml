@@ -52,6 +52,12 @@ Base {
                 property color error: Theme.color.error
             }
         }
+        readonly property var dns: QtObject {
+            readonly property var color: QtObject {
+                property color ok: Theme.color.ok
+                property color error: Theme.color.error
+            }
+        }
         readonly property var rate: QtObject {
             readonly property var preset: QtObject {
                 property var label: "normal"
@@ -151,9 +157,9 @@ Base {
         anchors.left: parent.left
         anchors.right: parent.right
         implicitHeight:
-        Math.max(latencyTitle.implicitHeight, latencyValue.implicitHeight) +
-            root.theme.latency.title.padding.bottom +
-            latencyDetails.implicitHeight
+            Math.max(latencyTitle.implicitHeight, latencyValue.implicitHeight) +
+                root.theme.latency.title.padding.bottom +
+                latencyDetails.implicitHeight
 
         E.TextTitle {
             id: latencyTitle
@@ -167,7 +173,6 @@ Base {
             text: Number.isFinite(time) ? Math.round(time) + ' ms' : 'ERR'
             color: latency.timeToColor(time)
             anchors.right: parent.right
-            // color: modelData.isConnected ? root.theme.ifaceList.details.color.normal : root.theme.ifaceList.details.color.error
         }
 
         E.Text {
@@ -238,6 +243,37 @@ Base {
             }
         }
 
+    }
+
+    Item {
+        id: dns
+
+        readonly property bool isOk: Number.isFinite(Provider.Network.dnsCheckTime)
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        implicitHeight: Math.max(dnsTitle.implicitHeight, dnsLatency.implicitHeight, dnsValue.implicitHeight)
+
+        E.TextTitle {
+            id: dnsTitle
+            text: 'DNS'
+            anchors.left: parent.left
+        }
+
+        E.Text {
+            id: dnsLatency
+            text: dns.isOk ? Provider.Network.dnsCheckTime + ' ms' : ''
+            preset: 'details'
+            anchors.left: dnsTitle.right
+            anchors.bottom: dnsTitle.bottom
+        }
+
+        E.Text {
+            id: dnsValue
+            text: dns.isOk ? 'Ok' : 'ERR'
+            color: dns.isOk ? root.theme.dns.color.ok : root.theme.dns.color.error
+            anchors.right: parent.right
+        }
     }
 
     Row {
