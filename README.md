@@ -19,6 +19,7 @@ Currently available components:
   - Current WiFi network and its level
   - Latency (ping time) for well-known hosts
   - DNS resolution health and its latency
+  - Default gateway IP and its latency
   - Download/upload rates
 - Memory monitor (RAM and swap) with a list of top memory-consuming processes
 - CPU usage monitor with a list of active processes
