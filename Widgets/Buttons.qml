@@ -9,7 +9,7 @@ Base {
     id: root
 
     readonly property var theme: QtObject {
-        property int spacing: 2
+        property int spacing: 8
         property color color: Theme.palette.silver
         property color colorHover: Theme.palette.belizehole
     }
@@ -18,6 +18,10 @@ Base {
         {
             icon: 'frame_inspect',
             command: 'T="$(mktemp)"; hyprprop >"$T" && alacritty -e fx "$T" || true; rm -f "$T"',
+        },
+        {
+            icon: 'draw_abstract',
+            command: 'wayscriber --active',
         },
     ]
 
