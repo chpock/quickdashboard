@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 pragma Singleton
 
 import Quickshell
+import Quickshell.Io
 import QtQuick
 import qs.Services as Service
 import qs
@@ -146,6 +147,58 @@ Singleton {
 
     onRunningChanged: {
         SettingsData.stateSet('Provider.Calendar.running', running)
+    }
+
+    // Everything related to calendar application is below. Move it to a service?
+
+    property bool calendarApplicationAvailable: false
+
+    function runCalendarApplication() {
+        calendarApplicationProc.running = true
+    }
+
+    function refreshCalendarApplication() {
+        let calendarApplication = DesktopEntries.applications.values.find(function(entry) {
+            return entry.name === 'Google Calendar'
+        })
+        if (calendarApplication) {
+            calendarApplicationAvailable = true
+            calendarApplicationProc.command = [
+                Quickshell.shellPath('bin/chrome-wait.sh'),
+                ...calendarApplication.command
+            ]
+        } else {
+            calendarApplicationAvailable = false
+        }
+    }
+
+    Timer {
+        id: initCalendarApplicationTimer
+        interval: 500
+        running: true
+        repeat: false
+        onTriggered: refreshCalendarApplication()
+    }
+
+    Timer {
+        id: refreshCalendarApplicationTimer
+        interval: 1000 * 60 * 5
+        running: true
+        repeat: true
+        onTriggered: refreshCalendarApplication()
+    }
+
+    Process {
+        id: calendarApplicationProc
+        running: false
+        // // qmllint disable signal-handler-parameters
+        onExited: (exitCode, _) => {
+        // qmllint enable signal-handler-parameters
+            if (exitCode !== 0) {
+                console.error('[Provider.Calendar/calendarApplicationProc]', 'finished with exit code:', exitCode)
+            }
+            root.refresh()
+        }
     }
 
 }

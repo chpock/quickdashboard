@@ -358,6 +358,28 @@ Base {
         }
 
         E.Icon {
+            id: headerEventIconRunApp
+            icon: 'edit_calendar'
+            anchors.right: headerEventIconRefresh.left
+            anchors.rightMargin: wordSpacing * 3
+            anchors.top: parent.top
+            anchors.topMargin: root.theme.events.header.padding.top
+            color:
+                headerEventIconRunAppHover.hovered
+                    ? root.theme.heading.buttons.colorHover
+                    : root.theme.heading.buttons.color
+            visible: headerEvent.isHovered && Provider.Calendar.calendarApplicationAvailable
+            HoverHandler {
+                id: headerEventIconRunAppHover
+                acceptedButtons: Qt.NoButton
+                cursorShape: Qt.PointingHandCursor
+            }
+            TapHandler {
+                onTapped: Provider.Calendar.runCalendarApplication()
+            }
+        }
+
+        E.Icon {
             id: headerEventIconRefresh
             icon: 'refresh'
             anchors.right: headerEventIconToggleVisibility.left
