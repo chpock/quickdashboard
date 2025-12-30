@@ -67,6 +67,7 @@ Singleton {
             Process {
                 id: pingProc
                 property int lineNumber: 0
+                property bool scheduledRestart: false
                 command: ['ping', '-i', root.interval, pinger.host]
                 running: false
                 stderr: SplitParser {
@@ -114,13 +115,33 @@ Singleton {
                 onExited: (exitCode, _) => {
                 // qmllint enable signal-handler-parameters
                     timeoutTimer.stop()
-                    console.warn('[Services/Ping]', 'ping for', pinger.host, 'exited with code:', exitCode)
-                    if (!restartTimer.running) {
-                        console.log('[Services/Ping]', 'restart ping in 5 seconds...')
-                        restartTimer.start()
+                    if (scheduledRestart) {
+                        pingProc.scheduledRestart = false
+                        pingProc.running = true
+                    } else {
+                        console.warn('[Services/Ping]', 'ping for', pinger.host, 'exited with code:', exitCode)
+                        if (!restartTimer.running) {
+                            console.log('[Services/Ping]', 'restart ping in 5 seconds...')
+                            restartTimer.start()
+                        }
+                        root.updateInfoPing(pinger.modelData, Infinity)
                     }
-                    root.updateInfoPing(pinger.modelData, Infinity)
                     lineNumber = 0
+                }
+            }
+
+            // There seems to be a bug in Quickshell where long running processes eat up RAM.
+            // In order to workaround this bug, we will restart service periodically.
+            Timer {
+                id: scheduledRestartTimer
+                interval: 1000 * 60 * 60
+                running: true
+                repeat: true
+                onTriggered: {
+                    if (pingProc.running) {
+                        pingProc.scheduledRestart = true
+                        pingProc.running = false
+                    }
                 }
             }
 

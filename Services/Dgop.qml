@@ -13,6 +13,11 @@ Singleton {
 
     property bool running: false
 
+    property int activeRequests: 0
+    property bool scheduledRestart: false
+    property bool scheduledRestartInProgress: false
+    property bool ready: running && !scheduledRestart
+
     readonly property var subscribers: QtObject {
         property int infoCPU: 0
         property int infoMemory: 0
@@ -41,24 +46,51 @@ Singleton {
         // stderr: SplitParser {
         //     splitMarker: "\n"
         //     onRead: line => {
-        //         console.log('[DGOP]', line)
+        //         console.log('[DGOP:stderr]', line)
         //     }
         // }
         //
         // stdout: SplitParser {
         //     splitMarker: "\n"
         //     onRead: line => {
-        //         console.log('[DGOP]', line)
+        //         console.log('[DGOP:stdout]', line)
         //     }
         // }
 
         // qmllint disable signal-handler-parameters
         onExited: (exitCode, _) => {
         // qmllint enable signal-handler-parameters
-            console.warn('dgop service exited with code:', exitCode)
-            if (!restartTimer.running) {
-                console.log('restart dgop in 5 seconds...')
-                restartTimer.start()
+            if (root.scheduledRestart) {
+                console.log('end: scheduled restart for dgop...')
+                dgopProc.running = true
+            } else {
+                console.warn('dgop service exited with code:', exitCode)
+                if (!restartTimer.running) {
+                    console.log('restart dgop in 5 seconds...')
+                    restartTimer.start()
+                }
+            }
+        }
+
+    }
+
+    // There seems to be a bug in Quickshell where long running processes eat up RAM.
+    // In order to workaround this bug, we will restart service periodically.
+    Timer {
+        id: scheduledRestartTimer
+        interval: 1000 * 60 * 60
+        running: true
+        repeat: true
+        onTriggered: {
+            if (dgopProc.running) {
+                root.scheduledRestart = true
+                if (!root.activeRequests) {
+                    console.log('start: scheduled restart for dgop...')
+                    root.scheduledRestartInProgress = true
+                    dgopProc.running = false
+                } else {
+                    console.log('start: scheduled (POSTPONED) restart for dgop...')
+                }
             }
         }
     }
@@ -144,7 +176,7 @@ Singleton {
     }
 
     function triggerAll() {
-        if (!root.running) return
+        if (!root.ready) return
         if (subscribers.infoCPU > 0) getInfoCPU()
         if (subscribers.infoMemory > 0) getInfoMemory()
         if (subscribers.infoNetwork > 0) getInfoNetwork()
@@ -165,6 +197,7 @@ Singleton {
     function request(path, query, callback) {
 
         const xhr = new XMLHttpRequest()
+        const silentErrors = path === '/health' && root.scheduledRestartInProgress
 
         xhr.onreadystatechange = function() {
             if(xhr.readyState !== XMLHttpRequest.DONE) return
@@ -174,8 +207,8 @@ Singleton {
                 try {
                     const response = responseText === "OK" ? responseText : JSON.parse(responseText)
                     try {
-                        callback(response)
                         processed = true
+                        callback(response)
                     }
                     catch (e) {
                         console.warn('Error in callback:', e, 'response:', responseText)
@@ -185,11 +218,19 @@ Singleton {
                     console.warn('Unable to parse JSON from dgop response:', e, 'response:', responseText)
                 }
             } else {
-                console.warn('HTTP request failed, status code:', xhr.status + '; response:', responseText)
+                if (!silentErrors) {
+                    console.warn('HTTP request failed, status code:', xhr.status + '; response:', responseText)
+                }
             }
             if (!processed) {
-                callback(null)
+                try {
+                    callback(null)
+                }
+                catch (e) {
+                    console.warn('Error in callback:', e, 'response:', responseText)
+                }
             }
+            --root.activeRequests
         }
 
         var url = 'http://localhost:63484' + path
@@ -205,6 +246,7 @@ Singleton {
         xhr.open('GET', url)
 
         xhr.send()
+        ++root.activeRequests
 
         return {
             abort: function() { try { xhr.abort() } catch(e) {} }
@@ -215,18 +257,23 @@ Singleton {
     function doHealthCheck() {
 
         if (!dgopProc.running) {
-            if (running) running = false
+            if (running && !scheduledRestart) running = false
             return
         }
 
         request('/health', {}, function(data) {
             if (data === "OK") {
+                if (scheduledRestartInProgress) {
+                    console.log('Healthcheck: OK')
+                    scheduledRestart = false
+                    scheduledRestartInProgress = false
+                }
                 if (running) return
                 running = true
                 root.available()
                 root.triggerAll()
             } else {
-                if (!running) return
+                if (!running || scheduledRestart) return
                 running = false
             }
         })
@@ -235,7 +282,7 @@ Singleton {
 
     property string cursorInfoCPU: ""
     function getInfoCPU() {
-        if (!running) return null
+        if (!ready) return null
         return request('/gops/cpu', {
             'cursor': cursorInfoCPU,
         }, function(data) {
@@ -252,7 +299,7 @@ Singleton {
     property var writeAvgDiskRate: Utils.movingAverage(() => avgWinSizeDiskRate)
     property string cursorInfoDisk: ""
     function getInfoDisk() {
-        if (!running) return null
+        if (!ready) return null
         return request('/gops/disk-rate', {
             'cursor': cursorInfoDisk,
         }, function(data) {
@@ -288,7 +335,7 @@ Singleton {
     }
 
     function getInfoMounts() {
-        if (!running) return null
+        if (!ready) return null
         return request('/gops/disk/mounts', {}, function(data) {
             if (!data) return
             const callbackData = data.data.map(function(item) {
@@ -306,7 +353,7 @@ Singleton {
     }
 
     function getInfoMemory() {
-        if (!running) return null
+        if (!ready) return null
         return request('/gops/memory', {}, function(data) {
             if (!data) return
             root.updateInfoMemory(data.data)
@@ -330,7 +377,7 @@ Singleton {
 
     property string cursorProcessesByCPU: ""
     function getProcessesByCPU() {
-        if (!running) return null
+        if (!ready) return null
         return request('/gops/processes', {
             'cursor': cursorProcessesByCPU,
             'sort_by': 'cpu',
@@ -355,7 +402,7 @@ Singleton {
 
     property string cursorProcessesByRAM: ""
     function getProcessesByRAM() {
-        if (!running) return null
+        if (!ready) return null
         return request('/gops/processes', {
             'cursor': cursorProcessesByRAM,
             'sort_by': 'memory',
@@ -383,7 +430,7 @@ Singleton {
     property var rxAvgNetworkRate: Utils.movingAverage(() => avgWinSizeNetworkRate)
     property var txAvgNetworkRate: Utils.movingAverage(() => avgWinSizeNetworkRate)
     function getInfoNetwork(callback) {
-        if (!running) return null
+        if (!ready) return null
         return request('/gops/net-rate', {
             'cursor': cursorInfoNetwork,
         }, function(data) {
@@ -395,6 +442,14 @@ Singleton {
             }
             root.updateInfoNetwork(callbackData)
         })
+    }
+
+    onActiveRequestsChanged: {
+        if (scheduledRestart && !activeRequests && !scheduledRestartInProgress) {
+            scheduledRestartInProgress = true
+            dgopProc.running = false
+            console.log('start: scheduled REAL restart for dgop...')
+        }
     }
 
 }
