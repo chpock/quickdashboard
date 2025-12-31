@@ -3,67 +3,49 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import qs.Widgets as Widget
+import qs.Widgets as W
 
 ShellRoot {
 
-    Variants {
-        model: [Quickshell.screens[0]]
+    id: root
 
-        PanelWindow {
-            id: w
+    W.Dashboard {
 
-            property var modelData
-            screen: modelData
+        screen: Quickshell.screens[0]
 
-            implicitWidth: 212
-            anchors {
-                right: true
-                top: true
-                bottom: true
-            }
+        align: W.Dashboard.AlignRight
 
-            color: 'transparent'
-
-            ColumnLayout {
-
-                id: content
-                anchors.fill: parent
-                spacing: 2
-
-                Widget.Calendar {
-                }
-
-                Widget.Memory {
-                }
-
-                Widget.CPU {
-                }
-
-                Widget.Network {
-                }
-
-                Widget.Disk {
-                }
-
-                Widget.Media {
-                }
-
-                Item {
-                    Layout.fillHeight: true
-                }
-
-                Widget.Buttons {
-                }
-
-                Widget.AudioVolume {
-                }
-
-                Widget.Clock {
-                }
-
-            }
-
+        W.Calendar {
         }
+
+        W.Memory {
+        }
+
+        W.CPU {
+        }
+
+        W.Network {
+        }
+
+        W.Disk {
+        }
+
+        W.Media {
+        }
+
+        Item {
+            Layout.fillHeight: true
+        }
+
+        W.Buttons {
+        }
+
+        W.AudioVolume {
+        }
+
+        W.Clock {
+        }
+
     }
+
 }
