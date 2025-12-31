@@ -271,14 +271,19 @@ Singleton {
         id: checkVdirsyncerProc
         command: ['vdirsyncer', 'showconfig']
         running: false
+        property bool isInitialLoading: true
         // qmllint disable signal-handler-parameters
         onExited: (exitCode, _) => {
         // qmllint enable signal-handler-parameters
             if (exitCode !== 0) {
                 console.info('[Service.Khal/checkVdirsyncerProc]', 'vdirsyncer: unavailable')
                 root.vdirsyncerAvailable = false
+                isInitialLoading = true
             } else {
-                console.info('[Service.Khal/checkVdirsyncerProc]', 'vdirsyncer: available')
+                if (isInitialLoading) {
+                    console.info('[Service.Khal/checkVdirsyncerProc]', 'vdirsyncer: available')
+                    isInitialLoading = false
+                }
                 root.vdirsyncerAvailable = true
             }
         }
