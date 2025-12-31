@@ -61,7 +61,7 @@ Singleton {
         onExited: (exitCode, _) => {
         // qmllint enable signal-handler-parameters
             if (root.scheduledRestart) {
-                console.log('end: scheduled restart for dgop...')
+                // console.log('end: scheduled restart for dgop...')
                 dgopProc.running = true
             } else {
                 console.warn('dgop service exited with code:', exitCode)
@@ -85,11 +85,11 @@ Singleton {
             if (dgopProc.running) {
                 root.scheduledRestart = true
                 if (!root.activeRequests) {
-                    console.log('start: scheduled restart for dgop...')
+                    // console.log('start: scheduled restart for dgop...')
                     root.scheduledRestartInProgress = true
                     dgopProc.running = false
                 } else {
-                    console.log('start: scheduled (POSTPONED) restart for dgop...')
+                    // console.log('start: scheduled (POSTPONED) restart for dgop...')
                 }
             }
         }
@@ -264,7 +264,7 @@ Singleton {
         request('/health', {}, function(data) {
             if (data === "OK") {
                 if (scheduledRestartInProgress) {
-                    console.log('Healthcheck: OK')
+                    // console.log('Healthcheck: OK')
                     scheduledRestart = false
                     scheduledRestartInProgress = false
                 }
@@ -448,7 +448,7 @@ Singleton {
         if (scheduledRestart && !activeRequests && !scheduledRestartInProgress) {
             scheduledRestartInProgress = true
             dgopProc.running = false
-            console.log('start: scheduled REAL restart for dgop...')
+            // console.log('start: scheduled REAL restart for dgop...')
         }
     }
 
