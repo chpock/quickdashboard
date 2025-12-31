@@ -1,7 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import QtQuick
-import QtQuick.Layouts
 import Quickshell
 import qs.Widgets as W
 
@@ -33,8 +31,7 @@ ShellRoot {
         W.Media {
         }
 
-        Item {
-            Layout.fillHeight: true
+        W.Separator {
         }
 
         W.Buttons {
