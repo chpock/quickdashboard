@@ -1,25 +1,33 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs
 import qs.Elements as E
+import qs.Config as C
 import '../utils.js' as Utils
 
-E.Text {
+Item {
     id: root
 
-    property real value
-    property var colors: Theme.thresholds.colors
-    property var levels: Theme.thresholds.levels
+    required property C.TextTemperature config
+    required property C.Theme theme
 
-    text: Utils.roundPercent(value) + "\u2103"
-    color: {
-        const calcValue = Math.floor(value)
-        for (const name in levels) {
-            if (calcValue >= levels[name][0] && calcValue <= levels[name][1]) {
-                return colors[name]
-            }
+    property real value
+
+    implicitHeight: text.implicitHeight
+    implicitWidth: text.implicitWidth
+
+    E.Text {
+        id: text
+
+        theme: root.theme
+        config: C.Text {
+            _defaults: root.config.text
+            color:
+                root.config.thresholds.enabled
+                    ? root.config.thresholds.getColor(root.value, root.theme)
+                    : root.config.text.color
         }
-        return undefined
+
+        text: Utils.roundPercent(root.value) + "\u2103"
     }
 }

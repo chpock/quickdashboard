@@ -2,70 +2,74 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell.Io
-import qs
 import qs.Elements as E
+import qs.Config as C
 
 Base {
     id: root
+    type: 'buttons'
+    hierarchy: ['base', type]
 
-    readonly property var theme: QtObject {
-        property int spacing: 8
-        property var color: QtObject {
-            property color normal: Theme.palette.silver
-            property color hover: Theme.palette.belizehole
-            property color active: Theme.palette.sunflower
+    component ConfigFragments: QtObject {
+
+        readonly property C.Icon button: C.Icon {
+            _defaults: root._config.defaults.icon
+            color: 'white'
+            hover {
+                enabled: true
+            }
+            active {
+                color: 'info/accent'
+            }
         }
+
+        readonly property C.Spacing spacing: C.Spacing {
+            horizontal: 8
+        }
+
     }
 
-    property var buttons: [
-        {
-            icon: 'frame_inspect',
-            command: 'T="$(mktemp)"; hyprprop >"$T" && alacritty -e fx "$T" || true; rm -f "$T"',
-            detached: true,
-        },
-        {
-            icon: 'draw_abstract',
-            command: 'wayscriber --active',
-        },
-    ]
+    configFragments: ConfigFragments {}
 
+    Component {
+        id: configFragmentsComponent
+        ConfigFragments {}
+    }
+
+    function recreateConfigFragments() {
+        configFragments = configFragmentsComponent.createObject(_config)
+    }
+
+    property var buttons: []
 
     Row {
-        width: parent.width
-        spacing: root.theme.spacing
+        anchors.left: parent.left
+        anchors.right: parent.right
+        spacing: root._config.fragments.spacing.horizontal
 
         Repeater {
             model: root.buttons
 
             Item {
-                id: button
+                id: container
                 required property var modelData
 
-                implicitWidth: icon.implicitWidth
-                implicitHeight: icon.implicitHeight
+                implicitWidth: button.implicitWidth
+                implicitHeight: button.implicitHeight
 
                 E.Icon {
-                    id: icon
-                    icon: button.modelData.icon
-                    color:
-                        iconHover.hovered
-                            ? root.theme.color.hover
-                            : process.running
-                                ? root.theme.color.active
-                                : root.theme.color.normal
+                    id: button
+                    theme: root._config.theme
+                    config: root._config.fragments.button
 
-                    HoverHandler {
-                        id: iconHover
-                        acceptedButtons: Qt.NoButton
-                        cursorShape: Qt.PointingHandCursor
-                    }
-                    TapHandler {
-                        onTapped: {
-                            if (button.modelData.detached) {
-                                process.startDetached()
-                            } else {
-                                process.running = true
-                            }
+                    icon: container.modelData.icon
+                    isActive: process.running
+
+                    onClicked: {
+                        if (container.modelData.detached) {
+                            process.startDetached()
+                        } else {
+                            process.running = true
                         }
                     }
                 }
@@ -73,13 +77,13 @@ Base {
                 Process {
                     id: process
                     running: false
-                    command: ["sh", "-c", button.modelData.command]
+                    command: ["sh", "-c", container.modelData.command]
                     // qmllint disable signal-handler-parameters
                     onExited: (exitCode, _) => {
                     // qmllint enable signal-handler-parameters
                         if (exitCode !== 0) {
                             console.warn('[Widgets/Buttons]', 'command exited with code:', exitCode,
-                                '; command:', button.modelData.command)
+                                '; command:', container.modelData.command)
                         }
                     }
                 }

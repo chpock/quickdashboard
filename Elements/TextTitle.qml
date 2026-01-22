@@ -1,61 +1,75 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs
 import qs.Elements as E
+import qs.Config as C
 
 Item {
     id: root
 
-    property int horizontalAlignment: Text.AlignLeft
-    property alias text: titleObj.text
-    property alias color: titleObj.color
-    property bool hasColon: true
-    property bool hasSpace: true
+    required property C.TextTitle config
+    required property C.Theme theme
 
-    property string preset: ""
+    property alias text: title.text
 
-    readonly property int spacing: hasSpace ? 2 * titleObj.wordSpacing : 0
+    implicitHeight: container.implicitHeight
+    implicitWidth:
+        title.implicitWidth +
+        (root.config.separator.enabled ? separator.implicitWidth : 0)
 
-    implicitHeight: Math.max(titleObj.implicitHeight, hasColon ? colonObj.implicitHeight : 0)
-    implicitWidth: titleObj.implicitWidth + (hasColon ? colonObj.implicitWidth : 0) + spacing
-
-    E.Text {
-        id: titleObj
-        preset: root.preset !== "" ? root.preset : 'title'
-        anchors.left:
-            root.horizontalAlignment === Text.AlignHCenter
-                ? parent.left
-                : root.horizontalAlignment === Text.AlignLeft
-                    ? parent.left
-                    : undefined
-        anchors.right:
-            root.horizontalAlignment === Text.AlignHCenter
-                ? parent.right
-                : root.horizontalAlignment === Text.AlignRight
-                    ? root.hasColon
-                        ? colonObj.left
-                        : parent.right
-                    : undefined
-        anchors.rightMargin:
-            root.horizontalAlignment === Text.AlignRight && !root.hasColon
-                ? root.spacing
-                : undefined
-        horizontalAlignment: root.horizontalAlignment === Text.AlignHCenter ? Text.AlignHCenter : undefined
+    Rectangle {
+        anchors.fill: parent
+        color: root.config.text.background
     }
 
-    E.Text {
-        id: colonObj
-        preset: root.preset
-        text: titleObj.text !== '' ? ':' : ''
-        color: Theme.palette.asbestos
+    Row {
+        id: container
+        spacing: 0
+
+        // qmllint disable Quick.anchor-combinations
         anchors.left:
-            root.horizontalAlignment === Text.AlignLeft || root.horizontalAlignment === Text.AlignHCenter
-                ? titleObj.right
+            root.config.text.alignment._horizontal === Text.AlignLeft
+                ? parent.left
                 : undefined
-        anchors.right: root.horizontalAlignment === Text.AlignRight ? parent.right : undefined
-        anchors.rightMargin: root.horizontalAlignment === Text.AlignRight ? root.spacing : undefined
-        visible: root.hasColon
+        anchors.right:
+            root.config.text.alignment._horizontal === Text.AlignRight
+                ? parent.right
+                : undefined
+        anchors.horizontalCenter:
+            root.config.text.alignment._horizontal === Text.AlignHCenter
+                ? parent.horizontalCenter
+                : undefined
+
+        E.Text {
+            id: title
+
+            theme: root.theme
+            config: C.Text {
+                _defaults: root.config.text
+                padding {
+                    right:
+                        root.config.separator.enabled
+                            ? 0
+                            : root.config.text.padding.right
+                }
+                background: 'transparent'
+            }
+        }
+
+        E.Text {
+            id: separator
+
+            theme: root.theme
+            config: C.Text {
+                _defaults: root.config.text
+                color: root.config.separator.color
+                background: 'transparent'
+            }
+
+            text: title.text !== '' ? root.config.separator.text : ''
+            visible: root.config.separator.enabled
+        }
+
     }
 
 }

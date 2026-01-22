@@ -1,58 +1,93 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs
 import qs.Elements as E
+import qs.Config as C
 import '../utils.js' as Utils
 
 Item {
     id: root
 
+    required property C.TextBytes config
+    required property C.Theme theme
+
     required property var value
-    property int precision: 4
     property bool isRate: false
-    property string prefix: ''
 
-    property string preset: ""
-    property var color: undefined
-    property var unitColors: Theme.units.colors
+    readonly property var formatedValue: Utils.formatBytes(value, config.precision)
 
-    property int horizontalAlignment: Text.AlignLeft
+    implicitHeight: container.implicitHeight
+    implicitWidth: valueObj.implicitWidth + unitObj.implicitWidth + suffix.implicitWidth
 
-    readonly property var formatedValue: Utils.formatBytes(value, precision)
-
-    implicitHeight: Math.max(valueObj.implicitHeight, unitObj.implicitHeight, suffix.implicitHeight)
-    implicitWidth: valueObj.implicitWidth + valueObj.wordSpacing + unitObj.implicitWidth + suffix.implicitWidth
-
-    E.Text {
-        id: valueObj
-        preset: root.preset
-        text: root.prefix + root.formatedValue[0] + ' '
-        color: root.color
-        anchors.left: root.horizontalAlignment === Text.AlignLeft ? parent.left : undefined
-        anchors.right: root.horizontalAlignment === Text.AlignRight ? unitObj.left : undefined
+    Rectangle {
+        anchors.fill: parent
+        color: root.config.text.background
     }
 
-    E.Text {
-        id: unitObj
-        preset: root.preset
-        text: root.formatedValue[1]
-        color: {
-            const unitLowercase = root.formatedValue[1].toLowerCase()
-            const color = root.unitColors[unitLowercase]
-            return color ? color : root.color
+    Row {
+        id: container
+        spacing: 0
+
+        // qmllint disable Quick.anchor-combinations
+        anchors.left:
+            root.config.text.alignment._horizontal === Text.AlignLeft
+                ? parent.left
+                : undefined
+        anchors.right:
+            root.config.text.alignment._horizontal === Text.AlignRight
+                ? parent.right
+                : undefined
+        anchors.horizontalCenter:
+            root.config.text.alignment._horizontal === Text.AlignHCenter
+                ? parent.horizontalCenter
+                : undefined
+
+        E.Text {
+            id: valueObj
+
+            theme: root.theme
+            config: C.Text {
+                _defaults: root.config.text
+                padding {
+                    right: '1ch'
+                }
+                background: 'transparent'
+            }
+
+            text: root.config.prefix + root.formatedValue[0]
         }
-        anchors.left: root.horizontalAlignment === Text.AlignLeft ? valueObj.right : undefined
-        anchors.right: root.horizontalAlignment === Text.AlignRight ? suffix.left : undefined
-    }
 
-    E.Text {
-        id: suffix
-        preset: root.preset
-        text: root.isRate ? 'b/s' : 'b'
-        color: root.color
-        anchors.right: root.horizontalAlignment === Text.AlignRight ? parent.right : undefined
-        anchors.left: root.horizontalAlignment === Text.AlignLeft ? unitObj.right : undefined
+        E.Text {
+            id: unitObj
+
+            theme: root.theme
+            config: C.Text {
+                _defaults: root.config.text
+                padding {
+                    right: 0
+                    left:  0
+                }
+                background: 'transparent'
+            }
+
+            text: root.formatedValue[1]
+        }
+
+        E.Text {
+            id: suffix
+
+            theme: root.theme
+            config: C.Text {
+                _defaults: root.config.text
+                padding {
+                    left:  0
+                }
+                background: 'transparent'
+            }
+
+            text: root.isRate ? 'b/s' : 'b'
+        }
+
     }
 
 }

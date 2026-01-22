@@ -1,52 +1,60 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs
+// import qs
+import qs.Config as C
 
 Item {
     id: root
 
-    enum HeightMode {
-        Capitals = 0,
-        Normal = 1,
-        Content = 2
-    }
+    required property C.Text config
+    required property C.Theme theme
 
-    enum Overflow {
-        OverflowNone = 0,
-        OverflowElide = 1,
-        OverflowAnimate = 2
-    }
-
-    property string preset: ""
-
-    readonly property int wordSpacing: Math.round(spaceMetrics2.boundingRect.width - spaceMetrics1.boundingRect.width)
-
-    property alias text: textObj.text
-    property var color: undefined
-    property int fontWeight: -1
-    property int fontSize: -1
-    property bool fontStrikeout: false
-    property var fontFamily: Theme.normalFont.name
-    property var fontFamilySpacing: textObj.font.family
+    property var text
     property var fontVariableAxes: ({})
-    property alias horizontalAlignment: textObj.horizontalAlignment
-    property alias fontSizeMode: textObj.fontSizeMode
-    property var verticalAlignment: undefined
-    property int heightMode: 1
-    property int overflow: 0
+    property var style
+    property var strikeout
+    readonly property C.Text _config: {
+        if (config._styles_loaded && style) {
+            for (var i = 0; i < config.styles.length; ++i) {
+                if (config.styles[i].style === style) return config.styles[i]
+            }
+        }
+        return config
+    }
+    readonly property bool isHovered: hoverHandler.hovered
 
-    property int animScrollDuration: 7
-    property int animPauseStartDuration: 6000
-    property int animPauseEndDuration: 2000
+    readonly property real leftMargin: calcMargin(_config.padding.left)
+    readonly property real rightMargin: calcMargin(_config.padding.right)
+    readonly property real wordSpacing: Math.round(spaceMetrics2.boundingRect.width - spaceMetrics1.boundingRect.width)
 
-    implicitHeight: textMetrics.tightBoundingRect.height
-    implicitWidth:  textObj.implicitWidth
-    clip: overflow === 2
+    implicitHeight:
+        textMetrics.tightBoundingRect.height +
+        root._config.padding.top + root._config.padding.bottom
+    implicitWidth:  textObj.implicitWidth + leftMargin + rightMargin
+    clip: _config._overflow === C.Text.OverflowScroll
+
+    function calcMargin(value) {
+        if (typeof value === "string") {
+            const len = value.length
+            if (len >=3 && value.endsWith('ch')) {
+                const numericPart = value.substring(0, len - 2)
+                if (numericPart.trim() !== '') {
+                    const charsCount = +numericPart
+                    if (isFinite(charsCount)) {
+                      return charsCount * root.wordSpacing
+                    }
+                }
+            }
+        }
+        return value
+    }
 
     // Rectangle {
     //     anchors.fill: parent
     //     color: 'blue'
+    //     border.color: 'red'
+    //     border.width: 1
     // }
 
     // Rectangle {
@@ -70,37 +78,67 @@ Item {
     //     }
     // }
 
+    Rectangle {
+        anchors.fill: parent
+        color: root.theme.getColor(root._config.background)
+    }
+
     Text {
         id: textObj
 
         property real scrollOffset: 0
         readonly property bool needsScrolling:
-            root.overflow === 2 && root.visible && root.width > 0 && root.width < implicitWidth
+            root._config._overflow === C.Text.OverflowScroll && root.visible && root.width > 0 && root.width < implicitWidth
 
-        height: textMetrics.tightBoundingRect.height
+        text: root.text == null ? root._config.text : root.text
         textFormat: Text.PlainText
         wrapMode: Text.NoWrap
-        color:
-            root.color !== undefined
-                ? root.color
-                : Theme.preset[root.preset !== '' ? root.preset : 'normal'].color
-        font.pixelSize:
-            root.fontSize !== -1
-                ? root.fontSize
-                : Theme.preset[root.preset !== '' ? root.preset : 'normal'].fontSize
-        font.weight:
-            root.fontWeight !== -1
-                ? root.fontWeight
-                : Theme.preset[root.preset !== '' ? root.preset : 'normal'].fontWeight
-        font.strikeout: root.fontStrikeout
-        font.family: root.fontFamily
+        color: root.theme.getColor(root._config.color)
+        font.pixelSize: root.theme.getFontSize(root._config.font.size)
+        font.weight: root.theme.getFontWeight(root._config.font.weight)
+        font.strikeout: root.strikeout ?? root._config.font.strikeout
+        font.family: root.theme.getFontFamily(root._config.font.family)
         font.variableAxes: root.fontVariableAxes
-        verticalAlignment: root.verticalAlignment === undefined ? Text.AlignVCenter : root.verticalAlignment
-        elide: root.overflow === 1 ? Text.ElideRight : Text.ElideNone
+        horizontalAlignment: root._config.alignment._horizontal
+        verticalAlignment: root._config.alignment._vertical
+        // verticalAlignment: Text.AlignVCenter
+        elide: root._config._overflow === C.Text.OverflowElide ? Text.ElideRight : Text.ElideNone
         x: needsScrolling ? -scrollOffset : 0
-        width: root.overflow === 0 && implicitWidth > parent.width ? undefined : parent.width
+        // width:
+        //     root._config._overflow === C.Text.OverflowNone && implicitWidth > parent.width
+        //         ? undefined
+        //         : parent.width
+
+        // anchors.fill: parent
+        // anchors.topMargin: root._config.padding.top
+        // anchors.bottomMargin: root._config.padding.bottom
+        // anchors.leftMargin: root.leftMargin
+        // anchors.rightMargin: root.rightMargin
+
         anchors.top: parent.top
+        anchors.topMargin: root._config.padding.top
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: root._config.padding.bottom
+
+        // TODO: left/right paddings will not work for C.Text.OverflowScroll
+        // I need to figure out how to make them work.
+
+        anchors.left:
+            root._config._overflow === C.Text.OverflowScroll
+                ? undefined
+                : parent.left
+        anchors.leftMargin:
+            root._config._overflow === C.Text.OverflowScroll
+                ? undefined
+                : root.leftMargin
+        anchors.right:
+            root._config._overflow === C.Text.OverflowScroll
+                ? undefined
+                : parent.right
+        anchors.rightMargin:
+            root._config._overflow === C.Text.OverflowScroll
+                ? undefined
+                : root.rightMargin
 
         onTextChanged: {
             scrollOffset = 0
@@ -115,10 +153,10 @@ Item {
             readonly property real duration:
                 textObj.implicitWidth === 0
                     ? 1000
-                    : Math.max(1000, 1000 * root.animScrollDuration * (textObj.implicitWidth - root.width) / root.width)
+                    : Math.max(1000, 1000 * root._config.scroll.duration * (textObj.implicitWidth - root.width) / root.width)
 
             PauseAnimation {
-                duration: root.animPauseStartDuration
+                duration: root._config.scroll.pauseStart
             }
 
             NumberAnimation {
@@ -131,7 +169,7 @@ Item {
             }
 
             PauseAnimation {
-                duration: root.animPauseEndDuration
+                duration: root._config.scroll.pauseEnd
             }
 
             NumberAnimation {
@@ -149,28 +187,47 @@ Item {
         id: textMetrics
         font: textObj.font
         text:
-            root.heightMode === 2
+            root._config._heightMode === C.Text.HeightContent
                 ? textObj.text
-                : root.heightMode === 0
+                : root._config._heightMode === C.Text.HeightCapitals
                     ? 'H%0'
                     : 'H%0bdfhklgjpqy'
     }
 
     TextMetrics {
         id: spaceMetrics1
-        font: root.fontFamilySpacing
-        text: 'AA'
+        font.pixelSize: textObj.font.pixelSize
+        font.weight: textObj.font.weight
+        font.family:
+            root._config.word_spacing_font_family
+                ? root.theme.getFontFamily(root._config.word_spacing_font_family)
+                : textObj.font.family
+        font.variableAxes: textObj.font.variableAxes
+        text: '++'
     }
 
     TextMetrics {
         id: spaceMetrics2
-        font: root.fontFamilySpacing
-        text: 'A A'
+        font.pixelSize: textObj.font.pixelSize
+        font.weight: textObj.font.weight
+        font.family:
+            root._config.word_spacing_font_family
+                ? root.theme.getFontFamily(root._config.word_spacing_font_family)
+                : textObj.font.family
+        font.variableAxes: textObj.font.variableAxes
+        text: '+ +'
     }
 
     FontMetrics {
         id: fontMetrics
         font: textObj.font
+    }
+
+    HoverHandler {
+        id: hoverHandler
+        enabled: root.config.hover.enabled
+        acceptedButtons: Qt.NoButton
+        cursorShape: Qt.PointingHandCursor
     }
 
 }

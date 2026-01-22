@@ -18,42 +18,28 @@ ShellRoot {
 
         align: W.Dashboard.AlignRight
 
-        // W.Calendar {
-        // }
-        W.CalendarX {
+        W.Calendar {
         }
 
-        // W.Memory {
-        // }
-        W.MemoryX {
+        W.Memory {
         }
 
-        // W.CPU {
-        // }
-        W.CPUX {
+        W.CPU {
         }
 
-        // W.Network {
-        // }
-        W.NetworkX {
+        W.Network {
         }
 
-        // W.Disk {
-        // }
-        W.DiskX {
+        W.Disk {
         }
 
-        // W.Media {
-        // }
-        W.MediaX {
+        W.Media {
         }
 
         W.Separator {
         }
 
-        // W.Buttons {
-        // }
-        W.ButtonsX {
+        W.Buttons {
 
             // fragments: ({
             //     button: {
@@ -78,14 +64,10 @@ ShellRoot {
 
         }
 
-        // W.AudioVolume {
-        // }
-        W.AudioVolumeX {
+        W.AudioVolume {
         }
 
-        // W.Clock {
-        // }
-        W.ClockX {
+        W.Clock {
         }
 
     }

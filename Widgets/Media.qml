@@ -1,349 +1,438 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs
 import qs.Elements as E
+import qs.Config as C
 import qs.Providers as Provider
 
 Base {
     id: root
+    type: 'media'
+    hierarchy: ['base', type]
 
-    readonly property var theme: QtObject {
-        readonly property var albumArtBox: QtObject {
-            property int size: 45
-            property var padding: QtObject {
-                property int right: 10
+    component ConfigFragments: QtObject {
+
+        readonly property QtObject album_art: QtObject {
+
+            readonly property C.Padding padding: C.Padding {
+                top:    0
+                bottom: 0
+                left:   0
+                right:  10
             }
-            property var border: QtObject {
-                property int width: 1
-                property color color: Theme.text.color.grey
+
+            readonly property C.Size size: C.Size {
+                width:  45
+                height: 45
             }
-            property var unknown: QtObject {
-                property int size: 35
-                property color color: Theme.palette.asbestos
+
+            readonly property C.Border border: C.Border {
+                width: 1
+                color: 'text/secondary'
+            }
+
+            readonly property C.Icon no_art: C.Icon {
+                _defaults: root._config.defaults.icon
+                font {
+                    size: 35
+                }
+                color: 'gray'
+            }
+
+        }
+
+        readonly property QtObject player: QtObject {
+
+            readonly property C.Text status: C.Text {
+                _defaults: root._config.defaults.text
+                overflow:  'elide'
+
+                C.Text {
+                    style: 'unavailable'
+                    color: 'severity/ignore'
+                    text:  'No players'
+                }
+
+                C.Text {
+                    style: 'playing'
+                    color: 'severity/good'
+                    text:  'Playing'
+                }
+
+                C.Text {
+                    style: 'paused'
+                    color: 'info/accent'
+                    text:  'Paused'
+                }
+
+                C.Text {
+                    style: 'stopped'
+                    color: 'severity/critical'
+                    text:  'Stopped'
+                }
+
+                C.Text {
+                    style: 'unknown'
+                    color: 'severity/critical'
+                    text:  'Unknown status'
+                }
+            }
+
+            readonly property C.Text time: C.Text {
+                _defaults: root._config.defaults.text
+            }
+
+            readonly property QtObject control: QtObject {
+
+                readonly property C.Icon button: C.Icon {
+                    _defaults: root._config.defaults.icon
+                    hover {
+                        enabled: true
+                    }
+                    color:  'white'
+                    filled: true
+                    weight: 700
+                }
+
+                readonly property C.Spacing spacing: C.Spacing {
+                    horizontal: 4
+                }
+
+                readonly property C.Padding padding: C.Padding {
+                    top:    1
+                    bottom: 0
+                    left:   0
+                    right:  0
+                }
+
+            }
+
+            readonly property C.Slider slider: C.Slider {
+                _defaults: root._config.defaults.slider
+                padding {
+                    top: 3
+                }
+            }
+
+            readonly property C.Text track: C.Text {
+                _defaults: root._config.defaults.text
+                overflow:  'scroll'
+                padding {
+                    top: 3
+                }
+            }
+
+            readonly property C.Text artist: C.Text {
+                _defaults: root._config.defaults.text
+                font {
+                    size: 'small'
+                }
+                padding {
+                    top: 3
+                }
+                color:     'text/secondary'
+                overflow:  'scroll'
+            }
+
+        }
+
+    }
+
+    configFragments: ConfigFragments {}
+
+    Component {
+        id: configFragmentsComponent
+        ConfigFragments {}
+    }
+
+    function recreateConfigFragments() {
+        configFragments = configFragmentsComponent.createObject(_config)
+    }
+
+    component AlbumArt: Rectangle {
+        id: album_art
+
+        readonly property var config: root._config.fragments.album_art
+        property bool isUnknown: !Provider.Mpris.hasTrackArt || isImageEmpty
+        property bool isImageEmpty: true
+
+        implicitWidth: config.size.width
+        implicitHeight: config.size.height
+        color: 'transparent'
+        border.width: config.border.width
+        border.color: root._config.theme.getColor(config.border.color)
+
+        E.Icon {
+            theme: root._config.theme
+            config: album_art.config.no_art
+
+            icon: 'question_mark'
+            anchors.fill: parent
+            visible: parent.isUnknown
+        }
+
+        Image {
+            id: image
+
+            anchors.fill: parent
+            asynchronous: true
+            // Don't cache to not waste RAM
+            cache: false
+            fillMode: Image.PreserveAspectCrop
+            retainWhileLoading: true
+            source: Provider.Mpris.trackArtUrl
+            visible: !parent.isUnknown
+            onStatusChanged: {
+                if (image.status === Image.Ready) {
+                    parent.isImageEmpty = false
+                } else if (image.status === Image.Null || image.status === Image.Error) {
+                    parent.isImageEmpty = true
+                }
             }
         }
-        readonly property var status: QtObject {
-            readonly property var unavailable: QtObject {
-                property string text: 'No players'
-                property color color: Theme.text.color.grey
-            }
-            readonly property var playing: QtObject {
-                property string text: 'Playing'
-                property color color: Theme.palette.nephritis
-            }
-            readonly property var paused: QtObject {
-                property string text: 'Paused'
-                property color color: Theme.palette.carrot
-            }
-            readonly property var stopped: QtObject {
-                property string text: 'Stopped'
-                property color color: Theme.palette.alizarin
-            }
-            readonly property var unknown: QtObject {
-                property string text: 'Unknown status'
-                property color color: Theme.palette.alizarin
+
+        TapHandler {
+            enabled: Provider.Mpris.hasRaise
+            gesturePolicy: TapHandler.WithinBounds
+            onTapped: {
+                Provider.Mpris.raise()
             }
         }
-        readonly property var controls: QtObject {
-            property int verticalOffset: 1
-            property color color: Theme.palette.silver
-            property color colorHover: Theme.palette.belizehole
+
+        HoverHandler {
+            enabled: Provider.Mpris.hasRaise
+            acceptedButtons: Qt.NoButton
+            cursorShape: Qt.PointingHandCursor
         }
-        readonly property var slider: QtObject {
-            property var padding: QtObject {
-                property int top: 3
-                property int bottom: 3
+    }
+
+    component Control: Item {
+        id: control
+
+        readonly property var config: root._config.fragments.player.control
+
+        readonly property int buttonCount:
+            (prev.visible ? 1 : 0) +
+            (toggle.visible ? 1 : 0) +
+            (next.visible ? 1 : 0)
+
+        implicitHeight:
+            row.implicitHeight +
+            config.padding.top + config.padding.bottom
+        implicitWidth:
+            (prev.visible ? prev.implicitWidth : 0) +
+            (toggle.visible ? toggle.implicitWidth : 0) +
+            (next.visible ? next.implicitWidth : 0) +
+            (buttonCount > 1 ? (buttonCount - 1) * row.spacing : 0) +
+            config.padding.left + config.padding.right
+
+        Row {
+            id: row
+
+            anchors.top: parent.top
+            anchors.topMargin: control.config.padding.top
+            anchors.left: parent.left
+            anchors.leftMargin: control.config.padding.left
+            anchors.right: parent.right
+            anchors.rightMargin: control.config.padding.right
+            spacing: control.config.spacing.horizontal
+
+            E.Icon {
+                id: prev
+                theme: root._config.theme
+                config: control.config.button
+
+                icon: 'skip_previous'
+                visible: Provider.Mpris.hasPrev
+                onClicked: Provider.Mpris.prev()
+            }
+
+            E.Icon {
+                id: toggle
+                theme: root._config.theme
+                config: control.config.button
+
+                icon:
+                    Provider.Mpris.isPaused
+                    ? 'resume'
+                    : Provider.Mpris.isStopped
+                        ? 'play_arrow'
+                        : Provider.Mpris.hasPause
+                            ? 'pause'
+                            : 'stop'
+                visible: Provider.Mpris.hasToggle
+                onClicked: Provider.Mpris.toggle()
+            }
+
+            E.Icon {
+                id: next
+                theme: root._config.theme
+                config: control.config.button
+
+                icon: 'skip_previous'
+                visible: Provider.Mpris.hasNext
+                onClicked: Provider.Mpris.next()
             }
         }
-        readonly property var trackTitle: QtObject {
-            property var padding: QtObject {
-                property int bottom: 3
+    }
+
+    component Player: Item {
+        id: player
+
+        readonly property var config: root._config.fragments.player
+
+        implicitHeight:
+            status_box.implicitHeight +
+            slider.implicitHeight +
+            track.implicitHeight +
+            artist.implicitHeight
+
+        Item {
+            id: status_box
+
+            implicitHeight:
+                Math.max(
+                    status.implicitHeight,
+                    playing_time.implicitHeight,
+                    control.implicitHeight,
+                )
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+
+            readonly property bool visibleTime:
+                !statusBoxHovered.hovered && Provider.Mpris.hasLength && Provider.Mpris.hasPosition
+            readonly property bool visibleControl:
+                !visibleTime && (Provider.Mpris.hasPrev || Provider.Mpris.hasToggle || Provider.Mpris.hasNext)
+
+            E.Text {
+                id: status
+                theme: root._config.theme
+                config: player.config.status
+
+                style: Provider.Mpris.status
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.right:
+                    parent.visibleTime
+                        ? playing_time.left
+                        : parent.visibleControl
+                            ? control.left
+                            : parent.right
+                anchors.rightMargin: (parent.visibleTime || parent.visibleControl) ? wordSpacing : 0
+
+                TapHandler {
+                    enabled: Provider.Mpris.hasPlayer
+                    gesturePolicy: TapHandler.WithinBounds
+                    onTapped: {
+                        Provider.Mpris.toggle()
+                    }
+                }
+                HoverHandler {
+                    enabled: Provider.Mpris.hasPlayer
+                    acceptedButtons: Qt.NoButton
+                    cursorShape: Qt.PointingHandCursor
+                }
+            }
+
+            E.Text {
+                id: playing_time
+                theme: root._config.theme
+                config: player.config.time
+
+                text: {
+                    const time = Math.max(0, Provider.Mpris.length - Provider.Mpris.position)
+                    const hours = Math.floor(time / 3600)
+                    const mins = Math.floor((time % 3600) / 60)
+                    const secs = time % 60
+                    const hoursStr = hours !== 0 ? (((hours < 10 ? '0' : '') + hours) + ':') : ''
+                    const minsStr = (mins < 10 ? '0' : '') + mins + ':'
+                    const secsStr = (secs < 10 ? '0' : '') + secs
+                    return hoursStr + minsStr + secsStr
+                }
+                anchors.right: parent.right
+                anchors.top: parent.top
+                visible: parent.visibleTime
+            }
+
+            Control {
+                id: control
+
+                visible: parent.visibleControl
+                anchors.right: parent.right
+            }
+
+            HoverHandler {
+                id: statusBoxHovered
             }
         }
-        readonly property var trackArtist: QtObject {
-            property var padding: QtObject {
-                property int bottom: 0
+
+        E.Slider {
+            id: slider
+            theme: root._config.theme
+            config: player.config.slider
+
+            value: Provider.Mpris.position
+            maxValue: Provider.Mpris.length
+            anchors.top: status_box.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            canSeek: Provider.Mpris.hasSeek
+            onSlide: offset => {
+                Provider.Mpris.activePlayer.position = offset
             }
         }
+
+        E.Text {
+            id: track
+            theme: root._config.theme
+            config: player.config.track
+
+            text: Provider.Mpris.track
+            anchors.top: slider.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            visible: Provider.Mpris.hasPlayer
+        }
+
+        E.Text {
+            id: artist
+            theme: root._config.theme
+            config: player.config.artist
+
+            text: Provider.Mpris.artist
+            anchors.top: track.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            visible: Provider.Mpris.hasPlayer
+        }
+
     }
 
     Item {
         anchors.left: parent.left
         anchors.right: parent.right
-        implicitHeight: Math.max(albumArtBox.implicitHeight, playerStatus.implicitHeight)
+        implicitHeight:
+            Math.max(
+                album_art.implicitHeight + album_art.config.padding._vertical,
+                player.implicitHeight,
+            )
 
-        Rectangle {
-            id: albumArtBox
-
-            property bool isUnknown: !Provider.Mpris.hasTrackArt || isImageEmpty
-            property bool isImageEmpty: true
+        AlbumArt {
+            id: album_art
 
             anchors.left: parent.left
-            implicitWidth: root.theme.albumArtBox.size
-            implicitHeight: root.theme.albumArtBox.size
-            color: 'transparent'
-            border.width: root.theme.albumArtBox.border.width
-            border.color: root.theme.albumArtBox.border.color
-
-            E.Icon {
-                icon: 'question_mark'
-                horizontalAlignment: Text.AlignHCenter
-                fontSizeMode: Text.Fit
-                fontSize: root.theme.albumArtBox.unknown.size
-                color: root.theme.albumArtBox.unknown.color
-                anchors.fill: parent
-                visible: parent.isUnknown
-            }
-
-            Image {
-                id: albumArtBoxImage
-                anchors.fill: parent
-                asynchronous: true
-                // Don't cache to not waste RAM
-                cache: false
-                fillMode: Image.PreserveAspectCrop
-                retainWhileLoading: true
-                source: Provider.Mpris.trackArtUrl
-                visible: !parent.isUnknown
-                onStatusChanged: {
-                    if (albumArtBoxImage.status === Image.Ready) {
-                        albumArtBox.isImageEmpty = false
-                    } else if (albumArtBoxImage.status === Image.Null || albumArtBoxImage.status === Image.Error) {
-                        albumArtBox.isImageEmpty = true
-                    }
-                }
-            }
-
-            TapHandler {
-                enabled: Provider.Mpris.hasRaise
-                gesturePolicy: TapHandler.WithinBounds
-                onTapped: {
-                    Provider.Mpris.raise()
-                }
-            }
-            HoverHandler {
-                enabled: Provider.Mpris.hasRaise
-                acceptedButtons: Qt.NoButton
-                cursorShape: Qt.PointingHandCursor
-            }
+            anchors.leftMargin: config.padding.left
+            anchors.top: parent.top
+            anchors.topMargin: config.padding.top
         }
 
-        Rectangle {
-            id: playerStatus
+        Player {
+            id: player
 
-            anchors.top: albumArtBox.top
-            anchors.left: albumArtBox.right
-            anchors.leftMargin: root.theme.albumArtBox.padding.right
+            anchors.left: album_art.right
+            anchors.leftMargin: album_art.config.padding.right
             anchors.right: parent.right
-            implicitHeight: statusBox.implicitHeight +
-                root.theme.slider.padding.top + slider.implicitHeight + root.theme.slider.padding.bottom +
-                trackTitleObj.implicitHeight + root.theme.trackTitle.padding.bottom +
-                trackArtistObj.implicitHeight + root.theme.trackArtist.padding.bottom
-            color: 'transparent'
-
-            Item {
-                id: statusBox
-
-                implicitHeight: Math.max(status.implicitHeight, playingTime.implicitHeight)
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-
-                readonly property bool visibleTime:
-                    !statusBoxHovered.hovered && Provider.Mpris.hasLength && Provider.Mpris.hasPosition
-                readonly property bool visibleControl:
-                    !visibleTime && (Provider.Mpris.hasPrev || Provider.Mpris.hasToggle || Provider.Mpris.hasNext)
-
-                E.Text {
-                    id: status
-                    text: root.theme.status[Provider.Mpris.status].text
-                    color: root.theme.status[Provider.Mpris.status].color
-                    anchors.left: parent.left
-                    anchors.top: parent.top
-                    anchors.right:
-                        parent.visibleTime
-                            ? playingTime.left
-                            : parent.visibleControl
-                                ? playingControl.left
-                                : parent.right
-                    anchors.rightMargin: (parent.visibleTime || parent.visibleControl) ? wordSpacing : 0
-                    overflow: E.Text.OverflowElide
-
-                    TapHandler {
-                        enabled: Provider.Mpris.hasPlayer
-                        gesturePolicy: TapHandler.WithinBounds
-                        onTapped: {
-                            Provider.Mpris.toggle()
-                        }
-                    }
-                    HoverHandler {
-                        enabled: Provider.Mpris.hasPlayer
-                        acceptedButtons: Qt.NoButton
-                        cursorShape: Qt.PointingHandCursor
-                    }
-                }
-
-                E.Text {
-                    id: playingTime
-                    text: {
-                        const time = Math.max(0, Provider.Mpris.length - Provider.Mpris.position)
-                        const hours = Math.floor(time / 3600)
-                        const mins = Math.floor((time % 3600) / 60)
-                        const secs = time % 60
-                        const hoursStr = hours !== 0 ? (((hours < 10 ? '0' : '') + hours) + ':') : ''
-                        const minsStr = (mins < 10 ? '0' : '') + mins + ':'
-                        const secsStr = (secs < 10 ? '0' : '') + secs
-                        return hoursStr + minsStr + secsStr
-                    }
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    visible: parent.visibleTime
-                }
-
-                Item {
-                    id: playingControl
-                    anchors.right: parent.right
-                    y: root.theme.controls.verticalOffset
-                    visible: parent.visibleControl
-                    implicitHeight: Math.max(iconPrev.implicitHeight, iconToggle.implicitHeight, iconNext.implicitHeight)
-                    implicitWidth: iconPrev.implicitWidthFull + iconToggle.implicitWidthFull + iconNext.implicitWidthFull
-
-                    E.Icon {
-                        id: iconPrev
-
-                        readonly property bool hasSpacing: Provider.Mpris.hasToggle || Provider.Mpris.hasNext
-                        readonly property real implicitWidthFull: visible ? (implicitWidth + (hasSpacing ? wordSpacing : 0)) : 0
-
-                        anchors.right:
-                            Provider.Mpris.hasToggle
-                                ? iconToggle.left
-                                : Provider.Mpris.hasNext
-                                    ? iconNext.left
-                                    : parent.right
-                        anchors.rightMargin: hasSpacing ? wordSpacing : undefined
-                        filled: true
-                        weight: 700
-                        icon: 'skip_previous'
-                        visible: Provider.Mpris.hasPrev
-                        color:
-                            iconPrevHover.hovered
-                                ? root.theme.controls.colorHover
-                                : root.theme.controls.color
-
-                        HoverHandler {
-                            id: iconPrevHover
-                            acceptedButtons: Qt.NoButton
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                        TapHandler {
-                            onTapped: Provider.Mpris.prev()
-                        }
-                    }
-
-                    E.Icon {
-                        id: iconToggle
-
-                        readonly property bool hasSpacing: Provider.Mpris.hasNext
-                        readonly property real implicitWidthFull: visible ? (implicitWidth + (hasSpacing ? wordSpacing : 0)) : 0
-
-                        anchors.right: Provider.Mpris.hasNext ? iconNext.left : parent.right
-                        anchors.rightMargin: Provider.Mpris.hasNext ? wordSpacing : undefined
-                        filled: true
-                        weight: 700
-                        icon:
-                            Provider.Mpris.isPaused
-                            ? 'resume'
-                            : Provider.Mpris.isStopped
-                                ? 'play_arrow'
-                                : Provider.Mpris.hasPause
-                                    ? 'pause'
-                                    : 'stop'
-                        visible: Provider.Mpris.hasToggle
-                        color:
-                            iconToggleHover.hovered
-                                ? root.theme.controls.colorHover
-                                : root.theme.controls.color
-
-                        HoverHandler {
-                            id: iconToggleHover
-                            acceptedButtons: Qt.NoButton
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                        TapHandler {
-                            onTapped: Provider.Mpris.toggle()
-                        }
-                    }
-
-                    E.Icon {
-                        id: iconNext
-
-                        readonly property bool hasSpacing: false
-                        readonly property real implicitWidthFull: visible ? (implicitWidth + (hasSpacing ? wordSpacing : 0)) : 0
-
-                        anchors.right: parent.right
-                        filled: true
-                        weight: 700
-                        icon: 'skip_next'
-                        visible: Provider.Mpris.hasNext
-                        color:
-                            iconNextHover.hovered
-                                ? root.theme.controls.colorHover
-                                : root.theme.controls.color
-
-                        HoverHandler {
-                            id: iconNextHover
-                            acceptedButtons: Qt.NoButton
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                        TapHandler {
-                            onTapped: Provider.Mpris.next()
-                        }
-                    }
-                }
-
-                HoverHandler {
-                    id: statusBoxHovered
-                }
-            }
-
-            E.Slider {
-                id: slider
-                value: Provider.Mpris.position
-                maxValue: Provider.Mpris.length
-                anchors.top: statusBox.bottom
-                anchors.topMargin: root.theme.slider.padding.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                canSeek: Provider.Mpris.hasSeek
-                onSlide: offset => {
-                    Provider.Mpris.activePlayer.position = offset
-                }
-            }
-
-            E.Text {
-                id: trackTitleObj
-                text: Provider.Mpris.track
-                anchors.top: slider.bottom
-                anchors.topMargin: root.theme.slider.padding.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                visible: Provider.Mpris.hasPlayer
-                overflow: E.Text.OverflowAnimate
-            }
-
-            E.Text {
-                id: trackArtistObj
-                text: Provider.Mpris.artist
-                preset: 'details'
-                anchors.top: trackTitleObj.bottom
-                anchors.topMargin: root.theme.trackTitle.padding.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                visible: Provider.Mpris.hasPlayer
-                overflow: E.Text.OverflowAnimate
-            }
-
         }
 
     }

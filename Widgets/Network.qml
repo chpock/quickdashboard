@@ -1,91 +1,284 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs
 import qs.Elements as E
+import qs.Config as C
 import qs.Providers as Provider
 
 Base {
     id: root
+    type: 'network'
+    hierarchy: ['base', type]
 
-    readonly property var theme: QtObject {
-        readonly property var ifaceList: QtObject {
-            readonly property var details: QtObject {
-                property string preset: "normal"
-                readonly property var color: QtObject {
-                    property color normal: Theme.text.color.normal
-                    property color error: Theme.text.color.error
+    component ConfigFragments: QtObject {
+
+        readonly property QtObject wireless_iface: QtObject {
+
+            readonly property C.TextTitle iface: C.TextTitle {
+                _defaults: root._config.defaults.text_title
+                text {
+                    padding {
+                        right: '1ch'
+                    }
                 }
             }
-            readonly property var signal: QtObject {
-                property string preset: "normal"
-                property var levels: ({
-                    'good':     [75, 100],
-                    'warning':  [20, 74 ],
-                    'critical': [ 0, 19 ],
-                })
-            }
-        }
-        readonly property var latency: QtObject {
-            readonly property var title: QtObject {
-                readonly property var padding: QtObject {
-                    property int bottom: 4
+
+            readonly property C.Text ssid: C.Text {
+                _defaults: root._config.defaults.text
+                overflow: 'elide'
+                padding {
+                    right: '1ch'
+                }
+
+                C.Text {
+                    style: 'error'
+                    color: 'severity/critical'
                 }
             }
-            readonly property var marks: QtObject {
-                readonly property int width: 8
-                readonly property var padding: QtObject {
-                    property int top: 3
-                    property int bottom: 1
-                    property int left: 0
-                    property int right: 0
+
+            readonly property C.TextPercent signal: C.TextPercent {
+                _defaults: root._config.defaults.text_percent
+                thresholds {
+                    good {
+                        value: '>=75'
+                    }
+                    warning {
+                        value: '>=20'
+                    }
+                    critical {
+                        value: 'any'
+                    }
                 }
-                readonly property int spacing: 5
-                readonly property int border: 1
             }
-            readonly property var thresholds: QtObject {
-                property real good: 40
-            }
-            readonly property var color: QtObject {
-                property color good: Theme.color.ok
-                property color warning: Theme.color.warning
-                property color error: Theme.color.error
-            }
+
         }
-        readonly property var dns: QtObject {
-            readonly property var color: QtObject {
-                property color ok: Theme.color.ok
-                property color error: Theme.color.error
+
+        readonly property QtObject latency: QtObject {
+
+            readonly property C.TextTitle title: C.TextTitle {
+                _defaults: root._config.defaults.text_title
+                text {
+                    padding {
+                        right: '1ch'
+                    }
+                }
             }
+
+            readonly property C.TextSeverity value: C.TextSeverity {
+                _defaults: root._config.defaults.text_severity
+                thresholds {
+                    good {
+                        value: '<40'
+                    }
+                    warning {
+                        value: 'any'
+                    }
+                    critical {
+                        value: 'any'
+                    }
+                }
+            }
+
+            readonly property C.Text details: C.Text {
+                _defaults: root._config.defaults.text
+                font {
+                    size: 'small'
+                }
+                padding {
+                    top: 4
+                }
+                color:    'text/secondary'
+                overflow: 'elide'
+            }
+
+            readonly property QtObject marks: QtObject {
+
+                readonly property C.Spacing spacing: C.Spacing {
+                    horizontal: 5
+                }
+
+                readonly property C.Padding padding: C.Padding {
+                    left:   0
+                    right:  0
+                    top:    2
+                    bottom: 2
+                }
+
+                readonly property C.Border border: C.Border {
+                    width: 1
+                }
+
+                property real width: 8
+
+            }
+
         }
-        readonly property var gateway: QtObject {
-            readonly property var thresholds: QtObject {
-                property real good: 10
+
+        readonly property QtObject dns: QtObject {
+
+            readonly property C.TextTitle title: C.TextTitle {
+                _defaults: root._config.defaults.text_title
+                text {
+                    padding {
+                        right: '1ch'
+                    }
+                }
             }
-            readonly property var color: QtObject {
-                property color good: Theme.color.ok
-                property color warning: Theme.color.warning
-                property color error: Theme.color.error
+
+            readonly property C.Text latency: C.Text {
+                _defaults: root._config.defaults.text
+                font {
+                    size: 'small'
+                }
+                color:    'text/secondary'
+                overflow: 'elide'
             }
+
+            readonly property C.TextSeverity status: C.TextSeverity {
+                _defaults: root._config.defaults.text_severity
+                thresholds {
+                    good {
+                        value: 'any'
+                    }
+                    critical {
+                        value: 'any'
+                    }
+                }
+            }
+
         }
-        readonly property var rate: QtObject {
-            readonly property var preset: QtObject {
-                property var label: "normal"
-                property var value: "details"
+
+        readonly property QtObject gateway: QtObject {
+
+            readonly property C.TextTitle title: C.TextTitle {
+                _defaults: root._config.defaults.text_title
+                text {
+                    padding {
+                        right: '1ch'
+                    }
+                }
             }
-            readonly property var download: QtObject {
-                property color color: Theme.palette.belizehole
-                property string label: "D:"
+
+            readonly property C.Text details: C.Text {
+                _defaults: root._config.defaults.text
+                font {
+                    size: 'small'
+                }
+                color:    'text/secondary'
+                overflow: 'elide'
             }
-            readonly property var upload: QtObject {
-                property color color: Theme.palette.greensea
-                property string label: "U:"
+
+            readonly property C.TextSeverity latency: C.TextSeverity {
+                _defaults: root._config.defaults.text_severity
+                thresholds {
+                    ignore {
+                        value: 'none'
+                    }
+                    good {
+                        value: '<10'
+                    }
+                    warning {
+                        value: 'any'
+                    }
+                    critical {
+                        value: 'any'
+                    }
+                }
             }
-            readonly property var graph: QtObject {
-                property int maxValue: 1024 * 5
-            }
-            property int spacing: 2
+
         }
+
+        readonly property QtObject rate: QtObject {
+
+            readonly property QtObject download: QtObject {
+
+                readonly property C.Text label: C.Text {
+                    _defaults: root._config.defaults.text
+                    color: 'info/primary'
+                    text: 'D:'
+                }
+
+                readonly property C.TextBytes rate: C.TextBytes {
+                    _defaults: root._config.defaults.text_bytes
+                    text {
+                        font {
+                            size: 'small'
+                        }
+                        color: 'text/secondary'
+                    }
+                }
+
+                readonly property C.GraphTimeseries graph: C.GraphTimeseries {
+                    _defaults: root._config.defaults.graph_timeseries
+                    stroke {
+                        color: 'info/primary'
+                    }
+                    axisY {
+                        max:    1024 * 5
+                        extend: true
+                    }
+                    border {
+                        color: 'info/primary'
+                    }
+                    padding {
+                        top: 2
+                    }
+                    fill:  'info/primary%30'
+                }
+
+            }
+
+            readonly property QtObject upload: QtObject {
+
+                readonly property C.Text label: C.Text {
+                    _defaults: root._config.defaults.text
+                    color: 'info/secondary'
+                    text: 'U:'
+                }
+
+                readonly property C.TextBytes rate: C.TextBytes {
+                    _defaults: root._config.defaults.text_bytes
+                    text {
+                        font {
+                            size: 'small'
+                        }
+                        color: 'text/secondary'
+                    }
+                }
+
+                readonly property C.GraphTimeseries graph: C.GraphTimeseries {
+                    _defaults: root._config.defaults.graph_timeseries
+                    stroke {
+                        color: 'info/secondary'
+                    }
+                    axisY {
+                        max:    1024 * 5
+                        extend: true
+                    }
+                    border {
+                        color: 'info/secondary'
+                    }
+                    padding {
+                        top: 2
+                    }
+                    fill:  'info/secondary%30'
+                }
+
+            }
+
+        }
+
+    }
+
+    configFragments: ConfigFragments {}
+
+    Component {
+        id: configFragmentsComponent
+        ConfigFragments {}
+    }
+
+    function recreateConfigFragments() {
+        configFragments = configFragmentsComponent.createObject(_config)
     }
 
     Connections {
@@ -96,151 +289,161 @@ Base {
         }
     }
 
-    Column {
-        id: wireless
+    property real wirelessIfaceWidth: 0
 
-        anchors.left: parent.left
-        anchors.right: parent.right
+    component WirelessIface: Item {
+        id: wireless_iface
 
-        property int ifaceWidth: 0
+        required property var modelData
+        readonly property var config: root._config.fragments.wireless_iface
 
-        Repeater {
-            model: Provider.WirelessDevices.ifaceModel
+        implicitHeight: Math.max(
+            iface.implicitHeight,
+            ssid.implicitHeight,
+            signal.implicitHeight,
+        )
 
-            Item {
-                id: ifaceRow
-                required property var modelData
+        E.TextTitle {
+            id: iface
+            theme: root._config.theme
+            config: wireless_iface.config.iface
 
-                implicitHeight: Math.max(ifaceObj.implicitHeight)
-                anchors.left: parent.left
-                anchors.right: parent.right
-
-                E.TextTitle {
-                    id: ifaceObj
-                    text: ifaceRow.modelData.iface
-                    anchors.left: parent.left
-                    onImplicitWidthChanged: {
-                        if (implicitWidth > wireless.ifaceWidth)
-                            wireless.ifaceWidth = implicitWidth
-                    }
-                }
-
-                E.Text {
-                    id: ssidObj
-                    text: ifaceRow.modelData.ssid
-                    preset: root.theme.ifaceList.details.preset
-                    anchors.left: ifaceObj.right
-                    anchors.right: parent.right
-                    color:
-                        parent.modelData.isConnected
-                            ? root.theme.ifaceList.details.color.normal
-                            : root.theme.ifaceList.details.color.error
-                    overflow: E.Text.OverflowElide
-                    horizontalAlignment: Text.AlignLeft
-                }
-
-                E.TextPercent {
-                    id: signal
-                    value: ifaceRow.modelData.signal
-                    levels: root.theme.ifaceList.signal.levels
-                    preset: root.theme.ifaceList.signal.preset
-                    anchors.right: parent.right
-                    visible: ifaceRow.modelData.isConnected
-                }
+            text: parent.modelData.iface
+            anchors.left: parent.left
+            onImplicitWidthChanged: {
+                if (implicitWidth > root.wirelessIfaceWidth)
+                    root.wirelessIfaceWidth = implicitWidth
             }
+        }
+
+        E.Text {
+            id: ssid
+            theme: root._config.theme
+            config: wireless_iface.config.ssid
+
+            text: parent.modelData.ssid
+            anchors.left: iface.right
+            anchors.right: parent.modelData.isConnected ? signal.right : parent.right
+            style: !parent.modelData.isConnected ? 'error' : undefined
+        }
+
+        E.TextPercent {
+            id: signal
+            theme: root._config.theme
+            config: wireless_iface.config.signal
+
+            value: parent.modelData.signal
+            anchors.right: parent.right
+            visible: parent.modelData.isConnected
         }
     }
 
-    Item {
+    Repeater {
+        model: Provider.WirelessDevices.ifaceModel
+
+        WirelessIface {
+            anchors.left: parent.left
+            anchors.right: parent.right
+        }
+    }
+
+    component Latency: Item {
         id: latency
+
+        readonly property var config: root._config.fragments.latency
 
         property string hoveredMarkName: ''
         property real hoveredMarkTime: Infinity
 
-        function timeToColor(value) {
-            if (!Number.isFinite(value)) return root.theme.latency.color.error
-            return value <= root.theme.latency.thresholds.good
-                ? root.theme.latency.color.good
-                : root.theme.latency.color.warning
-        }
-
-        anchors.left: parent.left
-        anchors.right: parent.right
         implicitHeight:
-            Math.max(latencyTitle.implicitHeight, latencyValue.implicitHeight) +
-                root.theme.latency.title.padding.bottom +
-                latencyDetails.implicitHeight
+            Math.max(title.implicitHeight, value.implicitHeight) +
+                details.implicitHeight
 
         E.TextTitle {
-            id: latencyTitle
+            id: title
+            theme: root._config.theme
+            config: latency.config.title
+
             text: 'Latency'
             anchors.left: parent.left
         }
 
-        E.Text {
-            id: latencyValue
-            readonly property real time: latencyDotsHover.hovered ? latency.hoveredMarkTime : Provider.Network.latency.time
+        E.TextSeverity {
+            id: value
+            theme: root._config.theme
+            config: latency.config.value
+
+            readonly property real time:
+                marksHoverHandler.hovered
+                    ? latency.hoveredMarkTime
+                    : Provider.Network.latency.time
+
             text: Number.isFinite(time) ? Math.round(time) + ' ms' : 'ERR'
-            color: latency.timeToColor(time)
+            value: time
+
             anchors.right: parent.right
         }
 
         E.Text {
-            id: latencyDetails
-            text: latencyDotsHover.hovered ? latency.hoveredMarkName : Provider.Network.latency.name
-            anchors.top: latencyTitle.bottom
-            anchors.topMargin: root.theme.latency.title.padding.bottom
+            id: details
+            theme: root._config.theme
+            config: latency.config.details
+
+            text:
+                marksHoverHandler.hovered
+                    ? latency.hoveredMarkName
+                    : Provider.Network.latency.name
+            anchors.top: title.bottom
             anchors.left: parent.left
-            anchors.right: latencyDots.left
-            preset: 'details'
-            overflow: E.Text.OverflowElide
+            anchors.right: marks.left
+            anchors.rightMargin: latency.config.details.padding.left
         }
 
         Row {
-            id: latencyDots
+            id: marks
 
-            anchors.top: latencyDetails.top
-            anchors.bottom: latencyDetails.bottom
+            anchors.top: details.top
+            anchors.topMargin: latency.config.details.padding.top + latency.config.marks.padding.top
+            anchors.bottom: details.bottom
+            anchors.bottomMargin: latency.config.details.padding.bottom + latency.config.marks.padding.bottom
             anchors.right: parent.right
-            spacing: root.theme.latency.marks.spacing
+            anchors.rightMargin: latency.config.marks.padding.right
+            spacing: latency.config.marks.spacing.horizontal
 
             Repeater {
                 model: Provider.Network.latencyHostsModel
 
                 Item {
-                    id: item
+                    id: mark
 
                     required property var modelData
 
                     readonly property bool isActive:
-                        hover.hovered || (!latencyDotsHover.hovered && modelData.host === Provider.Network.latency.host)
-                    readonly property color color: latency.timeToColor(modelData.time)
+                        hoverHandler.hovered || (!marksHoverHandler.hovered && modelData.host === Provider.Network.latency.host)
+                    readonly property color color:
+                        latency.config.value.thresholds.getColor(modelData.time, root._config.theme)
 
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
-                    implicitWidth: mark.implicitWidth + root.theme.latency.marks.padding.left + root.theme.latency.marks.padding.right
+                    implicitWidth: rect.implicitWidth
 
                     Rectangle {
-                        id: mark
-                        implicitWidth: root.theme.latency.marks.width
+                        id: rect
+                        implicitWidth: latency.config.marks.width
                         anchors.top: parent.top
-                        anchors.topMargin: root.theme.latency.marks.padding.top
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: root.theme.latency.marks.padding.bottom
-                        anchors.right: parent.right
-                        anchors.rightMargin: root.theme.latency.marks.padding.right
 
                         color: parent.isActive ? parent.color : 'transparent'
-                        border.width: root.theme.latency.marks.border
+                        border.width: latency.config.marks.border.width
                         border.color: parent.color
                     }
 
                     HoverHandler {
-                        id: hover
+                        id: hoverHandler
                         onHoveredChanged: {
                             if (hovered) {
-                                latency.hoveredMarkName = Qt.binding(() => item.modelData.name)
-                                latency.hoveredMarkTime = Qt.binding(() => item.modelData.time)
+                                latency.hoveredMarkName = Qt.binding(() => mark.modelData.name)
+                                latency.hoveredMarkTime = Qt.binding(() => mark.modelData.time)
                             }
                         }
                     }
@@ -249,127 +452,160 @@ Base {
             }
 
             HoverHandler {
-                id: latencyDotsHover
+                id: marksHoverHandler
             }
         }
 
     }
 
-    Item {
+    Latency {
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+
+    component DNS: Item {
         id: dns
+
+        readonly property var config: root._config.fragments.dns
 
         readonly property bool isOk: Number.isFinite(Provider.Network.dnsCheckTime)
 
-        anchors.left: parent.left
-        anchors.right: parent.right
-        implicitHeight: Math.max(dnsTitle.implicitHeight, dnsLatency.implicitHeight, dnsValue.implicitHeight)
+        implicitHeight: Math.max(title.implicitHeight, latency.implicitHeight, status.implicitHeight)
 
         E.TextTitle {
-            id: dnsTitle
+            id: title
+            theme: root._config.theme
+            config: dns.config.title
+
             text: 'DNS'
             anchors.left: parent.left
         }
 
         E.Text {
-            id: dnsLatency
+            id: latency
+            theme: root._config.theme
+            config: dns.config.latency
+
             text: dns.isOk ? Provider.Network.dnsCheckTime + ' ms' : ''
-            preset: 'details'
-            anchors.left: dnsTitle.right
-            anchors.bottom: dnsTitle.bottom
+            anchors.left: title.right
+            anchors.bottom: title.bottom
         }
 
-        E.Text {
-            id: dnsValue
+        E.TextSeverity {
+            id: status
+            theme: root._config.theme
+            config: dns.config.status
+
             text: dns.isOk ? 'Ok' : 'ERR'
-            color: dns.isOk ? root.theme.dns.color.ok : root.theme.dns.color.error
+            value: Provider.Network.dnsCheckTime
             anchors.right: parent.right
         }
     }
 
-    Item {
-        id: gateway
-
+    DNS {
         anchors.left: parent.left
         anchors.right: parent.right
-        implicitHeight: Math.max(gatewayTitle.implicitHeight, gatewayValue.implicitHeight)
+    }
+
+    component Gateway: Item {
+        id: gateway
+
+        readonly property var config: root._config.fragments.gateway
+
+        implicitHeight: Math.max(title.implicitHeight, details.implicitHeight, latency.implicitHeight)
 
         E.TextTitle {
-            id: gatewayTitle
+            id: title
+            theme: root._config.theme
+            config: gateway.config.title
+
             text: 'Gateway'
             anchors.left: parent.left
         }
 
         E.Text {
-            id: gatewayDetails
+            id: details
+            theme: root._config.theme
+            config: gateway.config.details
+
             text: Provider.Network.gatewayDefault.host
-            preset: 'details'
-            anchors.left: gatewayTitle.right
-            anchors.right: gatewayValue.left
-            anchors.bottom: gatewayTitle.bottom
-            overflow: E.Text.OverflowElide
+            anchors.left: title.right
+            anchors.right: latency.left
+            anchors.bottom: title.bottom
         }
 
-        E.Text {
-            id: gatewayValue
-            readonly property bool isOk: Number.isFinite(Provider.Network.gatewayDefault.latency)
-            text: isOk ? Math.round(Provider.Network.gatewayDefault.latency) + ' ms' : 'ERR'
-            color:
-                !isOk
-                    ? root.theme.gateway.color.error
-                    : Provider.Network.gatewayDefault.latency <= root.theme.gateway.thresholds.good
-                        ? root.theme.gateway.color.good
-                        : root.theme.gateway.color.warning
+        E.TextSeverity {
+            id: latency
+            theme: root._config.theme
+            config: gateway.config.latency
+
+            text:
+                Number.isFinite(Provider.Network.gatewayDefault.latency)
+                    ? Math.round(Provider.Network.gatewayDefault.latency) + ' ms'
+                    : 'ERR'
+            value: Provider.Network.gatewayDefault.latency
             anchors.right: parent.right
         }
+    }
+
+    Gateway {
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+
+    component RateItem: Item {
+        id: item
+
+        required property var modelData
+        readonly property var config: root._config.fragments.rate[modelData]
+
+        implicitHeight: Math.max(label.implicitHeight, rate.implicitHeight) + graph.implicitHeight
+
+        E.Text {
+            id: label
+            theme: root._config.theme
+            config: item.config.label
+
+            anchors.left: parent.left
+            anchors.top: parent.top
+        }
+
+        E.TextBytes {
+            id: rate
+            theme: root._config.theme
+            config: item.config.rate
+
+            value: Provider.Network.rate[item.modelData]
+            isRate: true
+            anchors.right: parent.right
+            anchors.bottom: label.bottom
+        }
+
+        E.GraphTimeseries {
+            id: graph
+            theme: root._config.theme
+            config: item.config.graph
+
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+        }
+
     }
 
     Row {
         id: rates
 
-        width: parent.width
-        spacing: Theme.base.spacing.vertical
+        anchors.left: parent.left
+        anchors.right: parent.right
+        spacing: root._config.widget.spacing.horizontal
 
         Repeater {
             model: ['download', 'upload']
 
-            Item {
-                id: rateItem
-
-                required property var modelData
-
-                implicitHeight: Math.max(label.implicitHeight, rate.implicitHeight) + root.theme.rate.spacing + graph.implicitHeight
+            RateItem {
                 implicitWidth: (parent.width - rates.spacing) / 2
-
-                E.Text {
-                    id: label
-                    text: root.theme.rate[rateItem.modelData].label
-                    color: root.theme.rate[rateItem.modelData].color
-                    anchors.left: parent.left
-                    anchors.top: parent.top
-                    preset: root.theme.rate.preset.label
-                }
-
-                E.TextBytes {
-                    id: rate
-                    anchors.right: parent.right
-                    anchors.bottom: label.bottom
-                    preset: root.theme.rate.preset.value
-                    value: Provider.Network.rate[rateItem.modelData]
-                    isRate: true
-                }
-
-                E.GraphTimeseries {
-                    id: graph
-                    color: root.theme.rate[rateItem.modelData].color
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.bottom: parent.bottom
-                    maxValueAuto: true
-                    maxValue: root.theme.rate.graph.maxValue
-                }
-
             }
-
         }
 
     }

@@ -2,34 +2,57 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import QtQuick
-import qs
 import qs.Elements as E
+import qs.Config as C
 
 Base {
     id: root
+    type: 'clock'
+    hierarchy: ['base', type]
 
-    readonly property var theme: QtObject {
-        readonly property var hours: QtObject {
-            property int fontSize: 40
-            property int fontWeight: Font.Bold
-            property color color: Theme.text.color.normal
+    component ConfigFragments: QtObject {
+
+        readonly property C.Text hours: C.Text {
+            _defaults: root._config.defaults.text
+            font {
+                size:   40
+                weight: 'bold'
+            }
+            heightMode: 'capitals'
         }
-        readonly property var minutes: QtObject {
-            property int fontSize: 40
-            property int fontWeight: Font.Normal
-            property color color: Theme.text.color.normal
+
+        readonly property C.Text separator: C.Text {
+            _defaults: root._config.defaults.text
+            font {
+                size: 40
+            }
+            padding {
+                top:   -3
+                left:  5
+                right: 5
+            }
+            heightMode: 'capitals'
         }
-        readonly property var separator: QtObject {
-            property int fontSize: 40
-            property int fontWeight: Font.Normal
-            property color color: Theme.text.color.normal
-            property int offset: -3
+
+        readonly property C.Text minutes: C.Text {
+            _defaults: root._config.defaults.text
+            font {
+                size: 40
+            }
+            heightMode: 'capitals'
         }
-        property int spacing: 5
-        readonly property var padding: QtObject {
-            property int top: 0
-            property int bottom: 0
-        }
+
+    }
+
+    configFragments: ConfigFragments {}
+
+    Component {
+        id: configFragmentsComponent
+        ConfigFragments {}
+    }
+
+    function recreateConfigFragments() {
+        configFragments = configFragmentsComponent.createObject(_config)
     }
 
     SystemClock {
@@ -39,46 +62,41 @@ Base {
 
     Item {
         id: clock
-        implicitHeight: Math.max(hours.implicitHeight, minutes.implicitHeight) + root.theme.padding.top + root.theme.padding.bottom
-        implicitWidth: hours.implicitWidth + colon.implicitWidth + minutes.implicitWidth + root.theme.spacing * 2
+
+        readonly property var config: root._config.fragments
+
+        implicitHeight: Math.max(hours.implicitHeight, separator.implicitHeight, minutes.implicitHeight)
+        implicitWidth: hours.implicitWidth + separator.implicitWidth + minutes.implicitWidth
         anchors.horizontalCenter: parent.horizontalCenter
 
         E.Text {
             id: hours
+            theme: root._config.theme
+            config: clock.config.hours
+
             text: Qt.formatDateTime(systemClock.date, "hh")
-            color: root.theme.hours.color
-            fontSize: root.theme.hours.fontSize
-            fontWeight: root.theme.hours.fontWeight
             anchors.left: parent.left
             anchors.top: parent.top
-            anchors.topMargin: root.theme.padding.top
-            heightMode: E.Text.Capitals
         }
 
         E.Text {
-            id: colon
+            id: separator
+            theme: root._config.theme
+            config: clock.config.separator
+
             text: ':'
             anchors.left: hours.right
-            anchors.leftMargin: root.theme.spacing
             anchors.top: parent.top
-            anchors.topMargin: root.theme.padding.top + root.theme.separator.offset
-            color: root.theme.separator.color
-            fontSize: root.theme.separator.fontSize
-            fontWeight: root.theme.separator.fontWeight
-            heightMode: E.Text.Capitals
         }
 
         E.Text {
             id: minutes
+            theme: root._config.theme
+            config: clock.config.minutes
+
             text: Qt.formatDateTime(systemClock.date, "mm")
-            anchors.left: colon.right
-            anchors.leftMargin: root.theme.spacing
+            anchors.left: separator.right
             anchors.top: parent.top
-            anchors.topMargin: root.theme.padding.top
-            color: root.theme.minutes.color
-            fontSize: root.theme.minutes.fontSize
-            fontWeight: root.theme.minutes.fontWeight
-            heightMode: E.Text.Capitals
         }
 
     }

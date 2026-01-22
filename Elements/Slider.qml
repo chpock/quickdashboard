@@ -1,12 +1,13 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs
+import qs.Config as C
 
 Item {
     id: root
 
-    property color color: Theme.slider.color.active
+    required property C.Slider config
+    required property C.Theme theme
 
     property real maxValue: 100.0
     property real value: 0
@@ -16,55 +17,72 @@ Item {
 
     signal slide(real offset)
 
-    readonly property real barHeight: height - Theme.slider.thumb.height
-    readonly property real barTopMargin: Theme.slider.thumb.height / 2
     property bool isHovered: false
     readonly property bool isThumbActive: isHovered || drag.active
+    readonly property real effectiveWidth: Math.max(0, width - root.config.padding.left - root.config.padding.right)
 
-    implicitHeight: Theme.slider.height
+    implicitHeight: Math.max(root.config.thumb.height, root.config.bar.height) +
+        root.config.padding.top + root.config.padding.bottom
 
     // Background (empty part)
     Rectangle {
         id: background
+
+        readonly property real topMargin: root.config.padding.top +
+            Math.max(0, root.config.thumb.height - root.config.bar.height) / 2
+
         anchors.left: parent.left
+        anchors.leftMargin: root.config.padding.left
         anchors.right: parent.right
+        anchors.rightMargin: root.config.padding.right
         anchors.top: parent.top
-        anchors.topMargin: root.barTopMargin
-        height: root.barHeight
-        color: Theme.slider.color.inactive
+        anchors.topMargin: topMargin
+        height: root.config.bar.height
+        color: root.theme.getColor(root.config.bar.color.inactive)
     }
 
     // Foreground (filled part)
     Rectangle {
         id: foreground
-        readonly property real thumbWidth: root.isThumbActive ? Theme.slider.thumb.width + Theme.slider.thumb.padding : 0
+
+        readonly property real thumbWidth:
+            root.isThumbActive
+                ? root.config.thumb.width + root.config.thumb.gap
+                : 0
+
         anchors.left: parent.left
+        anchors.leftMargin: root.config.padding.left
         anchors.top: parent.top
-        anchors.topMargin: root.barTopMargin
-        height: root.barHeight
+        anchors.topMargin: background.topMargin
+        height: root.config.bar.height
         width:
             root.maxValue <= 0
                 ? 0
-                : (parent.width - thumbWidth) * root.value / root.maxValue
-        color: root.color
+                : (root.effectiveWidth - thumbWidth) * root.value / root.maxValue
+        color: root.theme.getColor(root.config.bar.color.active)
     }
 
     Rectangle {
         id: thumb
+
         anchors.left: foreground.right
-        anchors.leftMargin: foreground.width >= 1 ? Theme.slider.thumb.padding : 0
+        anchors.leftMargin: foreground.width >= 1 ? root.config.thumb.gap : 0
         anchors.top: parent.top
+        anchors.topMargin: root.config.padding.top
         anchors.bottom: parent.bottom
-        width: Theme.slider.thumb.width
-        color: Theme.slider.thumb.color
+        anchors.bottomMargin: root.config.padding.bottom
+        width: root.config.thumb.width
+        color: root.theme.getColor(root.config.thumb.color)
         visible: root.isThumbActive
     }
 
     HoverHandler {
         id: hoverHandler
+
         enabled: root.canSeek
         acceptedButtons: Qt.NoButton
         cursorShape: Qt.PointingHandCursor
+
         onHoveredChanged: {
             if (hovered) {
                 thumbHide.stop()
@@ -79,18 +97,27 @@ Item {
         enabled: root.canSeek
         acceptedButtons: Qt.LeftButton
         gesturePolicy: TapHandler.WithinBounds
+
         onTapped: point => {
-            const slide = parent.width === 0 ? 0 : point.position.x / parent.width
+            const slide =
+                root.effectiveWidth === 0
+                    ? 0
+                    : Math.max(0, Math.min(root.effectiveWidth, point.position.x - root.config.padding.left)) / root.effectiveWidth
             root.slide(slide * root.maxValue)
         }
     }
 
     DragHandler {
         id: drag
+
         enabled: root.canSeek
         target: null
+
         onTranslationChanged: {
-            const slide = parent.width === 0 ? 0 : Math.max(0, Math.min(parent.width, centroid.position.x)) / parent.width
+            const slide =
+                root.effectiveWidth === 0
+                    ? 0
+                    : Math.max(0, Math.min(root.effectiveWidth, centroid.position.x)) / root.effectiveWidth
             root.slide(slide * root.maxValue)
         }
     }
@@ -98,14 +125,17 @@ Item {
     WheelHandler {
         enabled: root.canSeek
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+
         onWheel: event => root.wheelHandler(event)
     }
 
     Timer {
         id: thumbHide
+
         interval: 250
         running: false
         repeat: false
+
         onTriggered: {
             root.isHovered = false
         }

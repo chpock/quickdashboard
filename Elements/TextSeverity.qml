@@ -16,7 +16,7 @@ Item {
     implicitHeight: text.implicitHeight
     implicitWidth: text.implicitWidth
 
-    E.TextX {
+    E.Text {
         id: text
 
         theme: root.theme

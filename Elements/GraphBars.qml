@@ -2,16 +2,19 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtGraphs
-import qs
+import qs.Config as C
 
 Item {
     id: root
 
-    required property color color
+    required property C.GraphBars config
+    required property C.Theme theme
+
+    // required property color color
 
     property real maxValue: 100.0
 
-    implicitHeight: Theme.graph.height
+    implicitHeight: config.height + config.padding.top + config.padding.bottom
 
     function pushValues(values) {
         if (barSeries.count > values.length) {
@@ -27,13 +30,14 @@ Item {
             const set = barSeries.at(i)
             if (set.values[0] !== v) {
                 set.values = [v]
-                for (let j = 0; j < Theme.graph.bar.thresholds.length; ++j) {
-                    const threshold = Theme.graph.bar.thresholds[j];
-                    if (threshold.value === -1 || v <= threshold.value) {
-                        set.color = threshold.color
-                        break
-                    }
-                }
+                set.color = config.thresholds.getColor(v, theme)
+                // for (let j = 0; j < Theme.graph.bar.thresholds.length; ++j) {
+                //     const threshold = Theme.graph.bar.thresholds[j];
+                //     if (threshold.value === -1 || v <= threshold.value) {
+                //         set.color = threshold.color
+                //         break
+                //     }
+                // }
             }
         }
     }
@@ -43,15 +47,15 @@ Item {
         anchors.fill: parent
 
         border {
-            color: root.color
-            width: Theme.graph.border.width
+            color: root.theme.getColor(root.config.border.color)
+            width: root.config.border.width
         }
         color: "transparent"
 
         GraphsView {
             id: graph
             anchors.fill: parent
-            anchors.margins: Theme.graph.border.width + 2
+            anchors.margins: root.config.border.width + 2
 
             marginBottom: 0
             marginTop: 0

@@ -1,41 +1,97 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
-import qs
 import qs.Elements as E
+import qs.Config as C
 import qs.Providers as Provider
 
 Base {
     id: root
+    type: 'memory'
+    hierarchy: ['base', type]
 
-    readonly property var theme: QtObject {
-        readonly property var meter: QtObject {
-            property int paddingTitle: 5
-            readonly property var bar: QtObject {
-                readonly property var padding: QtObject {
-                    property int top: 3
-                    property int bottom: 2
+    component ConfigFragments: QtObject {
+
+        readonly property QtObject meter: QtObject {
+
+            readonly property C.TextTitle title: C.TextTitle {
+                _defaults: root._config.defaults.text_title
+                text {
+                    padding {
+                        right: '2ch'
+                    }
                 }
             }
-            readonly property var ram: QtObject {
-                property var levels: ({
-                    'good':     [0,  59 ],
-                    'warning':  [60, 89 ],
-                    'critical': [90, 100],
-                })
+
+            readonly property C.TextBytes free: C.TextBytes {
+                _defaults: root._config.defaults.text_bytes
+                precision: 3
             }
-            readonly property var swap: QtObject {
-                property var levels: ({
-                    'good':     [0,  59 ],
-                    'warning':  [60, 89 ],
-                    'critical': [90, 100],
-                })
+
+            readonly property C.TextBytes total: C.TextBytes {
+                _defaults: root._config.defaults.text_bytes
+                text {
+                    font {
+                        size: 'small'
+                    }
+                    color: 'text/secondary'
+                }
+                precision: 3
+                prefix: '  / '
             }
+
+            readonly property C.TextPercent percent: C.TextPercent {
+                _defaults: root._config.defaults.text_percent
+                thresholds {
+                    good {
+                        value: '<60'
+                    }
+                    warning {
+                        value: '<90'
+                    }
+                    critical {
+                        value: 'any'
+                    }
+                }
+            }
+
+            readonly property C.Bar bar: C.Bar {
+                _defaults: root._config.defaults.bar
+                padding {
+                    top:    3
+                    bottom: 2
+                }
+            }
+
         }
-        readonly property var processList: QtObject {
-            readonly property var padding: QtObject {
-                property int top: 5
-                property int bottom: 0
+
+        readonly property C.ProcessList process_list: C.ProcessList {
+            _defaults: root._config.defaults.process_list
+            padding {
+                top: 2
             }
+
+            readonly property C.TextBytes bytes: C.TextBytes {
+                _defaults: root._config.defaults.text_bytes
+                text {
+                    _defaults: root._config.defaults.process_list.value
+                }
+                precision: 3
+            }
+
         }
+
+    }
+
+    configFragments: ConfigFragments {}
+
+    Component {
+        id: configFragmentsComponent
+        ConfigFragments {}
+    }
+
+    function recreateConfigFragments() {
+        configFragments = configFragmentsComponent.createObject(_config)
     }
 
     Connections {
@@ -45,129 +101,118 @@ Base {
         }
     }
 
-    readonly property int labelWidth: Math.max(ramUsageLabel.implicitWidth, swapUsageValue.implicitWidth)
+    readonly property int titleWidth: Math.max(meterRAM.titleWidth, meterSwap.titleWidth)
 
-    Item {
-        id: ramUsage
-        implicitHeight: Math.max(ramUsageLabel.implicitHeight, ramUsageValue.implicitHeight) +
-            root.theme.meter.bar.padding.top + root.theme.meter.bar.padding.bottom +
-            ramUsageBar.implicitHeight
-        anchors.left: parent.left
-        anchors.right: parent.right
+    component Meter: Item {
+        id: meter
+
+        readonly property alias titleWidth: titleObj.implicitWidth
+        readonly property var config: root._config.fragments.meter
+
+        property alias title: titleObj.text
+        property alias free: freeObj.value
+        property alias total: totalObj.value
+
+        implicitHeight:
+            Math.max(
+                titleObj.implicitHeight,
+                freeObj.implicitHeight,
+                totalObj.implicitHeight,
+                percentObj.implicitHeight
+            ) +
+            barObj.implicitHeight
 
         E.TextTitle {
-            id: ramUsageLabel
-            text: 'RAM'
+            id: titleObj
+            theme: root._config.theme
+            config: meter.config.title
+
             anchors.left: parent.left
-            width: root.labelWidth
+            width: root.titleWidth
         }
 
+        // qmllint disable required
         E.TextBytes {
-            id: ramUsageDetailsAvailable
-            value: Provider.Memory.ram.available
-            precision: 3
-            anchors.left: ramUsageLabel.right
-            anchors.leftMargin: root.theme.meter.paddingTitle
-            anchors.bottom: ramUsageLabel.bottom
-        }
+            id: freeObj
+            theme: root._config.theme
+            config: meter.config.free
 
-        E.TextBytes {
-            id: ramUsageDetailsTotal
-            value: Provider.Memory.ram.total
-            precision: 3
-            prefix: ' / '
-            anchors.left: ramUsageDetailsAvailable.right
-            anchors.bottom: ramUsageLabel.bottom
-            preset: 'details'
+            anchors.left: titleObj.right
+            anchors.bottom: titleObj.bottom
         }
+        // qmllint enable required
+
+        // qmllint disable required
+        E.TextBytes {
+            id: totalObj
+            theme: root._config.theme
+            config: meter.config.total
+
+            anchors.left: freeObj.right
+            anchors.bottom: titleObj.bottom
+        }
+        // qmllint enable required
 
         E.TextPercent {
-            id: ramUsageValue
-            valueCurrent: Provider.Memory.ram.total - Provider.Memory.ram.available
-            valueMax: Provider.Memory.ram.total
-            levels: root.theme.meter.ram.levels
+            id: percentObj
+            theme: root._config.theme
+            config: meter.config.percent
+
+            valueCurrent: meter.total - meter.free
+            valueMax: meter.total
             anchors.right: parent.right
         }
 
         E.Bar {
-            id: ramUsageBar
-            value: ramUsageValue.calcValue
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: root.theme.meter.bar.padding.bottom
+            id: barObj
+            theme: root._config.theme
+            config: meter.config.bar
+
+            value: percentObj.calcValue
             anchors.left: parent.left
             anchors.right: parent.right
+            anchors.bottom: parent.bottom
         }
     }
 
-    Item {
-        id: swapUsage
-        implicitHeight: Math.max(swapUsageLabel.implicitHeight, swapUsageValue.implicitHeight) +
-            root.theme.meter.bar.padding.top + root.theme.meter.bar.padding.bottom +
-            swapUsageBar.implicitHeight
+    Meter {
+        id: meterRAM
+
         anchors.left: parent.left
         anchors.right: parent.right
 
-        E.TextTitle {
-            id: swapUsageLabel
-            text: 'Swap'
-            anchors.left: parent.left
-            width: root.labelWidth
-        }
-
-        E.TextBytes {
-            id: swapUsageDetailsFree
-            value: Provider.Memory.swap.free
-            precision: 3
-            anchors.left: swapUsageLabel.right
-            anchors.leftMargin: root.theme.meter.paddingTitle
-            anchors.bottom: swapUsageLabel.bottom
-        }
-
-        E.TextBytes {
-            id: swapUsageDetailsTotal
-            value: Provider.Memory.swap.total
-            precision: 3
-            prefix: ' / '
-            anchors.left: swapUsageDetailsFree.right
-            anchors.bottom: swapUsageLabel.bottom
-            preset: 'details'
-        }
-
-        E.TextPercent {
-            id: swapUsageValue
-            valueCurrent: Provider.Memory.swap.total - Provider.Memory.swap.free
-            valueMax: Provider.Memory.swap.total
-            levels: root.theme.meter.swap.levels
-            anchors.right: parent.right
-        }
-
-        E.Bar {
-            id: swapUsageBar
-            value: swapUsageValue.calcValue
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-        }
+        title: 'RAM'
+        free:  Provider.Memory.ram.available
+        total: Provider.Memory.ram.total
     }
 
-    Item {
-        implicitHeight: processList.implicitHeight + root.theme.processList.padding.top + root.theme.processList.padding.bottom
-        implicitWidth: processList.implicitWidth
+    Meter {
+        id: meterSwap
+
         anchors.left: parent.left
         anchors.right: parent.right
 
-        E.ProcessList {
-            id: processList
-            y: root.theme.processList.padding.top
+        title: 'Swap'
+        free:  Provider.Memory.swap.free
+        total: Provider.Memory.swap.total
+    }
 
-            E.TextBytes {
-                property var modelValue
-                value: modelValue
-                precision: 3
-                preset: Theme.processList.preset
-                color: Theme.processList.colors.value
-                horizontalAlignment: Text.AlignRight
-            }
+    E.ProcessList {
+        id: processList
+        theme: root._config.theme
+        config: root._config.fragments.process_list
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+
+        E.TextBytes {
+            theme: root._config.theme
+            config: root._config.fragments.process_list.bytes
+
+            property var modelValue
+            // qmllint disable unqualified
+            value: modelValue
+            // qmllint enable unqualified
         }
     }
 

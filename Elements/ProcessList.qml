@@ -1,17 +1,19 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs
+import qs.Config as C
 import qs.Elements as E
+import qs
 
 Item {
     id: root
 
-    anchors.left: parent.left
-    anchors.right: parent.right
-    implicitHeight: lv.implicitHeight
+    required property C.ProcessList config
+    required property C.Theme theme
 
-    default property Component valueRenderer
+    default property Component valueRenderer: defaultValueRenderer
+
+    implicitHeight: list.implicitHeight + config.padding.top + config.padding.bottom
 
     function pushValues(values) {
         for (let i = 0; i < rows.count; ++i) {
@@ -27,7 +29,26 @@ Item {
                 row.value = 0
             }
         }
-        lv.recomputeRightWidth()
+        list.recomputeRightWidth()
+    }
+
+    Component {
+        id: defaultValueRenderer
+
+        E.Text {
+            property var modelValue
+
+            theme: root.theme
+            config: root.config.value
+
+            text: modelValue
+            // text: 'foo1'
+            // preset: Theme.processList.preset
+            // color: Theme.processList.colors.value
+            // horizontalAlignment: Text.AlignRight
+            // width: list.colValueWidth
+            // visible: root.valueRenderer === null
+        }
     }
 
     ListModel {
@@ -49,23 +70,26 @@ Item {
     }
 
     ListView {
-        id: lv
+        id: list
+
         anchors.fill: parent
-        model: rows
-        spacing: Theme.processList.spacing
+        anchors.leftMargin: root.config.padding.left
+        anchors.rightMargin: root.config.padding.right
+        anchors.topMargin: root.config.padding.top
+        anchors.bottomMargin: root.config.padding.bottom
+        spacing: root.config.spacing.horizontal
         implicitHeight: contentHeight
 
-        property int colValueWidth: 0
+        model: rows
+
+        property real colValueWidth: 0
 
         function recomputeRightWidth() {
             var maxw = 0
-            for (let i = 0; i < lv.count; ++i) {
-                const d = lv.itemAtIndex(i)
+            for (let i = 0; i < list.count; ++i) {
+                const d = list.itemAtIndex(i)
                 if (d) {
-                    const currentWidth =
-                        root.valueRenderer === null
-                            ? d.children[0].children[2].implicitWidth
-                            : d.children[0].children[3].implicitWidth
+                    const currentWidth = d.children[0].children[2].implicitWidth
                     maxw = Math.max(maxw, currentWidth)
                 }
             }
@@ -74,50 +98,42 @@ Item {
 
         delegate: Item {
             id: item
-            width: lv.width
-            height: Math.max(colCommand.implicitHeight, colValue.implicitHeight)
+            width: list.width
+            height: Math.max(command.implicitHeight, args.implicitHeight)
             required property var model
 
             Row {
                 id: row
                 anchors.fill: parent
-                spacing: colCommand.wordSpacing * 2
+                spacing: 0
 
                 E.Text {
-                    id: colCommand
+                    id: command
+
+                    theme: root.theme
+                    config: root.config.command
+
                     text: item.model.command
-                    preset: Theme.processList.preset
-                    color: Theme.processList.colors.command
-                    overflow: E.Text.OverflowElide
-                    horizontalAlignment: Text.AlignLeft
+                    width:
+                        implicitWidth > (parent.width - list.colValueWidth)
+                            ? parent.width - list.colValueWidth
+                            : undefined
                 }
 
                 E.Text {
-                    id: colArgs
+                    id: args
+
+                    theme: root.theme
+                    config: root.config.args
+
                     text: item.model.args
-                    preset: Theme.processList.preset
-                    color: Theme.processList.colors.args
-                    overflow: E.Text.OverflowElide
-                    width: parent.width - colCommand.implicitWidth - lv.colValueWidth - parent.spacing * 2
-                    horizontalAlignment: Text.AlignLeft
-                }
-
-                E.Text {
-                    id: colValue
-                    text: item.model.value
-                    preset: Theme.processList.preset
-                    color: Theme.processList.colors.value
-                    horizontalAlignment: Text.AlignRight
-                    width: lv.colValueWidth
-                    visible: root.valueRenderer === null
+                    width: Math.max(0, parent.width - command.implicitWidth - list.colValueWidth)
                 }
 
                 Loader {
                     readonly property var modelValue: item.model.value
                     id: colValueLoader
-                    width: lv.colValueWidth
-                    visible: root.valueRenderer !== null
-                    active: root.valueRenderer !== null
+                    width: list.colValueWidth
                     sourceComponent: root.valueRenderer
                     Binding {
                         target: colValueLoader.item

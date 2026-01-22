@@ -1,18 +1,19 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs
 import qs.Elements as E
+import qs.Config as C
 import '../utils.js' as Utils
 
-E.Text {
+Item {
     id: root
+
+    required property C.TextPercent config
+    required property C.Theme theme
 
     property real value
     property real valueCurrent: NaN
     property real valueMax: NaN
-    property var colors: Theme.thresholds.colors
-    property var levels: Theme.thresholds.levels
 
     readonly property real calcValue:
         isNaN(valueMax)
@@ -21,14 +22,21 @@ E.Text {
                 ? 0
                 : 100 * valueCurrent / valueMax
 
-    text: Utils.roundPercent(calcValue) + '%'
-    color: {
-        const calcValue = Math.floor(root.calcValue)
-        for (const name in levels) {
-            if (calcValue >= levels[name][0] && calcValue <= levels[name][1]) {
-                return colors[name]
-            }
+    implicitHeight: text.implicitHeight
+    implicitWidth: text.implicitWidth
+
+    E.Text {
+        id: text
+
+        theme: root.theme
+        config: C.Text {
+            _defaults: root.config.text
+            color:
+                root.config.thresholds.enabled
+                    ? root.config.thresholds.getColor(root.calcValue, root.theme)
+                    : root.config.text.color
         }
-        return undefined
+
+        text: Utils.roundPercent(root.calcValue) + '%'
     }
 }
