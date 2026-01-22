@@ -177,7 +177,7 @@ Singleton {
         interval: 500
         running: true
         repeat: false
-        onTriggered: refreshCalendarApplication()
+        onTriggered: root.refreshCalendarApplication()
     }
 
     Timer {
@@ -185,13 +185,13 @@ Singleton {
         interval: 1000 * 60 * 5
         running: true
         repeat: true
-        onTriggered: refreshCalendarApplication()
+        onTriggered: root.refreshCalendarApplication()
     }
 
     Process {
         id: calendarApplicationProc
         running: false
-        // // qmllint disable signal-handler-parameters
+        // qmllint disable signal-handler-parameters
         onExited: (exitCode, _) => {
         // qmllint enable signal-handler-parameters
             if (exitCode !== 0) {
