@@ -38,5 +38,6 @@ Item {
         }
 
         text: Utils.roundPercent(root.calcValue) + '%'
+        anchors.fill: parent
     }
 }

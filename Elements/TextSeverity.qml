@@ -27,5 +27,6 @@ Item {
                     ? root.config.thresholds.getColor(root.value, root.theme)
                     : root.config.text.color
         }
+        anchors.fill: parent
     }
 }

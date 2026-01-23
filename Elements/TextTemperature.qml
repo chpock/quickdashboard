@@ -29,5 +29,6 @@ Item {
         }
 
         text: Utils.roundPercent(root.value) + "\u2103"
+        anchors.fill: parent
     }
 }
