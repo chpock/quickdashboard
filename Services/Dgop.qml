@@ -161,7 +161,9 @@ Singleton {
 
     Timer {
         id: processesByRAM
-        interval: 5000
+        // Get the list of processes by RAM once every 10 seconds, as this is
+        // an expensive operation.
+        interval: 10000
         repeat: true
         running: root.running && root.subscribers.processesByRAM > 0
         onTriggered: root.getProcessesByRAM()
@@ -361,64 +363,115 @@ Singleton {
     }
 
     function splitCommand(originalCommand, fullCommand) {
-        let splitIdx = fullCommand.indexOf(' ')
-        let command = (splitIdx === -1) ? fullCommand : fullCommand.slice(0, splitIdx)
-        let args = (splitIdx === -1) ? '' : fullCommand.slice(splitIdx + 1)
-        if (command === '/proc/self/exe') {
-            command = originalCommand
-        } else if (command.charAt(0) === '/') {
-            splitIdx = command.lastIndexOf('/')
-            if (splitIdx !== -1) {
-                command = command.slice(splitIdx + 1)
-            }
+        if (fullCommand === '') {
+            return [originalCommand, '', originalCommand]
         }
-        return [command, args]
+        let splitIdx = fullCommand.indexOf(' ')
+        let commandRaw = (splitIdx === -1) ? fullCommand : fullCommand.slice(0, splitIdx)
+        let args = (splitIdx === -1) ? '' : fullCommand.slice(splitIdx + 1)
+        let command
+        if (commandRaw === '/proc/self/exe') {
+            command = originalCommand
+        } else if (commandRaw.charAt(0) === '/') {
+            splitIdx = commandRaw.lastIndexOf('/')
+            command = splitIdx === -1 ? commandRaw : commandRaw.slice(splitIdx + 1)
+        } else {
+            command = commandRaw
+        }
+        return [command, args, commandRaw]
     }
 
     property string cursorProcessesByCPU: ""
     function getProcessesByCPU() {
         if (!ready) return null
         return request('/gops/processes', {
-            'cursor': cursorProcessesByCPU,
-            'sort_by': 'cpu',
-            'limit': 5,
+            cursor: cursorProcessesByCPU,
+            sort_by: 'cpu',
+            limit: 5,
         }, function(data) {
             if (!data) return
             cursorProcessesByCPU = data.cursor
             const callbackData = data.data.filter(function(item) {
                 return item.command !== 'dgop'
             }).map(function(item) {
-                let splitCommand = root.splitCommand(item.command, item.fullCommand)
+                const splitCommand = root.splitCommand(item.command, item.fullCommand)
                 return {
-                    'command': splitCommand[0],
-                    'args': splitCommand[1],
-                    'pid': item.pid,
-                    'value': item.cpu,
+                    command: splitCommand[0],
+                    args: splitCommand[1],
+                    pid: item.pid,
+                    value: item.cpu,
                 }
             })
             root.updateProcessesByCPU(callbackData)
         })
     }
 
+    function mergeProcessesByRAM(data) {
+
+        // Stage 1. Simplify data, we need only specific fields.
+        const processMap = {}
+        data.forEach(item => {
+            const splitCommand = root.splitCommand(item.command, item.fullCommand)
+            processMap[item.pid] = {
+                command: splitCommand[0],
+                args: splitCommand[1],
+                command_raw: splitCommand[2],
+                pid: item.pid,
+                ppid: item.ppid,
+                value: item.memoryKB * 1024,
+                children: [],
+                is_merged: false,
+            }
+        })
+
+        // Stage 2. Find children
+        Object.values(processMap).forEach(item => {
+            const parent = processMap[item.ppid];
+            if (parent) {
+                if (item.command_raw === '/proc/self/exe' || item.command_raw === parent.command_raw) {
+                    parent.children.push(item);
+                    item.is_merged = true;
+                }
+            }
+        })
+
+        function getAggregatedMemory(item) {
+            let total = item.value
+            item.children.forEach(child => {
+                total += getAggregatedMemory(child);
+            });
+            return total;
+        }
+
+        // Stage 3. Calculate RAM taking children into account
+        const processList = []
+        Object.values(processMap).forEach(item => {
+            if (!item.is_merged) {
+                item.value = getAggregatedMemory(item)
+                delete item.command_raw
+                delete item.ppid
+                delete item.children
+                delete item.is_merged
+                processList.push(item);
+            }
+        })
+
+        // Stage 4. Sort
+        processList.sort((a, b) => b.value - a.value)
+
+        return processList
+    }
+
     property string cursorProcessesByRAM: ""
     function getProcessesByRAM() {
         if (!ready) return null
         return request('/gops/processes', {
-            'cursor': cursorProcessesByRAM,
-            'sort_by': 'memory',
-            'limit': 5,
+            cursor: cursorProcessesByRAM,
+            disable_proc_cpu: true,
         }, function(data) {
             if (!data) return
             cursorProcessesByRAM = data.cursor
-            const callbackData = data.data.map(function(item) {
-                let splitCommand = root.splitCommand(item.command, item.fullCommand)
-                return {
-                    'command': splitCommand[0],
-                    'args': splitCommand[1],
-                    'pid': item.pid,
-                    'value': item.memoryKB * 1024,
-                }
-            })
+            const callbackData = root.mergeProcessesByRAM(data.data)
             root.updateProcessesByRAM(callbackData)
         })
     }
