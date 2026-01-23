@@ -55,6 +55,20 @@ Base {
         configFragments = configFragmentsComponent.createObject(_config)
     }
 
+    // This is a hack to fix a bug in quickshell where SystemClock with
+    // SystemClock.Minutes/SystemClock.Hours resolution does not update when
+    // exiting from suspended state and remains as the old value for some time.
+    SystemClock {
+        id: systemClockSync
+        precision: SystemClock.Seconds
+        onMinutesChanged: {
+            systemClock.precision =
+                systemClock.enabled && systemClockSync.minutes !== systemClock.minutes
+                    ? SystemClock.Seconds
+                    : SystemClock.Minutes
+        }
+    }
+
     SystemClock {
         id: systemClock
         precision: SystemClock.Minutes

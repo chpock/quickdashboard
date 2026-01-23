@@ -332,7 +332,21 @@ Base {
     SystemClock {
         id: systemClockTimeSeconds
         precision: SystemClock.Seconds
-        enabled: Provider.Calendar.running
+        // This is a hack to fix a bug in quickshell where SystemClock with
+        // SystemClock.Minutes/SystemClock.Hours resolution does not update when
+        // exiting from suspended state and remains as the old value for some time.
+        onMinutesChanged: {
+            systemClockTimeMinutes.precision =
+                systemClockTimeMinutes.enabled && systemClockTimeSeconds.minutes !== systemClockTimeMinutes.minutes
+                    ? SystemClock.Seconds
+                    : SystemClock.Minutes
+        }
+        onHoursChanged: {
+            systemClockDate.precision =
+                systemClockDate.enabled && systemClockTimeSeconds.hours !== systemClockDate.hours
+                    ? SystemClock.Seconds
+                    : SystemClock.Hours
+        }
     }
 
     component Header: Item {

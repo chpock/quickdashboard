@@ -44,10 +44,14 @@ Singleton {
     }
 
     // Additionally update events on hours changed. This will update events when the day changes.
+    // SystemClock.Seconds resolution is used here because quickshell has a bug
+    // and does not update time when exiting from suspended state.
+    // But onHoursChanged is also used here to ensure that events are updated
+    // no more than once an hour.
     SystemClock {
         id: systemClock
         enabled: root.running
-        precision: SystemClock.Hours
+        precision: SystemClock.Seconds
         onHoursChanged: {
             checkProc.running = true
         }
