@@ -388,6 +388,7 @@ Singleton {
             cursor: cursorProcessesByCPU,
             sort_by: 'cpu',
             limit: 5,
+            merge_children: true,
         }, function(data) {
             if (!data) return
             cursorProcessesByCPU = data.cursor
@@ -406,72 +407,27 @@ Singleton {
         })
     }
 
-    function mergeProcessesByRAM(data) {
-
-        // Stage 1. Simplify data, we need only specific fields.
-        const processMap = {}
-        data.forEach(item => {
-            const splitCommand = root.splitCommand(item.command, item.fullCommand)
-            processMap[item.pid] = {
-                command: splitCommand[0],
-                args: splitCommand[1],
-                command_raw: splitCommand[2],
-                pid: item.pid,
-                ppid: item.ppid,
-                value: item.memoryKB * 1024,
-                children: [],
-                is_merged: false,
-            }
-        })
-
-        // Stage 2. Find children
-        Object.values(processMap).forEach(item => {
-            const parent = processMap[item.ppid];
-            if (parent) {
-                if (item.command_raw === '/proc/self/exe' || item.command_raw === parent.command_raw) {
-                    parent.children.push(item);
-                    item.is_merged = true;
-                }
-            }
-        })
-
-        function getAggregatedMemory(item) {
-            let total = item.value
-            item.children.forEach(child => {
-                total += getAggregatedMemory(child);
-            });
-            return total;
-        }
-
-        // Stage 3. Calculate RAM taking children into account
-        const processList = []
-        Object.values(processMap).forEach(item => {
-            if (!item.is_merged) {
-                item.value = getAggregatedMemory(item)
-                delete item.command_raw
-                delete item.ppid
-                delete item.children
-                delete item.is_merged
-                processList.push(item);
-            }
-        })
-
-        // Stage 4. Sort
-        processList.sort((a, b) => b.value - a.value)
-
-        return processList
-    }
-
     property string cursorProcessesByRAM: ""
     function getProcessesByRAM() {
         if (!ready) return null
         return request('/gops/processes', {
             cursor: cursorProcessesByRAM,
             disable_proc_cpu: true,
+            sort_by: 'memory',
+            limit: 5,
+            merge_children: true,
         }, function(data) {
             if (!data) return
             cursorProcessesByRAM = data.cursor
-            const callbackData = root.mergeProcessesByRAM(data.data)
+            const callbackData = data.data.map(function(item) {
+                const splitCommand = root.splitCommand(item.command, item.fullCommand)
+                return {
+                    command: splitCommand[0],
+                    args: splitCommand[1],
+                    pid: item.pid,
+                    value: item.memoryKB * 1024,
+                }
+            })
             root.updateProcessesByRAM(callbackData)
         })
     }
