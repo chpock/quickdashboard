@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
+Base {
     property TextAlignment _defaults
 
     property var horizontal: _defaults?.horizontal

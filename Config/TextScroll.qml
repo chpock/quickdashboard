@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
+Base {
     property TextScroll _defaults
 
     property var duration:   _defaults?.duration

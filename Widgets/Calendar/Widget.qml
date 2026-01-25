@@ -6,274 +6,17 @@ import qs
 import qs.Elements as E
 import qs.Config as C
 import qs.Providers as Provider
+import qs.Widgets as Widget
 
-Base {
+Widget.Base {
     id: root
     type: 'calendar'
     hierarchy: ['base', type]
 
-    component ConfigFragments: QtObject {
-
-        readonly property QtObject header: QtObject {
-
-            readonly property C.Icon icon: C.Icon {
-                _defaults: root._config.defaults.icon
-                color: 'white'
-                hover {
-                    enabled: true
-                    color:   'blue'
-                }
-                padding {
-                    right: '1ch'
-                }
-                weight: 700
-            }
-
-            readonly property C.TextTitle title: C.TextTitle {
-                _defaults: root._config.defaults.text_title
-                text {
-                    alignment {
-                        horizontal: 'center'
-                    }
-                }
-                separator {
-                    enabled: false
-                }
-            }
-
+    _fragments: Fragments {
+        _defaults: Defaults {
+            widget: root
         }
-
-        readonly property QtObject calendar: QtObject {
-
-            readonly property C.Spacing spacing: C.Spacing {
-                horizontal: 3
-                vertical:   3
-            }
-
-            readonly property C.Text cell: C.Text {
-                _defaults: root._config.defaults.text
-                font {
-                    size: 'small'
-                }
-                padding {
-                    left:   3
-                    right:  3
-                    top:    3
-                    bottom: 3
-                }
-
-                C.Text {
-                    style: 'weekday'
-                    color: 'blue'
-                    alignment {
-                        horizontal: 'center'
-                    }
-                }
-
-                C.Text {
-                    style: 'weekday/today'
-                    font {
-                        weight: 'bold'
-                    }
-                }
-
-                C.Text {
-                    style: 'day'
-                    color: 'text/primary'
-                    heightMode: 'capitals'
-                    alignment {
-                        horizontal: 'right'
-                    }
-                }
-
-                C.Text {
-                    style: 'day/today'
-                    font {
-                        weight: 'bold'
-                    }
-                    background: 'blue'
-                }
-
-                C.Text {
-                    style: 'day/weekend'
-                    color: 'red'
-                }
-
-                C.Text {
-                    style: 'day/other'
-                    color: 'text/secondary'
-                }
-            }
-
-            readonly property var weekday_names: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-
-            readonly property QtObject hover: QtObject {
-                readonly property C.Border border: C.Border {
-                    width: 1
-                    color: 'blue'
-                }
-            }
-
-        }
-
-        readonly property QtObject events: QtObject {
-
-            readonly property C.TextTitle header: C.TextTitle {
-                _defaults: root._config.defaults.text_title
-                text {
-                    padding {
-                        top:    2
-                        bottom: 2
-                    }
-                }
-
-                readonly property C.Icon button: C.Icon {
-                    _defaults: root._config.defaults.icon
-                    color: 'white'
-                    hover {
-                        enabled: true
-                        color:   'blue'
-                    }
-                    padding {
-                        bottom: 3
-                    }
-
-                    C.Icon {
-                        style: 'application'
-                        padding {
-                            right: '2ch'
-                        }
-                    }
-
-                    C.Icon {
-                        style: 'refresh'
-                        padding {
-                            right: '2ch'
-                        }
-                    }
-
-                    C.Icon {
-                        style: 'visibility'
-                        padding {
-                            right: '2ch'
-                        }
-                    }
-
-                    C.Icon {
-                        style: 'plus'
-                        padding {
-                            right: '1ch'
-                        }
-                    }
-
-                    C.Icon {
-                        style: 'minus'
-                    }
-                }
-
-            }
-
-            readonly property C.Icon icon: C.Icon {
-                _defaults: root._config.defaults.icon
-                grade:  -25
-                filled: true
-                weight: 400
-
-                C.Icon {
-                    style: 'soon'
-                    color: 'info/accent'
-                }
-
-                C.Icon {
-                    style: 'in_progress'
-                    color: 'severity/critical'
-                }
-
-                C.Icon {
-                    style: 'far_in_future'
-                    color: 'severity/ignore'
-                }
-            }
-
-            readonly property C.Text title: C.Text {
-                _defaults: root._config.defaults.text
-                overflow: 'elide'
-
-                C.Text {
-                    style: 'far_in_future'
-                    color: 'severity/ignore'
-                }
-            }
-
-            readonly property C.Text marker: C.Text {
-                _defaults: root._config.defaults.text
-            }
-
-            readonly property C.Icon hide: C.Icon {
-                _defaults: root._config.defaults.icon
-                color: 'white'
-                hover {
-                    enabled: true
-                    color:   'blue'
-                }
-            }
-
-            readonly property C.Text details: C.Text {
-                _defaults: root._config.defaults.text
-                font {
-                    size: 'small'
-                }
-                padding {
-                    right: '1ch'
-                }
-                color:    'text/secondary'
-                overflow: 'elide'
-            }
-
-            readonly property C.Text timer: C.Text {
-                _defaults: root._config.defaults.text
-                padding {
-                    top: 2
-                }
-
-                C.Text {
-                    style: 'soon'
-                    color: 'info/accent'
-                }
-
-                C.Text {
-                    style: 'in_progress'
-                    color: 'severity/critical'
-                }
-
-                C.Text {
-                    style: 'far_in_future'
-                    color: 'severity/ignore'
-                }
-            }
-
-            readonly property QtObject color: QtObject {
-                property var soon:          'yellow'
-                property var in_progress:   'red'
-                property var far_in_future: 'gray'
-            }
-
-            property int alarm_offset_seconds: 600
-            property int far_in_future_offset_seconds: 14400
-
-        }
-
-    }
-
-    configFragments: ConfigFragments {}
-
-    Component {
-        id: configFragmentsComponent
-        ConfigFragments {}
-    }
-
-    function recreateConfigFragments() {
-        configFragments = configFragmentsComponent.createObject(_config)
     }
 
     property var calendarColors
@@ -287,7 +30,7 @@ Base {
 
         let colorIdx = calendarId in calendarColors ? calendarColors[calendarId] : -1
         colorIdx += 1
-        if (colorIdx >= _config.theme.palette.names.length) {
+        if (colorIdx >= _theme.palette.names.length) {
             // Re-create an object to trigger changes in bindings
             const calendarColorsNew = Object.assign({}, calendarColors)
             delete calendarColorsNew[calendarId]
@@ -352,7 +95,7 @@ Base {
     component Header: Item {
         id: header
 
-        readonly property var config: root._config.fragments.header
+        readonly property var config: root._fragments.calendar.header
         readonly property alias isHovered: hoverHandler.hovered
 
         implicitHeight: Math.max(
@@ -368,7 +111,7 @@ Base {
 
         E.Icon {
             id: iconLeft
-            theme: root._config.theme
+            theme: root._theme
             config: header.config.icon
 
             icon: 'keyboard_double_arrow_left'
@@ -379,7 +122,7 @@ Base {
 
         E.TextTitle {
             id: title
-            theme: root._config.theme
+            theme: root._theme
             config: header.config.title
 
             text: Qt.formatDate(calendar.currentDate, "MMMM, yyyy")
@@ -389,7 +132,7 @@ Base {
 
         E.Icon {
             id: iconCurrent
-            theme: root._config.theme
+            theme: root._theme
             config: header.config.icon
 
             icon: 'today'
@@ -400,7 +143,7 @@ Base {
 
         E.Icon {
             id: iconRight
-            theme: root._config.theme
+            theme: root._theme
             config: header.config.icon
 
             icon: 'keyboard_double_arrow_right'
@@ -419,7 +162,7 @@ Base {
     component Calendar: Grid {
         id: calendar
 
-        readonly property var config: root._config.fragments.calendar
+        readonly property var config: root._fragments.calendar
         property date currentDate: systemClockDate.date
         readonly property date startDate: {
             const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
@@ -477,7 +220,7 @@ Base {
                 implicitHeight: dayText.implicitHeight
                 color: 'transparent'
                 border.width: hoverHandler.hovered && !isDayName ? calendar.config.hover.border.width : 0
-                border.color: root._config.theme.getColor(calendar.config.hover.border.color)
+                border.color: root._theme.getColor(calendar.config.hover.border.color)
 
                 HoverHandler {
                     id: hoverHandler
@@ -485,7 +228,7 @@ Base {
 
                 E.Text {
                     id: dayText
-                    theme: root._config.theme
+                    theme: root._theme
                     config: calendar.config.cell
 
                     text: day.dayText
@@ -509,7 +252,7 @@ Base {
     component EventsHeader: Item {
         id: header
 
-        readonly property var config: root._config.fragments.events.header
+        readonly property var config: root._fragments.events.header
         readonly property alias isHovered: hoverHandler.hovered
 
         implicitHeight: Math.max(
@@ -526,8 +269,8 @@ Base {
 
         E.TextTitle {
             id: title
-            theme: root._config.theme
-            config: header.config
+            theme: root._theme
+            config: header.config.title
 
             text: 'Events'
             anchors.left: parent.left
@@ -535,7 +278,7 @@ Base {
 
         E.Icon {
             id: buttonApplication
-            theme: root._config.theme
+            theme: root._theme
             config: header.config.button
 
             icon: 'edit_calendar'
@@ -548,7 +291,7 @@ Base {
 
         E.Icon {
             id: buttonRefresh
-            theme: root._config.theme
+            theme: root._theme
             config: header.config.button
 
             icon: 'refresh'
@@ -561,7 +304,7 @@ Base {
 
         E.Icon {
             id: buttonToggleVisibility
-            theme: root._config.theme
+            theme: root._theme
             config: header.config.button
 
             icon: 'visibility_lock'
@@ -575,7 +318,7 @@ Base {
 
         E.Icon {
             id: buttonPlus
-            theme: root._config.theme
+            theme: root._theme
             config: header.config.button
 
             icon: 'add_circle'
@@ -588,7 +331,7 @@ Base {
 
         E.Icon {
             id: buttonMinus
-            theme: root._config.theme
+            theme: root._theme
             config: header.config.button
 
             icon: 'remove_circle'
@@ -611,7 +354,7 @@ Base {
 
         required property var modelData
 
-        readonly property var config: root._config.fragments.events
+        readonly property var config: root._fragments.events
         readonly property var eventTime: event.modelData.start.getTime()
         readonly property var currentTime: systemClockTimeSeconds.date.getTime()
         readonly property int eventTimeDelta: Math.abs((eventTime - currentTime) / 10 ** 3)
@@ -645,7 +388,7 @@ Base {
 
         E.Icon {
             id: icon
-            theme: root._config.theme
+            theme: root._theme
             config: event.config.icon
 
             icon:
@@ -672,7 +415,7 @@ Base {
 
             E.Text {
                 id: titleText
-                theme: root._config.theme
+                theme: root._theme
                 config: event.config.title
 
                 text: event.modelData.title
@@ -684,13 +427,13 @@ Base {
 
             E.Text {
                 id: titleIcon
-                theme: root._config.theme
+                theme: root._theme
                 config: C.Text {
                     _defaults: event.config.title
                     color:
                         event.modelData.calendarId in root.calendarColors
-                            ? root._config.theme.palette.getByIndex(root.calendarColors[event.modelData.calendarId])
-                            : root._config.theme.getColor('text/primary')
+                            ? root._theme.palette.getByIndex(root.calendarColors[event.modelData.calendarId])
+                            : root._theme.getColor('text/primary')
                 }
 
                 text:
@@ -716,7 +459,7 @@ Base {
 
         E.Icon {
             id: buttonHide
-            theme: root._config.theme
+            theme: root._theme
             config: event.config.hide
 
             icon: event.isHidden ? 'visibility' : 'visibility_off'
@@ -727,7 +470,7 @@ Base {
 
         E.Text {
             id: details
-            theme: root._config.theme
+            theme: root._theme
             config: event.config.details
 
             text: {
@@ -774,7 +517,7 @@ Base {
 
         E.Text {
             id: leftTime
-            theme: root._config.theme
+            theme: root._theme
             config: event.config.timer
 
             text: {

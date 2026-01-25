@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
+Base {
     property TextFont _defaults
 
     property var size:      _defaults?.size

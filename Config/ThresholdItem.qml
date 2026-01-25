@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
+Base {
 
     enum Operator {
         OpNone         = 0,

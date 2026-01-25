@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.Config as C
 
-QtObject {
+Base {
     id: root
 
     property C.Text _defaults
@@ -58,6 +58,15 @@ QtObject {
     property var style
     default property list<C.Text> styles
     property bool _styles_loaded: false
+
+    function getStyle(style) {
+        for (var i = 0; i < styles.length; ++i) {
+            if (styles[i].style === style) {
+                return styles[i]
+            }
+        }
+        return _defaults ? _defaults.getStyle(style) : null
+    }
 
     Component.onCompleted: {
         if (styles.length) {

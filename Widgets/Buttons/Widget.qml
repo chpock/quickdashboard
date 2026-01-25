@@ -3,41 +3,17 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell.Io
 import qs.Elements as E
-import qs.Config as C
+import qs.Widgets as Widget
 
-Base {
+Widget.Base {
     id: root
     type: 'buttons'
     hierarchy: ['base', type]
 
-    component ConfigFragments: QtObject {
-
-        readonly property C.Icon button: C.Icon {
-            _defaults: root._config.defaults.icon
-            color: 'white'
-            hover {
-                enabled: true
-            }
-            active {
-                color: 'info/accent'
-            }
+    _fragments: Fragments {
+        _defaults: Defaults {
+            widget: root
         }
-
-        readonly property C.Spacing spacing: C.Spacing {
-            horizontal: 8
-        }
-
-    }
-
-    configFragments: ConfigFragments {}
-
-    Component {
-        id: configFragmentsComponent
-        ConfigFragments {}
-    }
-
-    function recreateConfigFragments() {
-        configFragments = configFragmentsComponent.createObject(_config)
     }
 
     property var buttons: []
@@ -45,7 +21,7 @@ Base {
     Row {
         anchors.left: parent.left
         anchors.right: parent.right
-        spacing: root._config.fragments.spacing.horizontal
+        spacing: root._fragments.spacing.horizontal
 
         Repeater {
             model: root.buttons
@@ -59,8 +35,8 @@ Base {
 
                 E.Icon {
                     id: button
-                    theme: root._config.theme
-                    config: root._config.fragments.button
+                    theme: root._theme
+                    config: root._fragments.button
 
                     icon: container.modelData.icon
                     isActive: process.running
@@ -91,5 +67,15 @@ Base {
         }
 
     }
+
+    // Timer {
+    //     id: testTimer
+    //     interval: 3000
+    //     running: true
+    //     repeat: false
+    //     onTriggered: {
+    //         root._config._reset()
+    //     }
+    // }
 
 }

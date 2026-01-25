@@ -1,7 +1,16 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
-import qs.Widgets as W
+import qs.Widgets as Widget
+import qs.Widgets.AudioVolume as AudioVolume
+import qs.Widgets.Buttons as Buttons
+import qs.Widgets.Calendar as Calendar
+import qs.Widgets.Clock as Clock
+import qs.Widgets.Memory as Memory
+import qs.Widgets.CPU as CPU
+import qs.Widgets.Network as Network
+import qs.Widgets.Disk as Disk
+import qs.Widgets.Media as Media
 
 import QtQuick
 import Qt.labs.folderlistmodel
@@ -12,34 +21,34 @@ ShellRoot {
 
     id: root
 
-    W.Dashboard {
+    Dashboard {
 
         screen: Quickshell.screens[0]
 
-        align: W.Dashboard.AlignRight
+        align: Dashboard.AlignRight
 
-        W.Calendar {
+        Calendar.Widget {
         }
 
-        W.Memory {
+        Memory.Widget {
         }
 
-        W.CPU {
+        CPU.Widget {
         }
 
-        W.Network {
+        Network.Widget {
         }
 
-        W.Disk {
+        Disk.Widget {
         }
 
-        W.Media {
+        Media.Widget {
         }
 
-        W.Separator {
+        Widget.Separator {
         }
 
-        W.Buttons {
+        Buttons.Widget {
 
             // fragments: ({
             //     button: {
@@ -64,10 +73,10 @@ ShellRoot {
 
         }
 
-        W.AudioVolume {
+        AudioVolume.Widget {
         }
 
-        W.Clock {
+        Clock.Widget {
         }
 
     }

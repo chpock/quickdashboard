@@ -2,12 +2,20 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
+Base {
     id: root
 
-    readonly property ThemePalette palette: ThemePalette {}
-    readonly property ThemeColor color: ThemeColor {}
-    readonly property ThemeFont font: ThemeFont {}
+    property Theme _defaults
+
+    readonly property ThemePalette palette: ThemePalette {
+        _defaults: root._defaults?.palette ?? null
+    }
+    readonly property ThemeColor color: ThemeColor {
+        _defaults: root._defaults?.color ?? null
+    }
+    readonly property ThemeFont font: ThemeFont {
+        _defaults: root._defaults?.font ?? null
+    }
 
     function getColor(value) {
         if (typeof value === 'string') {

@@ -2,8 +2,18 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
-    readonly property ThemeFontFamily family: ThemeFontFamily {}
-    readonly property ThemeFontSize size: ThemeFontSize {}
-    readonly property ThemeFontWeight weight: ThemeFontWeight {}
+Base {
+    id: root
+
+    property ThemeFont _defaults
+
+    readonly property ThemeFontFamily family: ThemeFontFamily {
+        _defaults: root._defaults?.family ?? null
+    }
+    readonly property ThemeFontSize size: ThemeFontSize {
+        _defaults: root._defaults?.size ?? null
+    }
+    readonly property ThemeFontWeight weight: ThemeFontWeight {
+        _defaults: root._defaults?.weight ?? null
+    }
 }

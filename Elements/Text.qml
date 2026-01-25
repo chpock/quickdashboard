@@ -14,14 +14,7 @@ Item {
     property var fontVariableAxes: ({})
     property var style
     property var strikeout
-    readonly property C.Text _config: {
-        if (config._styles_loaded && style) {
-            for (var i = 0; i < config.styles.length; ++i) {
-                if (config.styles[i].style === style) return config.styles[i]
-            }
-        }
-        return config
-    }
+    readonly property C.Text _config: (config._styles_loaded && style && config.getStyle(style)) || config
     readonly property bool isHovered: hoverHandler.hovered
 
     readonly property real leftMargin: calcMargin(_config.padding.left)
@@ -199,7 +192,7 @@ Item {
         font.pixelSize: textObj.font.pixelSize
         font.weight: textObj.font.weight
         font.family:
-            root._config.word_spacing_font_family
+            root._config.word_spacing_font_family && root._config.word_spacing_font_family !== ''
                 ? root.theme.getFontFamily(root._config.word_spacing_font_family)
                 : textObj.font.family
         font.variableAxes: textObj.font.variableAxes
@@ -211,7 +204,7 @@ Item {
         font.pixelSize: textObj.font.pixelSize
         font.weight: textObj.font.weight
         font.family:
-            root._config.word_spacing_font_family
+            root._config.word_spacing_font_family && root._config.word_spacing_font_family !== ''
                 ? root.theme.getFontFamily(root._config.word_spacing_font_family)
                 : textObj.font.family
         font.variableAxes: textObj.font.variableAxes

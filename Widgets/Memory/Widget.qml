@@ -2,96 +2,18 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import qs.Elements as E
-import qs.Config as C
 import qs.Providers as Provider
+import qs.Widgets as Widget
 
-Base {
+Widget.Base {
     id: root
     type: 'memory'
     hierarchy: ['base', type]
 
-    component ConfigFragments: QtObject {
-
-        readonly property QtObject meter: QtObject {
-
-            readonly property C.TextTitle title: C.TextTitle {
-                _defaults: root._config.defaults.text_title
-                text {
-                    padding {
-                        right: '2ch'
-                    }
-                }
-            }
-
-            readonly property C.TextBytes free: C.TextBytes {
-                _defaults: root._config.defaults.text_bytes
-                precision: 3
-            }
-
-            readonly property C.TextBytes total: C.TextBytes {
-                _defaults: root._config.defaults.text_bytes
-                text {
-                    font {
-                        size: 'small'
-                    }
-                    color: 'text/secondary'
-                }
-                precision: 3
-                prefix: '  / '
-            }
-
-            readonly property C.TextPercent percent: C.TextPercent {
-                _defaults: root._config.defaults.text_percent
-                thresholds {
-                    good {
-                        value: '<60'
-                    }
-                    warning {
-                        value: '<90'
-                    }
-                    critical {
-                        value: 'any'
-                    }
-                }
-            }
-
-            readonly property C.Bar bar: C.Bar {
-                _defaults: root._config.defaults.bar
-                padding {
-                    top:    3
-                    bottom: 2
-                }
-            }
-
+    _fragments: Fragments {
+        _defaults: Defaults {
+            widget: root
         }
-
-        readonly property C.ProcessList process_list: C.ProcessList {
-            _defaults: root._config.defaults.process_list
-            padding {
-                top: 2
-            }
-
-            readonly property C.TextBytes bytes: C.TextBytes {
-                _defaults: root._config.defaults.text_bytes
-                text {
-                    _defaults: root._config.defaults.process_list.value
-                }
-                precision: 3
-            }
-
-        }
-
-    }
-
-    configFragments: ConfigFragments {}
-
-    Component {
-        id: configFragmentsComponent
-        ConfigFragments {}
-    }
-
-    function recreateConfigFragments() {
-        configFragments = configFragmentsComponent.createObject(_config)
     }
 
     Connections {
@@ -107,7 +29,7 @@ Base {
         id: meter
 
         readonly property alias titleWidth: titleObj.implicitWidth
-        readonly property var config: root._config.fragments.meter
+        readonly property var config: root._fragments.meter
 
         property alias title: titleObj.text
         property alias free: freeObj.value
@@ -124,7 +46,7 @@ Base {
 
         E.TextTitle {
             id: titleObj
-            theme: root._config.theme
+            theme: root._theme
             config: meter.config.title
 
             anchors.left: parent.left
@@ -134,7 +56,7 @@ Base {
         // qmllint disable required
         E.TextBytes {
             id: freeObj
-            theme: root._config.theme
+            theme: root._theme
             config: meter.config.free
 
             anchors.left: titleObj.right
@@ -145,7 +67,7 @@ Base {
         // qmllint disable required
         E.TextBytes {
             id: totalObj
-            theme: root._config.theme
+            theme: root._theme
             config: meter.config.total
 
             anchors.left: freeObj.right
@@ -155,7 +77,7 @@ Base {
 
         E.TextPercent {
             id: percentObj
-            theme: root._config.theme
+            theme: root._theme
             config: meter.config.percent
 
             valueCurrent: meter.total - meter.free
@@ -165,7 +87,7 @@ Base {
 
         E.Bar {
             id: barObj
-            theme: root._config.theme
+            theme: root._theme
             config: meter.config.bar
 
             value: percentObj.calcValue
@@ -199,15 +121,15 @@ Base {
 
     E.ProcessList {
         id: processList
-        theme: root._config.theme
-        config: root._config.fragments.process_list
+        theme: root._theme
+        config: root._fragments.processes.list
 
         anchors.left: parent.left
         anchors.right: parent.right
 
         E.TextBytes {
-            theme: root._config.theme
-            config: root._config.fragments.process_list.bytes
+            theme: root._theme
+            config: root._fragments.processes.value
 
             property var modelValue
             // qmllint disable unqualified

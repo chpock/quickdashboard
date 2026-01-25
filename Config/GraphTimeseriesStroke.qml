@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
+Base {
     property GraphTimeseriesStroke _defaults
 
     property var color: _defaults?.color

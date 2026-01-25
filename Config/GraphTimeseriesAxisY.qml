@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
+Base {
     property GraphTimeseriesAxisY _defaults
 
     property var max:    _defaults?.max

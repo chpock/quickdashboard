@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
+Base {
     property TextTitleSeparator _defaults
 
     property var enabled: _defaults?.enabled

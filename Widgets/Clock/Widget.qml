@@ -3,56 +3,17 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import qs.Elements as E
-import qs.Config as C
+import qs.Widgets as Widget
 
-Base {
+Widget.Base {
     id: root
     type: 'clock'
     hierarchy: ['base', type]
 
-    component ConfigFragments: QtObject {
-
-        readonly property C.Text hours: C.Text {
-            _defaults: root._config.defaults.text
-            font {
-                size:   40
-                weight: 'bold'
-            }
-            heightMode: 'capitals'
+    _fragments: Fragments {
+        _defaults: Defaults {
+            widget: root
         }
-
-        readonly property C.Text separator: C.Text {
-            _defaults: root._config.defaults.text
-            font {
-                size: 40
-            }
-            padding {
-                top:   -3
-                left:  5
-                right: 5
-            }
-            heightMode: 'capitals'
-        }
-
-        readonly property C.Text minutes: C.Text {
-            _defaults: root._config.defaults.text
-            font {
-                size: 40
-            }
-            heightMode: 'capitals'
-        }
-
-    }
-
-    configFragments: ConfigFragments {}
-
-    Component {
-        id: configFragmentsComponent
-        ConfigFragments {}
-    }
-
-    function recreateConfigFragments() {
-        configFragments = configFragmentsComponent.createObject(_config)
     }
 
     // This is a hack to fix a bug in quickshell where SystemClock with
@@ -77,7 +38,7 @@ Base {
     Item {
         id: clock
 
-        readonly property var config: root._config.fragments
+        readonly property var config: root._fragments
 
         implicitHeight: Math.max(hours.implicitHeight, separator.implicitHeight, minutes.implicitHeight)
         implicitWidth: hours.implicitWidth + separator.implicitWidth + minutes.implicitWidth
@@ -85,7 +46,7 @@ Base {
 
         E.Text {
             id: hours
-            theme: root._config.theme
+            theme: root._theme
             config: clock.config.hours
 
             text: Qt.formatDateTime(systemClock.date, "hh")
@@ -95,7 +56,7 @@ Base {
 
         E.Text {
             id: separator
-            theme: root._config.theme
+            theme: root._theme
             config: clock.config.separator
 
             text: ':'
@@ -105,7 +66,7 @@ Base {
 
         E.Text {
             id: minutes
-            theme: root._config.theme
+            theme: root._theme
             config: clock.config.minutes
 
             text: Qt.formatDateTime(systemClock.date, "mm")

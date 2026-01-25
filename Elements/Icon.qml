@@ -12,16 +12,8 @@ Item {
 
     required property string icon
     property var style
-    readonly property C.Icon _config: {
-        if (config._styles_loaded && style) {
-            for (var i = 0; i < config.styles.length; ++i) {
-                if (config.styles[i].style === style) {
-                    return config.styles[i]
-                }
-            }
-        }
-        return config
-    }
+    readonly property C.Icon _config: (config._styles_loaded && style && config.getStyle(style)) || config
+
     property bool isActive
 
     readonly property real fill: _config.filled ? 1.0 : 0.0

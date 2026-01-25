@@ -2,87 +2,18 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import qs.Elements as E
-import qs.Config as C
 import qs.Providers as Provider
+import qs.Widgets as Widget
 
-Base {
+Widget.Base {
     id: root
     type: 'audio_volume'
     hierarchy: ['base', type]
 
-    component ConfigFragments: QtObject {
-
-        readonly property C.Icon icon: C.Icon {
-            _defaults: root._config.defaults.icon
-            color:     'text/title'
-
-            C.Icon {
-                style: 'muted'
-                color: 'severity/critical'
-            }
-
-            C.Icon {
-                style: 'unavailable'
-                color: 'severity/critical'
-            }
+    _fragments: Fragments {
+        _defaults: Defaults {
+            widget: root
         }
-
-        readonly property C.Icon indicator: C.Icon {
-            _defaults: root._config.defaults.icon
-            color:     'info/accent'
-            padding {
-                left: '1ch'
-            }
-        }
-
-        readonly property C.Text device: C.Text {
-            _defaults: root._config.defaults.text
-            font {
-                size: 'small'
-            }
-            padding {
-                left:  '1ch'
-                right: '1ch'
-            }
-            overflow: 'elide'
-            color:    'text/secondary'
-
-            C.Text {
-                style: 'unavailable'
-                color: 'severity/critical'
-            }
-
-            C.Text {
-                style: 'hover'
-                color: 'text/primary'
-            }
-        }
-
-        readonly property C.TextPercent percent: C.TextPercent {
-            _defaults: root._config.defaults.text_percent
-            thresholds {
-                enabled: false
-            }
-        }
-
-        readonly property C.Slider slider: C.Slider {
-            _defaults: root._config.defaults.slider
-            padding {
-                top: 2
-            }
-        }
-
-    }
-
-    configFragments: ConfigFragments {}
-
-    Component {
-        id: configFragmentsComponent
-        ConfigFragments {}
-    }
-
-    function recreateConfigFragments() {
-        configFragments = configFragmentsComponent.createObject(_config)
     }
 
     component VolumeItem: Item {
@@ -90,7 +21,7 @@ Base {
 
         required property var modelData
 
-        readonly property var config: root._config.fragments
+        readonly property var config: root._fragments
         readonly property var device: modelData.device
         readonly property var audio: device ? device.audio : null
         readonly property bool isAvailable: audio !== null
@@ -116,7 +47,7 @@ Base {
 
         E.Icon {
             id: icon
-            theme: root._config.theme
+            theme: root._theme
             config: item.config.icon
 
             icon:
@@ -134,7 +65,7 @@ Base {
 
         E.Icon {
             id: indicator
-            theme: root._config.theme
+            theme: root._theme
             config: item.config.indicator
 
             icon:
@@ -149,7 +80,7 @@ Base {
 
         E.Text {
             id: deviceObj
-            theme: root._config.theme
+            theme: root._theme
             config: item.config.device
 
             text: parent.description
@@ -167,7 +98,7 @@ Base {
 
         E.TextPercent {
             id: volumeObj
-            theme: root._config.theme
+            theme: root._theme
             config: item.config.percent
 
             valueCurrent: parent.volume
@@ -177,7 +108,7 @@ Base {
 
         E.Slider {
             id: slider
-            theme: root._config.theme
+            theme: root._theme
             config: item.config.slider
 
             value: parent.volume

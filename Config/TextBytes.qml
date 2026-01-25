@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.Config as C
 
-QtObject {
+Base {
     id: root
 
     property TextBytes _defaults

@@ -2,10 +2,12 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-QtObject {
-    property int normal
-    property int medium
-    property int bold
-    property int extraBold
-    property int black
+Base {
+    property ThemeFontWeight _defaults
+
+    property var normal:     _defaults?.normal
+    property var medium:     _defaults?.medium
+    property var bold:       _defaults?.bold
+    property var extra_bold: _defaults?.extra_bold
+    property var black:      _defaults?.black
 }
