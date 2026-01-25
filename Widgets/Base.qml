@@ -17,15 +17,15 @@ Rectangle {
     property var fragments: ({})
     property var _fragments
 
-    FontLoader {
-        id: symbolsFont
-        source: Qt.resolvedUrl("../assets/fonts/material-design-icons/MaterialSymbolsSharp[FILL,GRAD,opsz,wght].ttf")
-    }
-
-    FontLoader {
-        id: generalFont
-        source: Qt.resolvedUrl("../assets/fonts/noto/NotoSans-Regular.ttf")
-    }
+    // FontLoader {
+    //     id: symbolsFont
+    //     source: Qt.resolvedUrl("../assets/fonts/material-design-icons/MaterialSymbolsSharp[FILL,GRAD,opsz,wght].ttf")
+    // }
+    //
+    // FontLoader {
+    //     id: generalFont
+    //     source: Qt.resolvedUrl("../assets/fonts/noto/NotoSans-Regular.ttf")
+    // }
 
     // component Widget: C.Widget {
     //     border {

@@ -17,6 +17,6 @@ Base {
         _defaults: root._defaults?.defaults ?? null
     }
 
-    property QtObject fragments
+    property var fragments: root._defaults?.fragments ?? null
 
 }
