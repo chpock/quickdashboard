@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import qs.Services as Service
 
 PanelWindow {
     id: root
@@ -33,22 +32,5 @@ PanelWindow {
         anchors.fill: parent
         spacing: root.spacing
     }
-
-    // See comments in QuickshellUtils.qml about this hack
-
-    property var previous: ({
-        width: -1,
-        height: -1
-    })
-
-    function changeDimentions(what, val) {
-        if (previous[what] != -1) {
-            Service.QuickshellUtils.registerDelta(what, screen.name, val - previous[what])
-        }
-        previous[what] = val
-    }
-
-    onHeightChanged: changeDimentions('height', height)
-    onWidthChanged: changeDimentions('width', width)
 
 }
