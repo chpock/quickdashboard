@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import QtQuick
 import qs.Elements as E
+import qs.Providers as P
 import qs.Widgets as Widget
 
 Widget.Base {
@@ -14,25 +14,6 @@ Widget.Base {
         _defaults: Defaults {
             widget: root
         }
-    }
-
-    // This is a hack to fix a bug in quickshell where SystemClock with
-    // SystemClock.Minutes/SystemClock.Hours resolution does not update when
-    // exiting from suspended state and remains as the old value for some time.
-    SystemClock {
-        id: systemClockSync
-        precision: SystemClock.Seconds
-        onMinutesChanged: {
-            systemClock.precision =
-                systemClock.enabled && systemClockSync.minutes !== systemClock.minutes
-                    ? SystemClock.Seconds
-                    : SystemClock.Minutes
-        }
-    }
-
-    SystemClock {
-        id: systemClock
-        precision: SystemClock.Minutes
     }
 
     Item {
@@ -49,7 +30,7 @@ Widget.Base {
             theme: root._theme
             config: clock.config.hours
 
-            text: Qt.formatDateTime(systemClock.date, "hh")
+            text: Qt.formatDateTime(P.SystemClock.dateMinutes, "hh")
             anchors.left: parent.left
             anchors.top: parent.top
         }
@@ -69,7 +50,7 @@ Widget.Base {
             theme: root._theme
             config: clock.config.minutes
 
-            text: Qt.formatDateTime(systemClock.date, "mm")
+            text: Qt.formatDateTime(P.SystemClock.dateMinutes, "mm")
             anchors.left: separator.right
             anchors.top: parent.top
         }

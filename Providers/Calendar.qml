@@ -25,10 +25,9 @@ Singleton {
     property var eventsUpcomingHiddenItems: []
     property bool eventUpcomingShowHidden: false
 
-    SystemClock {
-        id: systemClock
-        precision: SystemClock.Minutes
-        onMinutesChanged: {
+    Connections {
+        target: Service.SystemClock
+        function onDateMinutesChanged() {
             root.updateModels()
         }
     }
@@ -52,7 +51,7 @@ Singleton {
     }
 
     function updateModels() {
-        const currentDateObj = systemClock.date
+        const currentDateObj = new Date()
         const currentDate = currentDateObj.toDateString()
         const currentTime = currentDateObj.getTime()
         let idxEventUpcoming = 0

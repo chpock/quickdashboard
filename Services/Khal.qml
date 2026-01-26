@@ -4,6 +4,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.Services as Service
 
 Singleton {
     id: root
@@ -43,16 +44,11 @@ Singleton {
         onTriggered: checkProc.running = true
     }
 
-    // Additionally update events on hours changed. This will update events when the day changes.
-    // SystemClock.Seconds resolution is used here because quickshell has a bug
-    // and does not update time when exiting from suspended state.
-    // But onHoursChanged is also used here to ensure that events are updated
-    // no more than once an hour.
-    SystemClock {
-        id: systemClock
+    // Additionally update events on day change
+    Connections {
+        target: Service.SystemClock
         enabled: root.running
-        precision: SystemClock.Seconds
-        onHoursChanged: {
+        function onDateDaysChanged() {
             checkProc.running = true
         }
     }
@@ -166,11 +162,9 @@ Singleton {
             }
             if (startupProc.success) {
                 root.running = true
-                // We don't need to trigger checkProc here. As we enable root.running,
-                // systemClock will be enabled also. This will trigger hours change in it.
-                // And hours change will trigger checkProc.
                 root.available()
                 startupProc.success = false
+                checkProc.running = true
             } else {
                 root.running = false
                 root.unavailable()

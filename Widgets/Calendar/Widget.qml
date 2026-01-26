@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import QtQuick
 import qs
 import qs.Elements as E
@@ -26,6 +25,9 @@ Widget.Base {
         return Qt.locale().firstDayOfWeek % 7
     }
 
+    readonly property date currentDate: Provider.SystemClock.dateDays
+    readonly property string currentDateString: currentDate.toDateString()
+
     function changeCalendarColor(calendarId) {
 
         let colorIdx = calendarId in calendarColors ? calendarColors[calendarId] : -1
@@ -44,51 +46,19 @@ Widget.Base {
 
     function changeMonth(direction) {
         if (direction === 0) {
-            calendar.currentDate = Qt.binding(() => systemClockDate.date)
+            calendar.activeDate = Qt.binding(() => root.currentDate)
         } else {
-            const d = new Date(calendar.currentDate)
+            const d = new Date(calendar.activeDate)
             // reset to first day to avoid overflow when we increate month
             d.setDate(1)
             // increment month
             d.setMonth(d.getMonth() + direction)
             // bound to system time if result month/year match current month/year
-            if (d.getMonth() === systemClockDate.date.getMonth() && d.getYear() === systemClockDate.date.getYear()) {
+            if (d.getMonth() === root.currentDate.getMonth() && d.getYear() === root.currentDate.getYear()) {
                 changeMonth(0)
             } else {
-                calendar.currentDate = d
+                calendar.activeDate = d
             }
-        }
-    }
-
-    SystemClock {
-        id: systemClockDate
-        precision: SystemClock.Hours
-        readonly property string dateString: date.toDateString()
-    }
-
-    SystemClock {
-        id: systemClockTimeMinutes
-        precision: SystemClock.Minutes
-        enabled: Provider.Calendar.running
-    }
-
-    SystemClock {
-        id: systemClockTimeSeconds
-        precision: SystemClock.Seconds
-        // This is a hack to fix a bug in quickshell where SystemClock with
-        // SystemClock.Minutes/SystemClock.Hours resolution does not update when
-        // exiting from suspended state and remains as the old value for some time.
-        onMinutesChanged: {
-            systemClockTimeMinutes.precision =
-                systemClockTimeMinutes.enabled && systemClockTimeSeconds.minutes !== systemClockTimeMinutes.minutes
-                    ? SystemClock.Seconds
-                    : SystemClock.Minutes
-        }
-        onHoursChanged: {
-            systemClockDate.precision =
-                systemClockDate.enabled && systemClockTimeSeconds.hours !== systemClockDate.hours
-                    ? SystemClock.Seconds
-                    : SystemClock.Hours
         }
     }
 
@@ -125,7 +95,7 @@ Widget.Base {
             theme: root._theme
             config: header.config.title
 
-            text: Qt.formatDate(calendar.currentDate, "MMMM, yyyy")
+            text: Qt.formatDate(calendar.activeDate, "MMMM, yyyy")
             anchors.left: parent.left
             anchors.right: parent.right
         }
@@ -162,10 +132,11 @@ Widget.Base {
     component Calendar: Grid {
         id: calendar
 
+        property date activeDate: root.currentDate
+        property string activeDateString: activeDate.toDateString()
         readonly property var config: root._fragments.calendar
-        property date currentDate: systemClockDate.date
         readonly property date startDate: {
-            const monthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+            const monthStartDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1)
             let dateDiff = monthStartDate.getDay()
             dateDiff = (dateDiff + 7 - root.firstDayOfWeek) % 7
             monthStartDate.setDate(1 - dateDiff)
@@ -198,9 +169,9 @@ Widget.Base {
                         : dayDate.getDate()
 
                 readonly property bool isWeekend: dayDate.getDay() % 6 === 0
-                readonly property bool isCurrentMonth: dayDate.getMonth() == calendar.currentDate.getMonth()
-                readonly property bool isCurrentWeekDay: dayDate.getDay() == calendar.currentDate.getDay()
-                readonly property bool isToday: dayDate.toDateString() === systemClockDate.dateString
+                readonly property bool isCurrentMonth: dayDate.getMonth() == calendar.activeDate.getMonth()
+                readonly property bool isCurrentWeekDay: dayDate.getDay() == calendar.activeDate.getDay()
+                readonly property bool isToday: dayDate.toDateString() === root.currentDateString
 
                 readonly property string style:
                     isDayName
@@ -356,7 +327,7 @@ Widget.Base {
 
         readonly property var config: root._fragments.events
         readonly property var eventTime: event.modelData.start.getTime()
-        readonly property var currentTime: systemClockTimeSeconds.date.getTime()
+        readonly property var currentTime: Provider.SystemClock.dateSeconds.getTime()
         readonly property int eventTimeDelta: Math.abs((eventTime - currentTime) / 10 ** 3)
         readonly property bool isInProgress: currentTime >= eventTime ? true : false
 
@@ -366,7 +337,7 @@ Widget.Base {
         readonly property bool isSoon: !isInProgress && eventTimeDelta <= config.alarm_offset_seconds
         readonly property bool isFarInFuture:
             !isInProgress &&
-            modelData.start.toDateString() !== systemClockDate.dateString &&
+            modelData.start.toDateString() !== root.currentDateString &&
             eventTimeDelta > config.far_in_future_offset_seconds
 
         readonly property var style:
@@ -487,8 +458,11 @@ Widget.Base {
                     return date.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
                 }
 
-                const today = new Date(systemClockDate.date.getFullYear(),
-                systemClockDate.date.getMonth(), systemClockDate.date.getDate())
+                const today = new Date(
+                    root.currentDate.getFullYear(),
+                    root.currentDate.getMonth(),
+                    root.currentDate.getDate()
+                )
 
                 const startDay = new Date(event.modelData.start.getFullYear(),
                     event.modelData.start.getMonth(), event.modelData.start.getDate())
