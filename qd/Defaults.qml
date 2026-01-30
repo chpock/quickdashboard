@@ -63,26 +63,6 @@ Singleton {
             gray_bright:    '#95a5a6' // concrete
             gray:           '#7f8c8d' // asbestos
 
-            names: [
-               'cyan_bright',
-                'cyan',
-                'green_bright',
-                'green',
-                'blue_bright',
-                'blue',
-                'megenta_bright',
-                'megenta',
-                'yellow_bright',
-                'yellow',
-                'orange_bright',
-                'orange',
-                'red_bright',
-                'red',
-                'white_bright',
-                'white',
-                'gray_bright',
-                'gray',
-            ]
         }
         color {
             text {

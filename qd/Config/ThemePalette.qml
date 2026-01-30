@@ -26,11 +26,21 @@ Base {
     property var gray_bright:    _defaults?.gray_bright
     property var gray:           _defaults?.gray
 
-    property var names:          _defaults?.names
+    readonly property var _names: [
+        'cyan_bright', 'cyan',
+        'green_bright', 'green',
+        'blue_bright', 'blue',
+        'megenta_bright', 'megenta',
+        'yellow_bright', 'yellow',
+        'orange_bright', 'orange',
+        'red_bright', 'red',
+        'white_bright', 'white',
+        'gray_bright', 'gray',
+    ]
 
     function getByIndex(value) {
-        const idx = (value >= names.length || value < 0) ? 0 : value
-        const name = names[idx]
+        const idx = (value >= _names.length || value < 0) ? 0 : value
+        const name = _names[idx]
         return root[name]
     }
 }
