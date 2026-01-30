@@ -1,20 +1,21 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
-import qs.Widgets as Widget
-import qs.Widgets.AudioVolume as AudioVolume
-import qs.Widgets.Buttons as Buttons
-import qs.Widgets.Calendar as Calendar
-import qs.Widgets.Clock as Clock
-import qs.Widgets.Memory as Memory
-import qs.Widgets.CPU as CPU
-import qs.Widgets.Network as Network
-import qs.Widgets.Disk as Disk
-import qs.Widgets.Media as Media
+import qs.qd.Widgets as Widget
+import qs.qd.Widgets.AudioVolume as AudioVolume
+import qs.qd.Widgets.Buttons as Buttons
+import qs.qd.Widgets.Calendar as Calendar
+import qs.qd.Widgets.Clock as Clock
+import qs.qd.Widgets.Memory as Memory
+import qs.qd.Widgets.CPU as CPU
+import qs.qd.Widgets.Network as Network
+import qs.qd.Widgets.Disk as Disk
+import qs.qd.Widgets.Media as Media
+import qs.qd
 
 import QtQuick
-import Qt.labs.folderlistmodel
-import Quickshell.Io
+// import Qt.labs.folderlistmodel
+// import Quickshell.Io
 
 
 ShellRoot {
