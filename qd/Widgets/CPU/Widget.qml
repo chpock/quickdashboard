@@ -95,7 +95,7 @@ Widget.Base {
     Row {
         anchors.left: parent.left
         anchors.right: parent.right
-        spacing: root._config.widget.spacing.horizontal
+        spacing: root._widget.spacing.horizontal
 
         E.GraphTimeseries {
             id: cpu_usage

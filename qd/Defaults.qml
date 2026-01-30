@@ -4,15 +4,9 @@ pragma Singleton
 import Quickshell
 import QtQuick
 import qs.qd.Config as C
-// import QtCore
 
 Singleton {
     id: root
-
-    // readonly property alias widget: widget
-    // readonly property alias theme: theme
-    // readonly property alias defaults: defaults
-    readonly property alias config: config
 
     FontLoader {
         id: symbolsFont
@@ -24,21 +18,7 @@ Singleton {
         source: Qt.resolvedUrl("./assets/fonts/noto/NotoSans-Regular.ttf")
     }
 
-    C.Config {
-        id: config
-
-        widget {
-            _defaults: widget
-        }
-        theme {
-            _defaults: theme
-        }
-        defaults {
-            _defaults: defaults
-        }
-    }
-
-    C.Widget {
+    readonly property C.Widget widget: C.Widget {
         id: widget
 
         border {
@@ -60,7 +40,7 @@ Singleton {
         }
     }
 
-    C.Theme {
+    readonly property C.Theme theme: C.Theme {
         id: theme
 
         palette {
@@ -142,7 +122,7 @@ Singleton {
         }
     }
 
-    C.Defaults {
+    readonly property C.Defaults defaults: C.Defaults {
         id: defaults
 
         slider {

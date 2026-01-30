@@ -333,7 +333,7 @@ Widget.Base {
 
         anchors.left: parent.left
         anchors.right: parent.right
-        spacing: root._config.widget.spacing.horizontal
+        spacing: root._widget.spacing.horizontal
 
         Repeater {
             model: ['download', 'upload']
