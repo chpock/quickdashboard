@@ -163,7 +163,7 @@ Singleton {
         if (calendarApplication) {
             calendarApplicationAvailable = true
             calendarApplicationProc.command = [
-                Quickshell.shellPath('bin/chrome-wait.sh'),
+                Quickshell.shellPath('qd/bin/chrome-wait.sh'),
                 ...calendarApplication.command
             ]
         } else {
