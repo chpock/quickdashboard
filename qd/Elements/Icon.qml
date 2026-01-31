@@ -58,15 +58,14 @@ Item {
             color: root._config.color
             background: root._config.background
             text: 'question_mark'
-
-            C.Text {
-                style: 'hover'
-                color: root._config.hover.color
-            }
-            C.Text {
-                style: 'active'
-                color: root._config.active.color
-            }
+            styles: ({
+                hover: {
+                    color: root._config.hover.color,
+                },
+                active: {
+                    color: root._config.active.color,
+                },
+            })
         }
 
         text: root.icon

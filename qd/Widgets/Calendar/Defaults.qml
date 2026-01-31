@@ -56,44 +56,42 @@ Fragments {
                 bottom: 3
             }
 
-            styles: [
-                C.Text {
-                    style: 'weekday'
-                    color: 'blue'
-                    alignment {
-                        horizontal: 'center'
-                    }
+            styles: ({
+                weekday: {
+                    color: 'blue',
+                    alignment: {
+                        horizontal: 'center',
+                    },
+                    styles: {
+                        today: {
+                            font: {
+                                weight: 'bold',
+                            },
+                        },
+                    },
                 },
-                C.Text {
-                    style: 'weekday/today'
-                    font {
-                        weight: 'bold'
-                    }
-                },
-                C.Text {
-                    style: 'day'
-                    color: 'text/primary'
-                    heightMode: 'capitals'
-                    alignment {
-                        horizontal: 'right'
-                    }
-                },
-                C.Text {
-                    style: 'day/today'
-                    font {
-                        weight: 'bold'
-                    }
-                    background: 'blue'
-                },
-                C.Text {
-                    style: 'day/weekend'
-                    color: 'red'
-                },
-                C.Text {
-                    style: 'day/other'
-                    color: 'text/secondary'
-                },
-            ]
+                day: {
+                    color: 'text/primary',
+                    heightMode: 'capitals',
+                    alignment: {
+                        horizontal: 'right',
+                    },
+                    styles: {
+                        today: {
+                            font: {
+                                weight: 'bold',
+                            },
+                            background: 'blue',
+                        },
+                        weekend: {
+                            color: 'red',
+                        },
+                        other: {
+                            color: 'text/secondary',
+                        },
+                    },
+                }
+            })
         }
 
         weekday_names: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -189,12 +187,12 @@ Fragments {
         title {
             _defaults: widget._defaults.text
             overflow: 'elide'
-            styles: [
-                C.Text {
-                    style: 'far_in_future'
-                    color: 'severity/ignore'
+
+            styles: ({
+                far_in_future: {
+                    color: 'severity/ignore',
                 },
-            ]
+            })
         }
 
         marker {
@@ -228,20 +226,17 @@ Fragments {
                 top: 2
             }
 
-            styles: [
-                C.Text {
-                    style: 'soon'
-                    color: 'info/accent'
+            styles: ({
+                soon: {
+                    color: 'info/accent',
                 },
-                C.Text {
-                    style: 'in_progress'
-                    color: 'severity/critical'
+                in_progress: {
+                    color: 'severity/critical',
                 },
-                C.Text {
-                    style: 'far_in_future'
-                    color: 'severity/ignore'
+                far_in_future: {
+                    color: 'severity/ignore',
                 },
-            ]
+            })
         }
 
         alarm_offset_seconds: 600

@@ -42,33 +42,28 @@ Fragments {
             _defaults: widget._defaults.text
             overflow:  'elide'
 
-            styles: [
-                C.Text {
-                    style: 'unavailable'
-                    color: 'severity/ignore'
-                    text:  'No players'
+            styles: ({
+                unavailable: {
+                    color: 'severity/ignore',
+                    text:  'No players',
                 },
-                C.Text {
-                    style: 'playing'
-                    color: 'severity/good'
-                    text:  'Playing'
+                playing: {
+                    color: 'severity/good',
+                    text:  'Playing',
                 },
-                C.Text {
-                    style: 'paused'
-                    color: 'info/accent'
-                    text:  'Paused'
+                paused: {
+                    color: 'info/accent',
+                    text:  'Paused',
                 },
-                C.Text {
-                    style: 'stopped'
-                    color: 'severity/critical'
-                    text:  'Stopped'
+                stopped: {
+                    color: 'severity/critical',
+                    text:  'Stopped',
                 },
-                C.Text {
-                    style: 'unknown'
-                    color: 'severity/critical'
-                    text:  'Unknown status'
+                unknown: {
+                    color: 'severity/critical',
+                    text:  'Unknown status',
                 },
-            ]
+            })
         }
 
         time {

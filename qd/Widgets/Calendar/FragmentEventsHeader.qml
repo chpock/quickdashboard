@@ -8,9 +8,9 @@ C.Base {
     property FragmentEventsHeader _defaults
 
     readonly property C.TextTitle title: C.TextTitle {
-        _defaults: root?._defaults.title ?? null
+        _defaults: root._defaults?.title ?? null
     }
     readonly property C.Icon button: C.Icon {
-        _defaults: root?._defaults.button ?? null
+        _defaults: root._defaults?.button ?? null
     }
 }

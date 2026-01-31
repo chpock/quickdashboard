@@ -8,6 +8,6 @@ C.Base {
     property FragmentCalendarHover _defaults
 
     readonly property C.Border border: C.Border {
-        _defaults: root?._defaults?.border ?? null
+        _defaults: root._defaults?.border ?? null
     }
 }

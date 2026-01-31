@@ -9,13 +9,13 @@ import qs.qd.Widgets as Widget
 
 Widget.Base {
     id: root
-    type: 'calendar'
-    hierarchy: ['base', type]
 
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
         }
+        _custom: root.fragments
+        _chain: (root._chain ? root._chain + '.' : '') + root.type + '.fragments'
     }
 
     property var calendarColors
@@ -32,7 +32,7 @@ Widget.Base {
 
         let colorIdx = calendarId in calendarColors ? calendarColors[calendarId] : -1
         colorIdx += 1
-        if (colorIdx >= _theme.palette.names.length) {
+        if (colorIdx >= _theme.palette._names.length) {
             // Re-create an object to trigger changes in bindings
             const calendarColorsNew = Object.assign({}, calendarColors)
             delete calendarColorsNew[calendarId]
@@ -401,6 +401,7 @@ Widget.Base {
                 theme: root._theme
                 config: C.Text {
                     _defaults: event.config.title
+                    styles: undefined
                     color:
                         event.modelData.calendarId in root.calendarColors
                             ? root._theme.palette.getByIndex(root.calendarColors[event.modelData.calendarId])

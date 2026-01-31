@@ -7,13 +7,13 @@ import qs.qd.Widgets as Widget
 
 Widget.Base {
     id: root
-    type: 'audio_volume'
-    hierarchy: ['base', type]
 
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
         }
+        _custom: root.fragments
+        _chain: (root._chain ? root._chain + '.' : '') + root.type + '.fragments'
     }
 
     component VolumeItem: Item {

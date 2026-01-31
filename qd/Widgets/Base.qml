@@ -6,24 +6,33 @@ import qs.qd.Config as C
 
 Rectangle {
     id: root
-    property string type: "base"
-    property var hierarchy: [type]
+    readonly property string type: {
+        const objectName = root.toString()
+        return objectName.slice(0, objectName.indexOf('_'))
+    }
+    property string _chain
 
     default property alias content: content.data
 
     property var theme: ({})
     readonly property C.Theme _theme: C.Theme {
         _defaults: Defaults.theme
+        _custom: root.theme
+        _chain: (root._chain ? root._chain + '.' : '') + root.type + '.theme'
     }
 
     property var defaults: ({})
     readonly property C.Defaults _defaults: C.Defaults {
         _defaults: Defaults.defaults
+        _custom: root.defaults
+        _chain: (root._chain ? root._chain + '.' : '') + root.type + '.defaults'
     }
 
     property var widget: ({})
     readonly property C.Widget _widget: C.Widget {
         _defaults: Defaults.widget
+        _custom: root.widget
+        _chain: (root._chain ? root._chain + '.' : '') + root.type + '.widget'
     }
 
     property var fragments: ({})

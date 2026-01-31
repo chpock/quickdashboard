@@ -42,16 +42,15 @@ Fragments {
         }
         overflow: 'elide'
         color: 'text/secondary'
-        styles: [
-            C.Text {
-                style: 'unavailable'
-                color: 'severity/critical'
+
+        styles: ({
+            unavailable: {
+                color: 'severity/critical',
             },
-            C.Text {
-                style: 'hover'
-                color: 'text/primary'
+            hover: {
+                color: 'text/primary',
             },
-        ]
+        })
     }
 
     percent {

@@ -7,13 +7,13 @@ import qs.qd.Providers as Provider
 
 Widget.Base {
     id: root
-    type: 'network'
-    hierarchy: ['base', type]
 
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
         }
+        _custom: root.fragments
+        _chain: (root._chain ? root._chain + '.' : '') + root.type + '.fragments'
     }
 
     Connections {

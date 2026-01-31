@@ -56,38 +56,61 @@ Base {
 
 
     property var style
-    default property list<C.Text> styles
+
+    property var styles: _defaults?.styles
+    readonly property var _styles: ({})
+
     property bool _styles_loaded: false
 
     function getStyle(style) {
-        for (var i = 0; i < styles.length; ++i) {
-            if (styles[i].style === style) {
-                return styles[i]
-            }
+        return _styles[style] ?? null
+    }
+
+    function generateStyles(styles: var, parent: var, parentName: string): void {
+
+        if (!styles) {
+            return
         }
-        return _defaults ? _defaults.getStyle(style) : null
+
+        const styleComponent = Qt.createComponent("Text.qml")
+
+        for (let styleName in styles) {
+
+            const styleNameFull = parentName + styleName
+            // console.log('create style:', styleNameFull)
+
+            const styleObject = styleComponent.createObject(root, {
+                _defaults: parent,
+                styles: undefined,
+            })
+
+            const styleProperties = Object.assign({}, styles[styleName])
+            delete styleProperties['styles']
+            styleObject._custom = styleProperties
+
+            _styles[styleNameFull] = styleObject
+
+            generateStyles(styles[styleName].styles, styleObject, styleNameFull + '/')
+
+        }
+
+    }
+
+    function cleanupStyles(): void {
+        for (const styleName in _styles) {
+            _styles[styleName].destroy()
+            delete _styles[styleName]
+        }
     }
 
     Component.onCompleted: {
-        if (styles.length) {
-            const styleMap = {}
-            for (let i = 0; i < styles.length; i++) {
-                styleMap[styles[i].style] = i
-            }
-            for (let i = 0; i < styles.length; i++) {
-                const styleObj = styles[i]
-                const styleName = styleObj.style
-                const idx = styleName.lastIndexOf("/")
-                if (idx != -1) {
-                    const parentStyle = styleName.substring(0, idx)
-                    if (parentStyle in styleMap) {
-                        styleObj._defaults = styles[styleMap[parentStyle]]
-                        continue
-                    }
-                }
-                styleObj._defaults = root
-            }
-        }
+        cleanupStyles()
+        generateStyles(styles, root, '')
         _styles_loaded = true
     }
+
+    Component.onDestruction: {
+        cleanupStyles()
+    }
+
 }

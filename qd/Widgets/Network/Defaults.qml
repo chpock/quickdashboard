@@ -25,12 +25,11 @@ Fragments {
                 right: '1ch'
             }
 
-            styles: [
-                C.Text {
-                    style: 'error'
-                    color: 'severity/critical'
+            styles: ({
+                error: {
+                    color: 'severity/critical',
                 },
-            ]
+            })
         }
 
         signal {
