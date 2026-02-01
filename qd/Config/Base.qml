@@ -7,7 +7,7 @@ QtObject {
 
     property var _custom
     property string _chain
-    property bool _isCustomized: false
+    property bool _is_customized: false
 
     function _reset() {
 
@@ -20,60 +20,55 @@ QtObject {
                 ` where '${typeExpected}' is expected`, prop)
         }
 
-        function applyStyles(targetStyles: var, customStyles: var) {
+        function validateStyles(targetStyles: var, customStyles: var, parentName: string): var {
+            const returnStyles = {}
+            for (const styleName in customStyles) {
 
-            const targetStylesMap = {}
-            for (let i = 0; i < targetStyles.length; ++i) {
-                const style = targetStyles[i]
-                targetStylesMap[style.style] = style
-            }
+                const styleNameFull = parentName + styleName
 
-            const customStylesMap = {}
-            for (let i = 0; i < customStyles.length; ++i) {
-
-                const styleValue = customStyles[i]
-                const styleType = Array.isArray(styleValue) ? 'array' : typeof styleValue
-
-                if (styleType !== 'object') {
-                    console.error(`The style has invalid type '${styleType}'` +
-                        " where 'object' is expected:", _chain + '.styles[' + i + ']')
-                    continue
-                }
-
-                if (!styleValue.hasOwnProperty('style')) {
-                    console.error("The style does not have a mandatory property 'style':",
-                        _chain + '.styles[' + i + ']')
-                    continue
-                }
-
-                const styleName = styleValue.style
-                const styleNameType = Array.isArray(styleName) ? 'array' : typeof styleName
-
-                if (styleNameType !== 'string') {
-                    console.error("The 'style' property of the style has invalid type" +
-                        ` '${styleNameType}' where 'string' is expected:`,
-                        _chain + '.styles[' + i + '].style:', JSON.stringify(styleName))
-                    continue
-                }
-
-                if (!targetStylesMap.hasOwnProperty(styleName)) {
-                    const knownStyleNamesList = Object.keys(targetStylesMap)
-                    const knownStyleNamesText =
+                if (!targetStyles.hasOwnProperty(styleName)) {
+                    const knownStyles = Object.keys(targetStyles)
+                    const errmsg =
                         'known style name' +
                         (
-                            knownStyleNamesList.length === 1
-                                ? `is '${knownStyleNamesList[0]}'`
-                                : `are '${knownStyleNamesList.join("', '")}'`
+                            knownStyles.length === 1
+                                ? " is '" + knownStyles[0] + "'"
+                                : knownStyles.length === 2
+                                    ? "s are '" + knownStyles[0] + "' and '" + knownStyles[1] + "'"
+                                    : "s are '" + knownStyles.slice(0, -1).join("', '") + "' and '" + knownStyles[knownStyles.length - 1] + "'"
                         )
-                    console.error("The 'style' property in the style object has unknown style name,",
-                        knownStyleNamesText, _chain + '.styles[' + i + '].style:', JSON.stringify(styleName))
+                    reportWrongCustom(`Unknown style name '${styleNameFull}', ${errmsg}`, 'styles')
                     continue
                 }
 
-                customStylesMap[styleName] = styleValue
+                const styleObject = customStyles[styleName]
+                const resultStyleObject = Object.assign({}, styleObject)
+                const childrenStyles = styleObject.styles
+
+                if (styleObject.hasOwnProperty('styles')) {
+
+                    delete resultStyleObject['styles']
+
+                    const childrenStyles = styleObject.styles
+                    if (childrenStyles !== undefined && childrenStyles !== null) {
+
+                        if (!targetStyles[styleName].hasOwnProperty('styles')) {
+                            reportWrongCustom(`Style '${styleNameFull}' has unexpected children styles`, 'styles')
+                        } else if (typeof childrenStyles !== 'object' || Array.isArray(childrenStyles)) {
+                            reportWrongCustom(`Style '${styleNameFull}' has children styles as not an object`, 'styles')
+                        } else {
+                            const resultChildrenStyles = validateStyles(targetStyles[styleName].styles, childrenStyles, styleNameFull + '/')
+                            if (Object.keys(resultChildrenStyles)) {
+                                resultStyleObject.styles = resultChildrenStyles
+                            }
+                        }
+                    }
+                }
+
+                returnStyles[styleName] = resultStyleObject
 
             }
-
+            return returnStyles
         }
 
         // console.log('Start reset on:', root, 'chain:', _chain)
@@ -118,8 +113,14 @@ QtObject {
             }
 
             if (!hasCustom) {
-                if (prop === 'style' || prop === 'styles') {
-                    // console.log('Reset property to defaults (don\'t touch):', prop)
+                if (prop === 'styles') {
+                    const key = '_styles_custom'
+                    if (Object.keys(root[key]).length === 0) {
+                        // console.log('Reset property to defaults (don\'t touch):', prop)
+                    } else {
+                        console.log('Reset styles to defaults:', prop)
+                        root[key] = {}
+                    }
                 } else {
                     // console.log('Reset property to defaults:', prop)
                     const def = '_defaults'
@@ -129,16 +130,18 @@ QtObject {
             }
 
             if (prop === 'styles') {
-                if (customType !== 'array') {
-                    reportWrongCustomType(prop, customType, 'array')
+                if (customType !== 'object') {
+                    reportWrongCustomType(prop, customType, 'object')
                     continue
                 }
-                console.log("styles:", targetValue, typeof targetValue, root)
-                if (!targetValue.styles) {
+                // console.log("styles:", targetValue, typeof targetValue, root)
+                if (!targetValue) {
                     reportWrongCustom('Unable to apply styles, this object has no styles defined', prop)
                     continue
                 }
-                applyStyles(targetValue, customValue)
+                // applyStyles(targetValue, customValue)
+                const key = '_styles_custom'
+                root[key] = validateStyles(targetValue, customValue, '')
                 continue
             }
 
@@ -157,12 +160,12 @@ QtObject {
 
     on_CustomChanged: {
         let isCustomEmpty = !_custom || (typeof _custom === 'object' && Object.keys(_custom).length === 0)
-        if (!_isCustomized && isCustomEmpty) {
+        if (!_is_customized && isCustomEmpty) {
             return
         }
         // console.log("Custom changed on:", root, !(!_custom), typeof _custom)
         _reset()
-        _isCustomized = !isCustomEmpty
+        _is_customized = !isCustomEmpty
     }
 
 }

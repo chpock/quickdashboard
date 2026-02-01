@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.qd.Config as C
 
-Base {
+BaseStyled {
     id: root
 
     property C.Text _defaults
@@ -54,63 +54,10 @@ Base {
         heightMode === 'content'  ? 2 :
         heightMode
 
+    styles: _defaults?.styles
 
-    property var style
-
-    property var styles: _defaults?.styles
-    readonly property var _styles: ({})
-
-    property bool _styles_loaded: false
-
-    function getStyle(style) {
-        return _styles[style] ?? null
-    }
-
-    function generateStyles(styles: var, parent: var, parentName: string): void {
-
-        if (!styles) {
-            return
-        }
-
-        const styleComponent = Qt.createComponent("Text.qml")
-
-        for (let styleName in styles) {
-
-            const styleNameFull = parentName + styleName
-            // console.log('create style:', styleNameFull)
-
-            const styleObject = styleComponent.createObject(root, {
-                _defaults: parent,
-                styles: undefined,
-            })
-
-            const styleProperties = Object.assign({}, styles[styleName])
-            delete styleProperties['styles']
-            styleObject._custom = styleProperties
-
-            _styles[styleNameFull] = styleObject
-
-            generateStyles(styles[styleName].styles, styleObject, styleNameFull + '/')
-
-        }
-
-    }
-
-    function cleanupStyles(): void {
-        for (const styleName in _styles) {
-            _styles[styleName].destroy()
-            delete _styles[styleName]
-        }
-    }
-
-    Component.onCompleted: {
-        cleanupStyles()
-        generateStyles(styles, root, '')
-        _styles_loaded = true
-    }
-
-    Component.onDestruction: {
-        cleanupStyles()
+    function getStyleComponent() {
+        return Qt.createComponent("Text.qml")
     }
 
 }
