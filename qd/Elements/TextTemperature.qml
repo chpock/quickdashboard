@@ -21,11 +21,32 @@ Item {
 
         theme: root.theme
         config: C.Text {
-            _defaults: root.config.text
+            font {
+                _defaults: root.config.font
+            }
+            padding {
+                _defaults: root.config.padding
+            }
+            scroll {
+                duration:   0
+                pauseStart: 0
+                pauseEnd:   0
+            }
+            alignment {
+                _defaults: root.config.alignment
+            }
+            hover {
+                _defaults: root.config.hover
+            }
+            word_spacing_font_family: root.config.word_spacing_font_family
+            background: root.config.background
+            overflow:   'none'
+            heightMode: 'capitals'
+            text:       root.config.text
             color:
                 root.config.thresholds.enabled
                     ? root.config.thresholds.getColor(root.value, root.theme)
-                    : root.config.text.color
+                    : root.config.color
         }
 
         text: Utils.roundPercent(root.value) + "\u2103"

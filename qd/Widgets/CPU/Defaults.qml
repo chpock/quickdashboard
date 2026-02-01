@@ -15,13 +15,12 @@ Fragments {
 
         temperature {
             _defaults: widget._defaults.text_temperature
-            text {
-                font {
-                    size: 'small'
-                }
-                padding {
-                    right: 50
-                }
+            font {
+                size: 'small'
+            }
+            padding {
+                right: 50
+                bottom: 2
             }
             thresholds {
                 ignore {
