@@ -115,6 +115,9 @@ Fragments {
             alignment {
                 horizontal: 'right'
             }
+            font {
+                size: 'small'
+            }
             thresholds {
                 ignore {
                     value: '<5'
