@@ -311,11 +311,25 @@ Singleton {
             color:      defaults.text.color
         }
         text_bytes {
-            text {
-                _defaults: defaults.text
+            font {
+                _defaults: defaults.text.font
             }
-            precision: 4
-            prefix:    ''
+            padding {
+                _defaults: defaults.text.padding
+            }
+            alignment {
+                _defaults: defaults.text.alignment
+            }
+            hover {
+                _defaults: defaults.text.hover
+            }
+            word_spacing_font_family: defaults.text.word_spacing_font_family
+            heightMode: defaults.text.heightMode
+            background: defaults.text.background
+            text:       defaults.text.text
+            color:      defaults.text.color
+            precision:  4
+            prefix:     ''
         }
         icon {
             font {

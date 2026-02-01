@@ -182,12 +182,10 @@ Fragments {
 
             rate {
                 _defaults: widget._defaults.text_bytes
-                text {
-                    font {
-                        size: 'small'
-                    }
-                    color: 'text/secondary'
+                font {
+                    size: 'small'
                 }
+                color: 'text/secondary'
             }
 
             graph {
@@ -220,12 +218,10 @@ Fragments {
 
             rate {
                 _defaults: widget._defaults.text_bytes
-                text {
-                    font {
-                        size: 'small'
-                    }
-                    color: 'text/secondary'
+                font {
+                    size: 'small'
                 }
+                color: 'text/secondary'
             }
 
             graph {

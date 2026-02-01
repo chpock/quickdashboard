@@ -23,12 +23,10 @@ Fragments {
 
         total {
             _defaults: widget._defaults.text_bytes
-            text {
-                font {
-                    size: 'small'
-                }
-                color: 'text/secondary'
+            font {
+                size: 'small'
             }
+            color: 'text/secondary'
             precision: 3
             prefix: '  / '
         }
@@ -67,8 +65,11 @@ Fragments {
         }
         value {
             _defaults: widget._defaults.text_bytes
-            text {
-                _defaults: widget._defaults.process_list.value
+            alignment {
+                horizontal: 'right'
+            }
+            font {
+                size: 'small'
             }
             precision: 3
         }

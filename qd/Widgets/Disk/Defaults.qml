@@ -45,12 +45,10 @@ Fragments {
 
         total {
             _defaults: widget._defaults.text_bytes
-            text {
-                font {
-                    size: 'small'
-                }
-                color: 'text/secondary'
+            font {
+                size: 'small'
             }
+            color:     'text/secondary'
             precision: 3
             prefix:    '  / '
         }
@@ -72,17 +70,15 @@ Fragments {
             label {
                 _defaults: widget._defaults.text
                 color: 'info/primary'
-                text: 'R:'
+                text:  'R:'
             }
 
             rate {
                 _defaults: widget._defaults.text_bytes
-                text {
-                    font {
-                        size: 'small'
-                    }
-                    color: 'text/secondary'
+                font {
+                    size: 'small'
                 }
+                color: 'text/secondary'
             }
 
             graph {
@@ -110,17 +106,15 @@ Fragments {
             label {
                 _defaults: widget._defaults.text
                 color: 'info/secondary'
-                text: 'W:'
+                text:  'W:'
             }
 
             rate {
                 _defaults: widget._defaults.text_bytes
-                text {
-                    font {
-                        size: 'small'
-                    }
-                    color: 'text/secondary'
+                font {
+                    size: 'small'
                 }
+                color: 'text/secondary'
             }
 
             graph {
