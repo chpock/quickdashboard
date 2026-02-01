@@ -199,7 +199,6 @@ Singleton {
         text_temperature {
             font {
                 _defaults: defaults.text.font
-                weight: 'medium'
             }
             padding {
                 _defaults: defaults.text.padding
@@ -230,13 +229,23 @@ Singleton {
                 enabled: true
             }
             word_spacing_font_family: defaults.text.word_spacing_font_family
+            heightMode: defaults.text.heightMode
             background: defaults.text.background
             text:       defaults.text.text
             color:      defaults.text.color
         }
         text_percent {
-            text {
-                _defaults: defaults.text
+            font {
+                _defaults: defaults.text.font
+            }
+            padding {
+                _defaults: defaults.text.padding
+            }
+            alignment {
+                _defaults: defaults.text.alignment
+            }
+            hover {
+                _defaults: defaults.text.hover
             }
             thresholds {
                 ignore {
@@ -257,6 +266,11 @@ Singleton {
                 }
                 enabled: true
             }
+            word_spacing_font_family: defaults.text.word_spacing_font_family
+            heightMode: defaults.text.heightMode
+            background: defaults.text.background
+            text:       defaults.text.text
+            color:      defaults.text.color
         }
         text_severity {
             text {

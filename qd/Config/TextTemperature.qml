@@ -22,8 +22,9 @@ Base {
     readonly property Thresholds thresholds: Thresholds {
         _defaults: root._defaults?.thresholds ?? null
     }
-    property var color:                 _defaults?.color
-    property var background:            _defaults?.background
     property var word_spacing_font_family: _defaults?.word_spacing_font_family
-    property var text:                  _defaults?.text
+    property var heightMode: _defaults?.heightMode
+    property var color:      _defaults?.color
+    property var background: _defaults?.background
+    property var text:       _defaults?.text
 }

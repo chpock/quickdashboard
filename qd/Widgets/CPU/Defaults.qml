@@ -20,7 +20,6 @@ Fragments {
             }
             padding {
                 right: 50
-                bottom: 2
             }
             thresholds {
                 ignore {
@@ -113,8 +112,8 @@ Fragments {
 
         value {
             _defaults: widget._defaults.text_percent
-            text {
-                _defaults: widget._defaults.process_list.value
+            alignment {
+                horizontal: 'right'
             }
             thresholds {
                 ignore {

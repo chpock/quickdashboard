@@ -18,7 +18,6 @@ Item {
 
     E.Text {
         id: text
-
         theme: root.theme
         config: C.Text {
             font {
@@ -41,7 +40,7 @@ Item {
             word_spacing_font_family: root.config.word_spacing_font_family
             background: root.config.background
             overflow:   'none'
-            heightMode: 'capitals'
+            heightMode: root.config.heightMode
             text:       root.config.text
             color:
                 root.config.thresholds.enabled
