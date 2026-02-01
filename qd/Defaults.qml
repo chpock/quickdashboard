@@ -172,18 +172,29 @@ Singleton {
             text:       '?'
         }
         text_title {
-            text {
-                _defaults: defaults.text
-                font {
-                    weight: 'medium'
-                }
-                color: 'megenta_bright'
+            font {
+                _defaults: defaults.text.font
+                weight: 'medium'
+            }
+            padding {
+                _defaults: defaults.text.padding
+            }
+            alignment {
+                _defaults: defaults.text.alignment
+            }
+            hover {
+                _defaults: defaults.text.hover
             }
             separator {
                 enabled: true
                 color:   'gray'
                 text:    ':'
             }
+            word_spacing_font_family: defaults.text.word_spacing_font_family
+            background: defaults.text.background
+            heightMode: defaults.text.heightMode
+            text:       defaults.text.text
+            color:      'megenta_bright'
         }
         text_temperature {
             text {

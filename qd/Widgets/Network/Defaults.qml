@@ -10,10 +10,8 @@ Fragments {
 
         iface {
             _defaults: widget._defaults.text_title
-            text {
-                padding {
-                    right: '1ch'
-                }
+            padding {
+                right: '1ch'
             }
         }
 
@@ -52,10 +50,8 @@ Fragments {
 
         title {
             _defaults: widget._defaults.text_title
-            text {
-                padding {
-                    right: '1ch'
-                }
+            padding {
+                right: '1ch'
             }
         }
 
@@ -108,10 +104,8 @@ Fragments {
 
         title {
             _defaults: widget._defaults.text_title
-            text {
-                padding {
-                    right: '1ch'
-                }
+            padding {
+                right: '1ch'
             }
         }
 
@@ -142,10 +136,8 @@ Fragments {
 
         title {
             _defaults: widget._defaults.text_title
-            text {
-                padding {
-                    right: '1ch'
-                }
+            padding {
+                right: '1ch'
             }
         }
 

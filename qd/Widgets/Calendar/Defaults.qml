@@ -26,10 +26,8 @@ Fragments {
 
             title {
                 _defaults: widget._defaults.text_title
-                text {
-                    alignment {
-                        horizontal: 'center'
-                    }
+                alignment {
+                    horizontal: 'center'
                 }
                 separator {
                     enabled: false
@@ -110,11 +108,9 @@ Fragments {
 
             title {
                 _defaults: widget._defaults.text_title
-                text {
-                    padding {
-                        top:    2
-                        bottom: 2
-                    }
+                padding {
+                    top:    2
+                    bottom: 2
                 }
             }
 

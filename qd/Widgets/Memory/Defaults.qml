@@ -11,10 +11,8 @@ Fragments {
 
         title {
             _defaults: widget._defaults.text_title
-            text {
-                padding {
-                    right: '2ch'
-                }
+            padding {
+                right: '2ch'
             }
         }
 

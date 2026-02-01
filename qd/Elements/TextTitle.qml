@@ -19,7 +19,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: root.config.text.background
+        color: root.config.background
     }
 
     Row {
@@ -28,42 +28,66 @@ Item {
 
         // qmllint disable Quick.anchor-combinations
         anchors.left:
-            root.config.text.alignment._horizontal === Text.AlignLeft
+            root.config.alignment._horizontal === Text.AlignLeft
                 ? parent.left
                 : undefined
         anchors.right:
-            root.config.text.alignment._horizontal === Text.AlignRight
+            root.config.alignment._horizontal === Text.AlignRight
                 ? parent.right
                 : undefined
         anchors.horizontalCenter:
-            root.config.text.alignment._horizontal === Text.AlignHCenter
+            root.config.alignment._horizontal === Text.AlignHCenter
                 ? parent.horizontalCenter
                 : undefined
+        // qmllint enable Quick.anchor-combinations
+
+        readonly property C.Text text_config: C.Text {
+            font {
+                _defaults: root.config.font
+            }
+            padding {
+                _defaults: root.config.padding
+            }
+            scroll {
+                duration:   0
+                pauseStart: 0
+                pauseEnd:   0
+            }
+            alignment {
+                horizontal: 'left'
+                vertical:   root.config.alignment.vertical
+            }
+            hover {
+                _defaults: root.config.hover
+            }
+            word_spacing_font_family: root.config.word_spacing_font_family
+            color:      root.config.color
+            background: 'transparent'
+            overflow:   'none'
+            heightMode: root.config.heightMode
+            text:       root.config.text
+        }
 
         E.Text {
             id: title
-
             theme: root.theme
             config: C.Text {
-                _defaults: root.config.text
+                _defaults: container.text_config
                 padding {
                     right:
                         root.config.separator.enabled
                             ? 0
-                            : root.config.text.padding.right
+                            : root.config.padding.right
                 }
-                background: 'transparent'
             }
         }
 
         E.Text {
             id: separator
-
             theme: root.theme
             config: C.Text {
-                _defaults: root.config.text
+                _defaults: container.text_config
                 color: root.config.separator.color
-                background: 'transparent'
             }
 
             text: title.text !== '' ? root.config.separator.text : ''
