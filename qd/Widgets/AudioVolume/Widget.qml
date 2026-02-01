@@ -29,7 +29,7 @@ Widget.Base {
         readonly property bool isMuted: isAvailable && (audio.muted || volume === 0)
         readonly property string description: isAvailable ? device.description : 'Unavailable'
         readonly property bool hasIndicator: isAvailable && (isHeadset || isHdmi)
-        readonly property bool isHeadset: isAvailable && (device.name.includes('bluez') || device.name.includes('hdmi'))
+        readonly property bool isHeadset: isAvailable && (device.name.includes('bluez') || device.name.includes('bluetooth') || device.name.includes('usb'))
         readonly property bool isHdmi: isAvailable && device.name.includes('hdmi')
 
         implicitHeight:
@@ -50,16 +50,15 @@ Widget.Base {
             theme: root._theme
             config: item.config.icon
 
-            icon:
-                !item.isAvailable || item.isMuted
-                    ? item.modelData.icon.muted
-                    : item.modelData.icon.normal
             style:
-                !item.isAvailable
-                    ? 'unavailable'
-                    : item.isMuted
-                        ? 'muted'
-                        : undefined
+                item.modelData.name +
+                (
+                    !item.isAvailable
+                        ? '/unavailable'
+                        : item.isMuted
+                            ? '/muted'
+                            : ''
+                )
             anchors.left: parent.left
         }
 
@@ -68,12 +67,15 @@ Widget.Base {
             theme: root._theme
             config: item.config.indicator
 
-            icon:
-                item.isHeadset
-                    ? item.modelData.icon.headset
-                    : item.isHdmi
-                        ? item.modelData.icon.hdmi
-                        : ''
+            style:
+                item.modelData.name +
+                (
+                    item.isHeadset
+                        ? '/headset'
+                        : item.isHdmi
+                            ? '/hdmi'
+                            : ''
+                )
             anchors.left: icon.right
             visible: parent.hasIndicator
         }
@@ -149,22 +151,10 @@ Widget.Base {
             {
                 name: "output",
                 device: Provider.AudioDevices.sink,
-                icon: {
-                    normal: 'volume_up',
-                    muted: 'volume_off',
-                    headset: 'headphones',
-                    hdmi: 'connected_tv',
-                },
             },
             {
                 name: "input",
                 device: Provider.AudioDevices.source,
-                icon: {
-                    normal: 'mic',
-                    muted: 'mic_off',
-                    headset: 'headset_mic',
-                    hdmi: 'connected_tv',
-                }
             },
         ]
 

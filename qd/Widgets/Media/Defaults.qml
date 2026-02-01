@@ -32,6 +32,7 @@ Fragments {
                 size: 35
             }
             color: 'gray'
+            icon:  'question_mark'
         }
 
     }
@@ -80,6 +81,31 @@ Fragments {
                 color:  'white'
                 filled: true
                 weight: 700
+
+                styles: ({
+                    previous: {
+                        icon: 'skip_previous',
+                    },
+                    next: {
+                        icon: 'skip_next',
+                    },
+                    toggle: {
+                        styles: {
+                            resume: {
+                                icon: 'resume',
+                            },
+                            play: {
+                                icon: 'play_arrow',
+                            },
+                            pause: {
+                                icon: 'pause',
+                            },
+                            stop: {
+                                icon: 'stop',
+                            },
+                        },
+                    },
+                })
             }
 
             spacing {

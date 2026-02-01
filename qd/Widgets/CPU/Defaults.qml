@@ -11,6 +11,7 @@ Fragments {
 
         title {
             _defaults: widget._defaults.text_title
+            text: 'CPU'
         }
 
         temperature {

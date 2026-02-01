@@ -12,11 +12,29 @@ Fragments {
         color: 'text/title'
 
         styles: ({
-            muted: {
-                color: 'severity/critical',
+            output: {
+                icon: 'volume_up',
+                styles: {
+                    muted: {
+                        icon:  'volume_off',
+                        color: 'severity/critical',
+                    },
+                    unavailable: {
+                        color: 'severity/critical',
+                    },
+                },
             },
-            unavailable: {
-                color: 'severity/critical',
+            input: {
+                icon: 'mic',
+                styles: {
+                    muted: {
+                        icon:  'mic_off',
+                        color: 'severity/critical',
+                    },
+                    unavailable: {
+                        color: 'severity/critical',
+                    },
+                },
             },
         })
     }
@@ -27,6 +45,29 @@ Fragments {
         padding {
             left: '1ch'
         }
+
+        styles: ({
+            output: {
+                styles: {
+                    headset: {
+                        icon:  'headphones',
+                    },
+                    hdmi: {
+                        icon:  'connected_tv',
+                    },
+                },
+            },
+            input: {
+                styles: {
+                    headset: {
+                        icon:  'headset_mic',
+                    },
+                    hdmi: {
+                        icon:  'connected_tv',
+                    },
+                },
+            },
+        })
     }
 
     device {

@@ -10,7 +10,7 @@ Item {
     required property C.Icon config
     required property C.Theme theme
 
-    required property string icon
+    property var icon
     property var style
     readonly property C.Icon _config: (config._styles_loaded && style && config.getStyle(style)) || config
 
@@ -51,7 +51,6 @@ Item {
             word_spacing_font_family: root._config.word_spacing_font_family
             color: root._config.color
             background: root._config.background
-            text: 'question_mark'
             styles: ({
                 hover: {
                     color: root._config.hover.color,
@@ -62,7 +61,7 @@ Item {
             })
         }
 
-        text: root.icon
+        text: root.icon == null ? root._config.icon : root.icon
         style:
             isHovered
                 ? 'hover'

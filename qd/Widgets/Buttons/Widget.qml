@@ -68,14 +68,4 @@ Widget.Base {
 
     }
 
-    // Timer {
-    //     id: testTimer
-    //     interval: 3000
-    //     running: true
-    //     repeat: false
-    //     onTriggered: {
-    //         root._config._reset()
-    //     }
-    // }
-
 }

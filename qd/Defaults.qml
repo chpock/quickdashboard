@@ -358,6 +358,7 @@ Singleton {
             grade:       200
             weight:      400
             opticalSize: 24
+            icon:        'question_mark'
         }
         graph_timeseries {
             stroke {

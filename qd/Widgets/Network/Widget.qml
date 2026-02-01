@@ -99,7 +99,6 @@ Widget.Base {
             theme: root._theme
             config: latency.config.title
 
-            text: 'Latency'
             anchors.left: parent.left
         }
 
@@ -115,7 +114,6 @@ Widget.Base {
 
             text: Number.isFinite(time) ? Math.round(time) + ' ms' : 'ERR'
             value: time
-
             anchors.right: parent.right
         }
 
@@ -212,7 +210,6 @@ Widget.Base {
             theme: root._theme
             config: dns.config.title
 
-            text: 'DNS'
             anchors.left: parent.left
         }
 
@@ -254,7 +251,6 @@ Widget.Base {
             theme: root._theme
             config: gateway.config.title
 
-            text: 'Gateway'
             anchors.left: parent.left
         }
 

@@ -26,6 +26,7 @@ BaseStyled {
     property var grade:       _defaults?.grade
     property var weight:      _defaults?.weight
     property var opticalSize: _defaults?.opticalSize
+    property var icon:        _defaults?.icon
 
     styles: _defaults?.styles
 

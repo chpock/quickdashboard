@@ -22,6 +22,18 @@ Fragments {
                     right: '1ch'
                 }
                 weight: 700
+
+                styles: ({
+                    month_previous: {
+                        icon: 'keyboard_double_arrow_left',
+                    },
+                    month_current: {
+                        icon: 'today',
+                    },
+                    month_next: {
+                        icon: 'keyboard_double_arrow_right',
+                    },
+                })
             }
 
             title {
@@ -112,6 +124,7 @@ Fragments {
                     top:    2
                     bottom: 2
                 }
+                text: 'Events'
             }
 
             button {
@@ -127,26 +140,31 @@ Fragments {
 
                 styles: ({
                     application: {
+                        icon: 'edit_calendar',
                         padding: {
                             right: '2ch',
                         },
                     },
                     refresh: {
+                        icon: 'refresh',
                         padding: {
                             right: '2ch',
                         },
                     },
                     visibility: {
+                        icon: 'visibility_lock',
                         padding: {
                             right: '2ch',
                         },
                     },
                     plus: {
+                        icon: 'add_circle',
                         padding: {
                             right: '1ch',
                         },
                     },
                     minus: {
+                        icon: 'remove_circle',
                     },
                 })
             }
@@ -158,12 +176,15 @@ Fragments {
             grade:  -25
             filled: true
             weight: 400
+            icon: 'event'
 
             styles: ({
                 soon: {
+                    icon:  'alarm',
                     color: 'info/accent',
                 },
                 in_progress: {
+                    icon:  'event_upcoming',
                     color: 'severity/critical',
                 },
                 far_in_future: {
@@ -194,6 +215,13 @@ Fragments {
                 enabled: true
                 color:   'blue'
             }
+            icon: 'visibility_off'
+
+            styles: ({
+                unhide: {
+                    icon: 'visibility',
+                },
+            })
         }
 
         details {

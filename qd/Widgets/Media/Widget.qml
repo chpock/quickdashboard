@@ -33,7 +33,6 @@ Widget.Base {
             theme: root._theme
             config: album_art.config.no_art
 
-            icon: 'question_mark'
             anchors.fill: parent
             visible: parent.isUnknown
         }
@@ -109,7 +108,7 @@ Widget.Base {
                 theme: root._theme
                 config: control.config.button
 
-                icon: 'skip_previous'
+                style: 'previous'
                 visible: Provider.Mpris.hasPrev
                 onClicked: Provider.Mpris.prev()
             }
@@ -119,14 +118,17 @@ Widget.Base {
                 theme: root._theme
                 config: control.config.button
 
-                icon:
-                    Provider.Mpris.isPaused
-                    ? 'resume'
-                    : Provider.Mpris.isStopped
-                        ? 'play_arrow'
-                        : Provider.Mpris.hasPause
-                            ? 'pause'
-                            : 'stop'
+                style:
+                    'toggle/' +
+                    (
+                        Provider.Mpris.isPaused
+                        ? 'resume'
+                        : Provider.Mpris.isStopped
+                            ? 'play'
+                            : Provider.Mpris.hasPause
+                                ? 'pause'
+                                : 'stop'
+                    )
                 visible: Provider.Mpris.hasToggle
                 onClicked: Provider.Mpris.toggle()
             }
@@ -136,7 +138,7 @@ Widget.Base {
                 theme: root._theme
                 config: control.config.button
 
-                icon: 'skip_previous'
+                style: 'next'
                 visible: Provider.Mpris.hasNext
                 onClicked: Provider.Mpris.next()
             }

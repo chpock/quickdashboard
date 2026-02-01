@@ -40,7 +40,6 @@ Widget.Base {
             theme: root._theme
             config: clock.config.separator
 
-            text: ':'
             anchors.left: hours.right
             anchors.top: parent.top
         }

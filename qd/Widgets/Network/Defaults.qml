@@ -53,6 +53,7 @@ Fragments {
             padding {
                 right: '1ch'
             }
+            text: 'Latency'
         }
 
         value {
@@ -107,6 +108,7 @@ Fragments {
             padding {
                 right: '1ch'
             }
+            text: 'DNS'
         }
 
         latency {
@@ -139,6 +141,7 @@ Fragments {
             padding {
                 right: '1ch'
             }
+            text: 'Gateway'
         }
 
         details {

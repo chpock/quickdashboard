@@ -27,6 +27,7 @@ Fragments {
             right: 5
         }
         heightMode: 'capitals'
+        text: ':'
     }
 
     minutes {

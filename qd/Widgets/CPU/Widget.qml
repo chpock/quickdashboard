@@ -51,7 +51,6 @@ Widget.Base {
             theme: root._theme
             config: meter.config.title
 
-            text: 'CPU'
             anchors.left: parent.left
         }
 

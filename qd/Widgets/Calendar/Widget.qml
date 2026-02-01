@@ -84,7 +84,7 @@ Widget.Base {
             theme: root._theme
             config: header.config.icon
 
-            icon: 'keyboard_double_arrow_left'
+            style: 'month_previous'
             anchors.left: parent.left
             visible: parent.isHovered
             onClicked: root.changeMonth(-1)
@@ -105,7 +105,7 @@ Widget.Base {
             theme: root._theme
             config: header.config.icon
 
-            icon: 'today'
+            style: 'month_current'
             anchors.right: iconRight.left
             visible: parent.isHovered
             onClicked: root.changeMonth(0)
@@ -116,7 +116,7 @@ Widget.Base {
             theme: root._theme
             config: header.config.icon
 
-            icon: 'keyboard_double_arrow_right'
+            style: 'month_next'
             anchors.right: parent.right
             visible: parent.isHovered
             onClicked: root.changeMonth(1)
@@ -243,7 +243,6 @@ Widget.Base {
             theme: root._theme
             config: header.config.title
 
-            text: 'Events'
             anchors.left: parent.left
         }
 
@@ -252,7 +251,6 @@ Widget.Base {
             theme: root._theme
             config: header.config.button
 
-            icon: 'edit_calendar'
             style: 'application'
             anchors.right: buttonRefresh.left
             anchors.bottom: title.bottom
@@ -265,7 +263,6 @@ Widget.Base {
             theme: root._theme
             config: header.config.button
 
-            icon: 'refresh'
             style: 'refresh'
             anchors.right: buttonToggleVisibility.left
             anchors.bottom: title.bottom
@@ -278,7 +275,6 @@ Widget.Base {
             theme: root._theme
             config: header.config.button
 
-            icon: 'visibility_lock'
             style: 'visibility'
             isActive: Provider.Calendar.eventUpcomingShowHidden
             anchors.right: buttonPlus.left
@@ -292,7 +288,6 @@ Widget.Base {
             theme: root._theme
             config: header.config.button
 
-            icon: 'add_circle'
             style: 'plus'
             anchors.right: buttonMinus.left
             anchors.bottom: title.bottom
@@ -305,7 +300,6 @@ Widget.Base {
             theme: root._theme
             config: header.config.button
 
-            icon: 'remove_circle'
             style: 'minus'
             anchors.right: parent.right
             anchors.bottom: title.bottom
@@ -362,12 +356,6 @@ Widget.Base {
             theme: root._theme
             config: event.config.icon
 
-            icon:
-                event.isInProgress
-                    ? 'event_upcoming'
-                    : event.isSoon
-                        ? 'alarm'
-                        : 'event'
             style: event.style
             anchors.left: parent.left
             visible: !event.isEmpty
@@ -434,7 +422,7 @@ Widget.Base {
             theme: root._theme
             config: event.config.hide
 
-            icon: event.isHidden ? 'visibility' : 'visibility_off'
+            style: event.isHidden ? 'unhide' : undefined
             anchors.right: parent.right
             visible: event.isHovered && !event.isEmpty
             onClicked: Provider.Calendar.eventsUpcomingToggleEventVisibility(event.modelData.eventId)
