@@ -23,7 +23,7 @@ BaseStyled {
     readonly property TextFont font: TextFont {
         _defaults: root._defaults?.font ?? null
     }
-    readonly property Padding padding: Padding {
+    readonly property TextPadding padding: TextPadding {
         _defaults: root._defaults?.padding ?? null
     }
     readonly property TextScroll scroll: TextScroll {

@@ -29,18 +29,12 @@ Item {
         theme: root.theme
         config: C.Text {
             font {
-                size:      root._config.font.size
-                weight:    root._config.font.weight
-                family:    root._config.font.family
-                strikeout: root._config.font.strikeout
+                _defaults: root._config.font
             }
             overflow:   C.Text.OverflowNone
             heightMode: C.Text.HeightNormal
             padding {
-                left:   root._config.padding.left
-                right:  root._config.padding.right
-                top:    root._config.padding.top
-                bottom: root._config.padding.bottom
+                _defaults: root._config.padding
             }
             scroll {
                 duration:   0

@@ -8,6 +8,7 @@ QtObject {
     property var _custom
     property string _chain
     property bool _is_customized: false
+    property var _validation: ({})
 
     function _reset() {
 
@@ -15,9 +16,9 @@ QtObject {
             console.error(message + ':', _chain + '.' + prop + ':', JSON.stringify(_custom[prop]))
         }
 
-        function reportWrongCustomType(prop: string, typeActual: string, typeExpected: string) {
+        function reportWrongCustomType(prop: string, typeActual: string, typeExpected: var) {
             reportWrongCustom(`The property has invalid type '${typeActual}'` +
-                ` where '${typeExpected}' is expected`, prop)
+                ` where ${JSON.stringify(typeExpected)} is expected`, prop)
         }
 
         function validateStyles(targetStyles: var, customStyles: var, parentName: string): var {
@@ -146,8 +147,16 @@ QtObject {
             }
 
             if (customType !== targetType) {
-                reportWrongCustomType(prop, customType, targetType)
-                continue
+                if (root._validation.hasOwnProperty(prop)) {
+                    const allowedTypes = root._validation[prop]
+                    if (!allowedTypes.includes(customType)) {
+                        reportWrongCustomType(prop, customType, allowedTypes)
+                        continue
+                    }
+                } else {
+                    reportWrongCustomType(prop, customType, targetType)
+                    continue
+                }
             }
 
             // console.log('Set custom value for prop:', prop, 'type:', targetType, 'value:', JSON.stringify(customValue))

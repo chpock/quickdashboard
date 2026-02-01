@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 
-import qs.qd.Config as C
 import qs.qd.Widgets as Widget
 
 Fragments {
@@ -130,35 +129,30 @@ Fragments {
                     bottom: 3
                 }
 
-                styles: [
-                    C.Icon {
-                        style: 'application'
-                        padding {
-                            right: '2ch'
-                        }
+                styles: ({
+                    application: {
+                        padding: {
+                            right: '2ch',
+                        },
                     },
-                    C.Icon {
-                        style: 'refresh'
-                        padding {
-                            right: '2ch'
-                        }
+                    refresh: {
+                        padding: {
+                            right: '2ch',
+                        },
                     },
-                    C.Icon {
-                        style: 'visibility'
-                        padding {
-                            right: '2ch'
-                        }
+                    visibility: {
+                        padding: {
+                            right: '2ch',
+                        },
                     },
-                    C.Icon {
-                        style: 'plus'
-                        padding {
-                            right: '1ch'
-                        }
+                    plus: {
+                        padding: {
+                            right: '1ch',
+                        },
                     },
-                    C.Icon {
-                        style: 'minus'
+                    minus: {
                     },
-                ]
+                })
             }
 
         }
@@ -168,20 +162,18 @@ Fragments {
             grade:  -25
             filled: true
             weight: 400
-            styles: [
-                C.Icon {
-                    style: 'soon'
-                    color: 'info/accent'
+
+            styles: ({
+                soon: {
+                    color: 'info/accent',
                 },
-                C.Icon {
-                    style: 'in_progress'
-                    color: 'severity/critical'
+                in_progress: {
+                    color: 'severity/critical',
                 },
-                C.Icon {
-                    style: 'far_in_future'
-                    color: 'severity/ignore'
+                far_in_future: {
+                    color: 'severity/ignore',
                 },
-            ]
+            })
         }
 
         title {

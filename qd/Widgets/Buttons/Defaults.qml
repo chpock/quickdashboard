@@ -8,7 +8,7 @@ Fragments {
     property Widget.Base widget
 
     button {
-        _defaults: widget?._defaults.icon
+        _defaults: widget._defaults.icon
         color: 'white'
         hover {
             enabled: true

@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-Base {
+BaseStyled {
     id: root
 
     property Icon _defaults
@@ -10,7 +10,7 @@ Base {
     readonly property TextFont font: TextFont {
         _defaults: root._defaults?.font ?? null
     }
-    readonly property Padding padding: Padding {
+    readonly property TextPadding padding: TextPadding {
         _defaults: root._defaults?.padding ?? null
     }
     readonly property IconHover hover: IconHover {
@@ -27,39 +27,10 @@ Base {
     property var weight:      _defaults?.weight
     property var opticalSize: _defaults?.opticalSize
 
-    property var style
-    default property list<Icon> styles
-    property bool _styles_loaded: false
+    styles: _defaults?.styles
 
-    function getStyle(style) {
-        for (var i = 0; i < styles.length; ++i) {
-            if (styles[i].style === style) {
-                return styles[i]
-            }
-        }
-        return _defaults ? _defaults.getStyle(style) : null
+    function getStyleComponent() {
+        return Qt.createComponent("Icon.qml")
     }
 
-    Component.onCompleted: {
-        if (styles.length) {
-            const styleMap = {}
-            for (let i = 0; i < styles.length; i++) {
-                styleMap[styles[i].style] = i
-            }
-            for (let i = 0; i < styles.length; i++) {
-                const styleObj = styles[i]
-                const styleName = styleObj.style
-                const idx = styleName.lastIndexOf("/")
-                if (idx != -1) {
-                    const parentStyle = styleName.substring(0, idx)
-                    if (parentStyle in styleMap) {
-                        styleObj._defaults = styles[styleMap[parentStyle]]
-                        continue
-                    }
-                }
-                styleObj._defaults = root
-            }
-        }
-        _styles_loaded = true
-    }
 }

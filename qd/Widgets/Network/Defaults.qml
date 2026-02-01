@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import qs.qd.Widgets as Widget
-import qs.qd.Config as C
 
 Fragments {
 
