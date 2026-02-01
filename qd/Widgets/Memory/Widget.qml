@@ -31,7 +31,7 @@ Widget.Base {
         readonly property alias titleWidth: titleObj.implicitWidth
         readonly property var config: root._fragments.meter
 
-        property alias title: titleObj.text
+        required property string style
         property alias free: freeObj.value
         property alias total: totalObj.value
 
@@ -49,6 +49,7 @@ Widget.Base {
             theme: root._theme
             config: meter.config.title
 
+            style: meter.style
             anchors.left: parent.left
             width: root.titleWidth
         }
@@ -103,7 +104,7 @@ Widget.Base {
         anchors.left: parent.left
         anchors.right: parent.right
 
-        title: 'RAM'
+        style: 'ram'
         free:  Provider.Memory.ram.available
         total: Provider.Memory.ram.total
     }
@@ -114,7 +115,7 @@ Widget.Base {
         anchors.left: parent.left
         anchors.right: parent.right
 
-        title: 'Swap'
+        style: 'swap'
         free:  Provider.Memory.swap.free
         total: Provider.Memory.swap.total
     }

@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 
-Base {
+BaseStyled {
     id: root
 
     property TextTitle _defaults
@@ -27,4 +27,10 @@ Base {
     property var heightMode:            _defaults?.heightMode
     property var word_spacing_font_family: _defaults?.word_spacing_font_family
     property var text:                  _defaults?.text
+
+    styles: _defaults?.styles
+
+    function getStyleComponent() {
+        return Qt.createComponent("TextTitle.qml")
+    }
 }

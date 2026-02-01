@@ -14,6 +14,15 @@ Fragments {
             padding {
                 right: '2ch'
             }
+
+            styles: ({
+                ram: {
+                    text: 'RAM',
+                },
+                swap: {
+                    text: 'Swap',
+                },
+            })
         }
 
         free {
