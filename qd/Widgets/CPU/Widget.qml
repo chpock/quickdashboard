@@ -25,7 +25,7 @@ Widget.Base {
             cpu_usage.pushValue(data.usage)
         }
         function onUpdateCoresUsage(data) {
-            cores_usage.pushValues(data.coreUsage)
+            cores_usage.pushValues(data)
         }
     }
 

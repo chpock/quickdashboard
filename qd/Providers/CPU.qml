@@ -3,6 +3,7 @@ pragma Singleton
 
 import Quickshell
 import QtQuick
+import qs.qd as QD
 
 // This is required for quickshell hot reload to work.
 // qmllint disable unused-imports
@@ -16,6 +17,6 @@ Singleton {
     Loader {
         id: loader
 
-        source: "CPU/Provider.qml"
+        source: 'CPU/' + (QD.Settings.isDemo ? 'Mock' : '') + 'Provider.qml'
     }
 }

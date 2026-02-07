@@ -8,6 +8,8 @@ import QtCore
 Singleton {
     id: root
 
+    readonly property bool isDemo: false
+
     Settings {
         id: stateStore
         location: StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/ck.dashboard/state.ini"
