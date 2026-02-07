@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import qs.qd.Services as Service
-import qs.qd
+import qs.qd as QD
 import '../../utils.js' as Utils
 
 Scope {
@@ -50,7 +50,7 @@ Scope {
     ListModel {
         id: ifaceModelObj
         Component.onCompleted: {
-            let stateCount = SettingsData.stateGet('Provider.WirelessDevices.ListModel.count', 0)
+            let stateCount = QD.Settings.stateGet('Provider.WirelessDevices.ListModel.count', 0)
             const sampleData = {
                 'iface': '',
                 'ssid': '',
@@ -62,7 +62,7 @@ Scope {
             }
         }
         onCountChanged: {
-            SettingsData.stateSet('Provider.WirelessDevices.ListModel.count', count)
+            QD.Settings.stateSet('Provider.WirelessDevices.ListModel.count', count)
         }
     }
 

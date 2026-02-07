@@ -4,7 +4,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import qs.qd.Services as Service
-import qs.qd
+import qs.qd as QD
 
 Scope {
     id: root
@@ -125,13 +125,13 @@ Scope {
     ListModel {
         id: eventsUpcomingModelObj
         Component.onCompleted: {
-            let stateCount = SettingsData.stateGet('Provider.Calendar.ListModel.count', 3)
+            let stateCount = QD.Settings.stateGet('Provider.Calendar.ListModel.count', 3)
             while (stateCount-- > 0) {
                 append(sampleData)
             }
         }
         onCountChanged: {
-            SettingsData.stateSet('Provider.Calendar.ListModel.count', count)
+            QD.Settings.stateSet('Provider.Calendar.ListModel.count', count)
         }
     }
 
@@ -140,11 +140,11 @@ Scope {
     }
 
     Component.onCompleted: {
-        running = SettingsData.stateGet('Provider.Calendar.running', false)
+        running = QD.Settings.stateGet('Provider.Calendar.running', false)
     }
 
     onRunningChanged: {
-        SettingsData.stateSet('Provider.Calendar.running', running)
+        QD.Settings.stateSet('Provider.Calendar.running', running)
     }
 
     // Everything related to calendar application is below. Move it to a service?

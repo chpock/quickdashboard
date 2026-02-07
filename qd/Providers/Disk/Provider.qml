@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import qs.qd.Services as Service
-import qs.qd
+import qs.qd as QD
 
 Scope {
     id: root
@@ -61,7 +61,7 @@ Scope {
     ListModel {
         id: mountModelObj
         Component.onCompleted: {
-            let stateCount = SettingsData.stateGet('Provider.Disk.ListModel.count', 0)
+            let stateCount = QD.Settings.stateGet('Provider.Disk.ListModel.count', 0)
             const sampleData = {
                 'device': '',
                 'mount': '',
@@ -76,7 +76,7 @@ Scope {
             }
         }
         onCountChanged: {
-            SettingsData.stateSet('Provider.Disk.ListModel.count', count)
+            QD.Settings.stateSet('Provider.Disk.ListModel.count', count)
         }
     }
 

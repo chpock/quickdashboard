@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs.qd as Quickdashboard
+import qs.qd as QD
 import qs.qd.Elements as E
 import qs.qd.Config as C
 import qs.qd.Providers as Provider
@@ -525,7 +525,7 @@ Widget.Base {
 
     Component.onCompleted: {
         try {
-            calendarColors = JSON.parse(Quickdashboard.SettingsData.stateGet('Widget.Calendar.calendarColors', '{}'))
+            calendarColors = JSON.parse(QD.Settings.stateGet('Widget.Calendar.calendarColors', '{}'))
         }
         catch (e) {
             calendarColors = {}
@@ -535,7 +535,7 @@ Widget.Base {
 
     onCalendarColorsChanged: {
         if (!loaded) return
-        Quickdashboard.SettingsData.stateSet('Widget.Calendar.calendarColors', JSON.stringify(calendarColors))
+        QD.Settings.stateSet('Widget.Calendar.calendarColors', JSON.stringify(calendarColors))
     }
 
 }

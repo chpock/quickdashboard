@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.qd.Config as C
 import qs.qd.Elements as E
-import qs.qd
+import qs.qd as QD
 
 Item {
     id: root
@@ -54,7 +54,7 @@ Item {
     ListModel {
         id: rows
         Component.onCompleted: {
-            let stateCount = SettingsData.stateGet('Element.ProcessList.ListModel.count', 3)
+            let stateCount = QD.Settings.stateGet('Element.ProcessList.ListModel.count', 3)
             const sampleData = {
                 'command': '',
                 'args': '',
@@ -65,7 +65,7 @@ Item {
             }
         }
         onCountChanged: {
-            SettingsData.stateSet('Element.ProcessList.ListModel.count', count)
+            QD.Settings.stateSet('Element.ProcessList.ListModel.count', count)
         }
     }
 
