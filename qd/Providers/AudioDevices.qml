@@ -3,16 +3,19 @@ pragma Singleton
 
 import Quickshell
 import QtQuick
-import Quickshell.Services.Pipewire
+
+// This is required for quickshell hot reload to work.
+// qmllint disable unused-imports
+import qs.qd.Providers.AudioDevices
+// qmllint enable unused-imports
 
 Singleton {
-    id: root
 
-    readonly property PwNode sink: Pipewire.defaultAudioSink
-    readonly property PwNode source: Pipewire.defaultAudioSource
+    property alias instance: loader.item
 
-    PwObjectTracker {
-        objects: Pipewire.nodes.values.filter(node => node.audio && !node.isStream)
+    Loader {
+        id: loader
+
+        source: "AudioDevices/Provider.qml"
     }
-
 }

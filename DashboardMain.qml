@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import qs.qd.Widgets as W
 import qs.qd
+import QtQuick
 
 Dashboard {
 
@@ -27,15 +28,7 @@ Dashboard {
     }
 
     W.Buttons {
-
-        // fragments: ({
-        //     button: {
-        //         hover: {
-        //             color: 'red',
-        //         },
-        //         color: 'green',
-        //     },
-        // })
+        id: b
 
         buttons: [
             {

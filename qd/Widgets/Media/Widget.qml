@@ -8,6 +8,8 @@ import qs.qd.Providers as Provider
 Widget.Base {
     id: root
 
+    readonly property var providerMpris: Provider.Mpris.instance
+
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
@@ -20,7 +22,7 @@ Widget.Base {
         id: album_art
 
         readonly property var config: root._fragments.album_art
-        property bool isUnknown: !Provider.Mpris.hasTrackArt || isImageEmpty
+        property bool isUnknown: !root.providerMpris.hasTrackArt || isImageEmpty
         property bool isImageEmpty: true
 
         implicitWidth: config.size.width
@@ -46,7 +48,7 @@ Widget.Base {
             cache: false
             fillMode: Image.PreserveAspectCrop
             retainWhileLoading: true
-            source: Provider.Mpris.trackArtUrl
+            source: root.providerMpris.trackArtUrl
             visible: !parent.isUnknown
             onStatusChanged: {
                 if (image.status === Image.Ready) {
@@ -58,15 +60,15 @@ Widget.Base {
         }
 
         TapHandler {
-            enabled: Provider.Mpris.hasRaise
+            enabled: root.providerMpris.hasRaise
             gesturePolicy: TapHandler.WithinBounds
             onTapped: {
-                Provider.Mpris.raise()
+                root.providerMpris.raise()
             }
         }
 
         HoverHandler {
-            enabled: Provider.Mpris.hasRaise
+            enabled: root.providerMpris.hasRaise
             acceptedButtons: Qt.NoButton
             cursorShape: Qt.PointingHandCursor
         }
@@ -109,8 +111,8 @@ Widget.Base {
                 config: control.config.button
 
                 style: 'previous'
-                visible: Provider.Mpris.hasPrev
-                onClicked: Provider.Mpris.prev()
+                visible: root.providerMpris.hasPrev
+                onClicked: root.providerMpris.prev()
             }
 
             E.Icon {
@@ -121,16 +123,16 @@ Widget.Base {
                 style:
                     'toggle/' +
                     (
-                        Provider.Mpris.isPaused
+                        root.providerMpris.isPaused
                         ? 'resume'
-                        : Provider.Mpris.isStopped
+                        : root.providerMpris.isStopped
                             ? 'play'
-                            : Provider.Mpris.hasPause
+                            : root.providerMpris.hasPause
                                 ? 'pause'
                                 : 'stop'
                     )
-                visible: Provider.Mpris.hasToggle
-                onClicked: Provider.Mpris.toggle()
+                visible: root.providerMpris.hasToggle
+                onClicked: root.providerMpris.toggle()
             }
 
             E.Icon {
@@ -139,8 +141,8 @@ Widget.Base {
                 config: control.config.button
 
                 style: 'next'
-                visible: Provider.Mpris.hasNext
-                onClicked: Provider.Mpris.next()
+                visible: root.providerMpris.hasNext
+                onClicked: root.providerMpris.next()
             }
         }
     }
@@ -170,16 +172,20 @@ Widget.Base {
             anchors.top: parent.top
 
             readonly property bool visibleTime:
-                !statusBoxHovered.hovered && Provider.Mpris.hasLength && Provider.Mpris.hasPosition
+                !statusBoxHovered.hovered && root.providerMpris.hasLength && root.providerMpris.hasPosition
             readonly property bool visibleControl:
-                !visibleTime && (Provider.Mpris.hasPrev || Provider.Mpris.hasToggle || Provider.Mpris.hasNext)
+                !visibleTime && (
+                    root.providerMpris.hasPrev ||
+                    root.providerMpris.hasToggle ||
+                    root.providerMpris.hasNext
+                )
 
             E.Text {
                 id: status
                 theme: root._theme
                 config: player.config.status
 
-                style: Provider.Mpris.status
+                style: root.providerMpris.status
                 anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.right:
@@ -191,14 +197,14 @@ Widget.Base {
                 anchors.rightMargin: (parent.visibleTime || parent.visibleControl) ? wordSpacing : 0
 
                 TapHandler {
-                    enabled: Provider.Mpris.hasPlayer
+                    enabled: root.providerMpris.hasPlayer
                     gesturePolicy: TapHandler.WithinBounds
                     onTapped: {
-                        Provider.Mpris.toggle()
+                        root.providerMpris.toggle()
                     }
                 }
                 HoverHandler {
-                    enabled: Provider.Mpris.hasPlayer
+                    enabled: root.providerMpris.hasPlayer
                     acceptedButtons: Qt.NoButton
                     cursorShape: Qt.PointingHandCursor
                 }
@@ -210,7 +216,7 @@ Widget.Base {
                 config: player.config.time
 
                 text: {
-                    const time = Math.max(0, Provider.Mpris.length - Provider.Mpris.position)
+                    const time = Math.max(0, root.providerMpris.length - root.providerMpris.position)
                     const hours = Math.floor(time / 3600)
                     const mins = Math.floor((time % 3600) / 60)
                     const secs = time % 60
@@ -241,14 +247,14 @@ Widget.Base {
             theme: root._theme
             config: player.config.slider
 
-            value: Provider.Mpris.position
-            maxValue: Provider.Mpris.length
+            value: root.providerMpris.position
+            maxValue: root.providerMpris.length
             anchors.top: status_box.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            canSeek: Provider.Mpris.hasSeek
+            canSeek: root.providerMpris.hasSeek
             onSlide: offset => {
-                Provider.Mpris.activePlayer.position = offset
+                root.providerMpris.activePlayer.position = offset
             }
         }
 
@@ -257,11 +263,11 @@ Widget.Base {
             theme: root._theme
             config: player.config.track
 
-            text: Provider.Mpris.track
+            text: root.providerMpris.track
             anchors.top: slider.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            visible: Provider.Mpris.hasPlayer
+            visible: root.providerMpris.hasPlayer
         }
 
         E.Text {
@@ -269,11 +275,11 @@ Widget.Base {
             theme: root._theme
             config: player.config.artist
 
-            text: Provider.Mpris.artist
+            text: root.providerMpris.artist
             anchors.top: track.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            visible: Provider.Mpris.hasPlayer
+            visible: root.providerMpris.hasPlayer
         }
 
     }

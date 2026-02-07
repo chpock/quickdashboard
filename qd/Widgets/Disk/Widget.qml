@@ -8,6 +8,8 @@ import qs.qd.Providers as Provider
 Widget.Base {
     id: root
 
+    readonly property var providerDisk: Provider.Disk.instance
+
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
@@ -17,7 +19,7 @@ Widget.Base {
     }
 
     Connections {
-        target: Provider.Disk
+        target: root.providerDisk
         function onUpdateDiskRate(data) {
             rates.children[0].children[2].pushValue(data.readrate)
             rates.children[1].children[2].pushValue(data.writerate)
@@ -111,7 +113,7 @@ Widget.Base {
     }
 
     Repeater {
-        model: Provider.Disk.mountModel
+        model: root.providerDisk.mountModel
 
         Mount {
             anchors.left: parent?.left
@@ -142,7 +144,7 @@ Widget.Base {
             theme: root._theme
             config: item.config.rate
 
-            value: Provider.Disk.rate[item.modelData]
+            value: root.providerDisk.rate[item.modelData]
             isRate: true
             anchors.right: parent.right
             anchors.bottom: label.bottom

@@ -8,6 +8,9 @@ import qs.qd.Providers as Provider
 Widget.Base {
     id: root
 
+    readonly property var providerWirelessDevices: Provider.WirelessDevices.instance
+    readonly property var providerNetwork: Provider.Network.instance
+
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
@@ -17,7 +20,7 @@ Widget.Base {
     }
 
     Connections {
-        target: Provider.Network
+        target: root.providerNetwork
         function onUpdateNetworkRate(data) {
             rates.children[0].children[2].pushValue(data.rxrate)
             rates.children[1].children[2].pushValue(data.txrate)
@@ -74,7 +77,7 @@ Widget.Base {
     }
 
     Repeater {
-        model: Provider.WirelessDevices.ifaceModel
+        model: root.providerWirelessDevices.ifaceModel
 
         WirelessIface {
             anchors.left: parent.left
@@ -110,7 +113,7 @@ Widget.Base {
             readonly property real time:
                 marksHoverHandler.hovered
                     ? latency.hoveredMarkTime
-                    : Provider.Network.latency.time
+                    : root.providerNetwork.latency.time
 
             text: Number.isFinite(time) ? Math.round(time) + ' ms' : 'ERR'
             value: time
@@ -125,7 +128,7 @@ Widget.Base {
             text:
                 marksHoverHandler.hovered
                     ? latency.hoveredMarkName
-                    : Provider.Network.latency.name
+                    : root.providerNetwork.latency.name
             anchors.top: title.bottom
             anchors.left: parent.left
             anchors.right: marks.left
@@ -144,7 +147,7 @@ Widget.Base {
             spacing: latency.config.marks.spacing.horizontal
 
             Repeater {
-                model: Provider.Network.latencyHostsModel
+                model: root.providerNetwork.latencyHostsModel
 
                 Item {
                     id: mark
@@ -152,7 +155,7 @@ Widget.Base {
                     required property var modelData
 
                     readonly property bool isActive:
-                        hoverHandler.hovered || (!marksHoverHandler.hovered && modelData.host === Provider.Network.latency.host)
+                        hoverHandler.hovered || (!marksHoverHandler.hovered && modelData.host === root.providerNetwork.latency.host)
                     readonly property color color:
                         latency.config.value.thresholds.getColor(modelData.time, root._theme)
 
@@ -201,7 +204,7 @@ Widget.Base {
 
         readonly property var config: root._fragments.dns
 
-        readonly property bool isOk: Number.isFinite(Provider.Network.dnsCheckTime)
+        readonly property bool isOk: Number.isFinite(root.providerNetwork.dnsCheckTime)
 
         implicitHeight: Math.max(title.implicitHeight, latency.implicitHeight, status.implicitHeight)
 
@@ -218,7 +221,7 @@ Widget.Base {
             theme: root._theme
             config: dns.config.latency
 
-            text: dns.isOk ? Provider.Network.dnsCheckTime + ' ms' : ''
+            text: dns.isOk ? root.providerNetwork.dnsCheckTime + ' ms' : ''
             anchors.left: title.right
             anchors.bottom: title.bottom
         }
@@ -229,7 +232,7 @@ Widget.Base {
             config: dns.config.status
 
             text: dns.isOk ? 'Ok' : 'ERR'
-            value: Provider.Network.dnsCheckTime
+            value: root.providerNetwork.dnsCheckTime
             anchors.right: parent.right
         }
     }
@@ -259,7 +262,7 @@ Widget.Base {
             theme: root._theme
             config: gateway.config.details
 
-            text: Provider.Network.gatewayDefault.host
+            text: root.providerNetwork.gatewayDefault.host
             anchors.left: title.right
             anchors.right: latency.left
             anchors.bottom: title.bottom
@@ -270,11 +273,13 @@ Widget.Base {
             theme: root._theme
             config: gateway.config.latency
 
+            readonly property real gatewayLatency: root.providerNetwork.gatewayDefault.latency
+
             text:
-                Number.isFinite(Provider.Network.gatewayDefault.latency)
-                    ? Math.round(Provider.Network.gatewayDefault.latency) + ' ms'
+                Number.isFinite(gatewayLatency)
+                    ? Math.round(gatewayLatency) + ' ms'
                     : 'ERR'
-            value: Provider.Network.gatewayDefault.latency
+            value: gatewayLatency
             anchors.right: parent.right
         }
     }
@@ -306,7 +311,7 @@ Widget.Base {
             theme: root._theme
             config: item.config.rate
 
-            value: Provider.Network.rate[item.modelData]
+            value: root.providerNetwork.rate[item.modelData]
             isRate: true
             anchors.right: parent.right
             anchors.bottom: label.bottom

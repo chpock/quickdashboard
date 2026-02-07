@@ -8,6 +8,8 @@ import qs.qd.Widgets as Widget
 Widget.Base {
     id: root
 
+    readonly property var providerAudioDevices: Provider.AudioDevices.instance
+
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
@@ -150,11 +152,11 @@ Widget.Base {
         model: [
             {
                 name: "output",
-                device: Provider.AudioDevices.sink,
+                device: root.providerAudioDevices.sink,
             },
             {
                 name: "input",
-                device: Provider.AudioDevices.source,
+                device: root.providerAudioDevices.source,
             },
         ]
 

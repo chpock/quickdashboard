@@ -2,11 +2,13 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import qs.qd.Elements as E
-import qs.qd.Providers as P
+import qs.qd.Providers as Provider
 import qs.qd.Widgets as Widget
 
 Widget.Base {
     id: root
+
+    readonly property var providerSystemClock: Provider.SystemClock.instance
 
     _fragments: Fragments {
         _defaults: Defaults {
@@ -30,7 +32,7 @@ Widget.Base {
             theme: root._theme
             config: clock.config.hours
 
-            text: Qt.formatDateTime(P.SystemClock.dateMinutes, "hh")
+            text: Qt.formatDateTime(root.providerSystemClock.dateMinutes, "hh")
             anchors.left: parent.left
             anchors.top: parent.top
         }
@@ -49,7 +51,7 @@ Widget.Base {
             theme: root._theme
             config: clock.config.minutes
 
-            text: Qt.formatDateTime(P.SystemClock.dateMinutes, "mm")
+            text: Qt.formatDateTime(root.providerSystemClock.dateMinutes, "mm")
             anchors.left: separator.right
             anchors.top: parent.top
         }

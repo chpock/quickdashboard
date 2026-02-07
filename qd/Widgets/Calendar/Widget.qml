@@ -10,6 +10,9 @@ import qs.qd.Widgets as Widget
 Widget.Base {
     id: root
 
+    readonly property var providerCalendar: Provider.Calendar.instance
+    readonly property var providerSystemClock: Provider.SystemClock.instance
+
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
@@ -25,7 +28,7 @@ Widget.Base {
         return Qt.locale().firstDayOfWeek % 7
     }
 
-    readonly property date currentDate: Provider.SystemClock.dateDays
+    readonly property date currentDate: root.providerSystemClock.dateDays
     readonly property string currentDateString: currentDate.toDateString()
 
     function changeCalendarColor(calendarId) {
@@ -254,8 +257,8 @@ Widget.Base {
             style: 'application'
             anchors.right: buttonRefresh.left
             anchors.bottom: title.bottom
-            visible: parent.isHovered && Provider.Calendar.calendarApplicationAvailable
-            onClicked: Provider.Calendar.runCalendarApplication()
+            visible: parent.isHovered && root.providerCalendar.calendarApplicationAvailable
+            onClicked: root.providerCalendar.runCalendarApplication()
         }
 
         E.Icon {
@@ -267,7 +270,7 @@ Widget.Base {
             anchors.right: buttonToggleVisibility.left
             anchors.bottom: title.bottom
             visible: parent.isHovered
-            onClicked: Provider.Calendar.refresh()
+            onClicked: root.providerCalendar.refresh()
         }
 
         E.Icon {
@@ -276,11 +279,11 @@ Widget.Base {
             config: header.config.button
 
             style: 'visibility'
-            isActive: Provider.Calendar.eventUpcomingShowHidden
+            isActive: root.providerCalendar.eventUpcomingShowHidden
             anchors.right: buttonPlus.left
             anchors.bottom: title.bottom
             visible: parent.isHovered
-            onClicked: Provider.Calendar.eventsUpcomingToggleVisibility()
+            onClicked: root.providerCalendar.eventsUpcomingToggleVisibility()
         }
 
         E.Icon {
@@ -292,7 +295,7 @@ Widget.Base {
             anchors.right: buttonMinus.left
             anchors.bottom: title.bottom
             visible: parent.isHovered
-            onClicked: Provider.Calendar.eventsUpcomingChangeAmount(1)
+            onClicked: root.providerCalendar.eventsUpcomingChangeAmount(1)
         }
 
         E.Icon {
@@ -304,14 +307,14 @@ Widget.Base {
             anchors.right: parent.right
             anchors.bottom: title.bottom
             visible: parent.isHovered
-            onClicked: Provider.Calendar.eventsUpcomingChangeAmount(-1)
+            onClicked: root.providerCalendar.eventsUpcomingChangeAmount(-1)
         }
     }
 
     EventsHeader {
         anchors.left: parent.left
         anchors.right: parent.right
-        visible: Provider.Calendar.running
+        visible: root.providerCalendar.running
     }
 
     component Event: Item {
@@ -321,11 +324,11 @@ Widget.Base {
 
         readonly property var config: root._fragments.events
         readonly property var eventTime: event.modelData.start.getTime()
-        readonly property var currentTime: Provider.SystemClock.dateSeconds.getTime()
+        readonly property var currentTime: root.providerSystemClock.dateSeconds.getTime()
         readonly property int eventTimeDelta: Math.abs((eventTime - currentTime) / 10 ** 3)
         readonly property bool isInProgress: currentTime >= eventTime ? true : false
 
-        readonly property bool isHidden: Provider.Calendar.eventsUpcomingIsHidden(modelData.eventId)
+        readonly property bool isHidden: root.providerCalendar.eventsUpcomingIsHidden(modelData.eventId)
         readonly property bool isEmpty: modelData.eventId === ''
 
         readonly property bool isSoon: !isInProgress && eventTimeDelta <= config.alarm_offset_seconds
@@ -425,7 +428,7 @@ Widget.Base {
             style: event.isHidden ? 'unhide' : undefined
             anchors.right: parent.right
             visible: event.isHovered && !event.isEmpty
-            onClicked: Provider.Calendar.eventsUpcomingToggleEventVisibility(event.modelData.eventId)
+            onClicked: root.providerCalendar.eventsUpcomingToggleEventVisibility(event.modelData.eventId)
         }
 
         E.Text {
@@ -511,12 +514,12 @@ Widget.Base {
     }
 
     Repeater {
-        model: Provider.Calendar.eventsUpcomingModel
+        model: root.providerCalendar.eventsUpcomingModel
 
         Event {
             anchors.left: parent?.left
             anchors.right: parent?.right
-            visible: Provider.Calendar.running
+            visible: root.providerCalendar.running
         }
     }
 

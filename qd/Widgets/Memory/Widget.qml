@@ -8,6 +8,9 @@ import qs.qd.Widgets as Widget
 Widget.Base {
     id: root
 
+    readonly property var providerMemory: Provider.Memory.instance
+    readonly property var providerProcess: Provider.Process.instance
+
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
@@ -17,7 +20,7 @@ Widget.Base {
     }
 
     Connections {
-        target: Provider.Process
+        target: root.providerProcess
         function onUpdateProcessesByRAM(data) {
             processList.pushValues(data)
         }
@@ -105,8 +108,8 @@ Widget.Base {
         anchors.right: parent.right
 
         style: 'ram'
-        free:  Provider.Memory.ram.available
-        total: Provider.Memory.ram.total
+        free:  root.providerMemory.ramAvailable
+        total: root.providerMemory.ramTotal
     }
 
     Meter {
@@ -116,8 +119,8 @@ Widget.Base {
         anchors.right: parent.right
 
         style: 'swap'
-        free:  Provider.Memory.swap.free
-        total: Provider.Memory.swap.total
+        free:  root.providerMemory.swapFree
+        total: root.providerMemory.swapTotal
     }
 
     E.ProcessList {

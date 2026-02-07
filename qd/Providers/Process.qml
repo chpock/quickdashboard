@@ -3,32 +3,19 @@ pragma Singleton
 
 import Quickshell
 import QtQuick
-import qs.qd.Services as Service
+
+// This is required for quickshell hot reload to work.
+// qmllint disable unused-imports
+import qs.qd.Providers.Process
+// qmllint enable unused-imports
 
 Singleton {
-    id: root
 
-    signal updateProcessesByCPU(var info)
-    signal updateProcessesByRAM(var info)
+    property alias instance: loader.item
 
-    Component.onCompleted: {
-        Service.Dgop.subscribe('processesByCPU')
-        Service.Dgop.subscribe('processesByRAM')
+    Loader {
+        id: loader
+
+        source: "Process/Provider.qml"
     }
-
-    Component.onDestruction: {
-        Service.Dgop.unsubscribe('processesByCPU')
-        Service.Dgop.unsubscribe('processesByRAM')
-    }
-
-    Connections {
-        target: Service.Dgop
-        function onUpdateProcessesByCPU(data) {
-            root.updateProcessesByCPU(data)
-        }
-        function onUpdateProcessesByRAM(data) {
-            root.updateProcessesByRAM(data)
-        }
-    }
-
 }

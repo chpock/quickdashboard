@@ -2,17 +2,20 @@ pragma ComponentBehavior: Bound
 pragma Singleton
 
 import Quickshell
-import qs.qd.Services as Service
+import QtQuick
+
+// This is required for quickshell hot reload to work.
+// qmllint disable unused-imports
+import qs.qd.Providers.SystemClock
+// qmllint enable unused-imports
 
 Singleton {
-    id: root
 
-    readonly property date dateSeconds: Service.SystemClock.dateSeconds
-    readonly property date dateMinutes: Service.SystemClock.dateMinutes
-    readonly property date dateHours: Service.SystemClock.dateHours
-    readonly property date dateDays: Service.SystemClock.dateHours
+    property alias instance: loader.item
 
-    readonly property int seconds: dateSeconds.getSeconds()
-    readonly property int minutes: dateMinutes.getMinutes()
-    readonly property int hours: dateHours.getHours()
+    Loader {
+        id: loader
+
+        source: "SystemClock/Provider.qml"
+    }
 }

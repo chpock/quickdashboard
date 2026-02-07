@@ -8,6 +8,9 @@ import qs.qd.Widgets as Widget
 Widget.Base {
     id: root
 
+    readonly property var providerCPU: Provider.CPU.instance
+    readonly property var providerProcess: Provider.Process.instance
+
     _fragments: Fragments {
         _defaults: Defaults {
             widget: root
@@ -17,17 +20,17 @@ Widget.Base {
     }
 
     Connections {
-        target: Provider.CPU
-        function onUpdateCPU(data) {
+        target: root.providerCPU
+        function onUpdateUsage(data) {
             cpu_usage.pushValue(data.usage)
         }
-        function onUpdateCPUCores(data) {
+        function onUpdateCoresUsage(data) {
             cores_usage.pushValues(data.coreUsage)
         }
     }
 
     Connections {
-        target: Provider.Process
+        target: root.providerProcess
         function onUpdateProcessesByCPU(data) {
             processList.pushValues(data)
         }
@@ -59,7 +62,7 @@ Widget.Base {
             theme: root._theme
             config: meter.config.temperature
 
-            value: Provider.CPU.cpu.temperature
+            value: root.providerCPU.temperature
             anchors.right: parent.right
             anchors.bottom: title.bottom
         }
@@ -69,7 +72,7 @@ Widget.Base {
             theme: root._theme
             config: meter.config.percent
 
-            value: Provider.CPU.cpu.usage
+            value: root.providerCPU.usage
             anchors.right: parent.right
             anchors.bottom: title.bottom
         }
@@ -79,7 +82,7 @@ Widget.Base {
             theme: root._theme
             config: meter.config.bar
 
-            value: Provider.CPU.cpu.usage
+            value: root.providerCPU.usage
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
