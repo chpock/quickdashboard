@@ -26,8 +26,8 @@ import Quickshell.Services.Pipewire
 Scope {
     id: root
 
-    readonly property PwNode sink: Pipewire.defaultAudioSink
-    readonly property PwNode source: Pipewire.defaultAudioSource
+    property var sink: Pipewire.defaultAudioSink
+    property var source: Pipewire.defaultAudioSource
 
     PwObjectTracker {
         objects: Pipewire.nodes.values.filter(node => node.audio && !node.isStream)
