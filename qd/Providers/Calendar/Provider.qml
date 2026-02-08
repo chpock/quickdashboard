@@ -23,6 +23,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import qs.qd.Services as Service
+import qs.qd.Providers as Providers
 import qs.qd as QD
 
 Scope {
@@ -33,15 +34,20 @@ Scope {
     readonly property alias eventsTodayModel: eventsTodayModelObj
 
     property var eventsAll: []
-    property var sampleData: {
-        'calendarId': '',
-        'eventId':    '',
-        'title':      '',
-        'start':      new Date(),
-        'end':        new Date(),
-    }
+    property var sampleData: ({
+        calendarId: '',
+        eventId:    '',
+        title:      '',
+        start:      new Date(),
+        end:        new Date(),
+    })
     property var eventsUpcomingHiddenItems: []
     property bool eventUpcomingShowHidden: false
+
+    property var calendarColors: ({})
+    property bool calendarColorsLoaded: false
+
+    property bool hasService: true
 
     Connections {
         target: Service.SystemClock
@@ -52,6 +58,7 @@ Scope {
 
     Connections {
         target: Service.Khal
+        enabled: root.hasService
         function onUpdateEvents(data) {
             root.eventsAll = data
             root.updateModels()
@@ -69,7 +76,7 @@ Scope {
     }
 
     function updateModels() {
-        const currentDateObj = new Date()
+        const currentDateObj = Providers.SystemClock.instance.dateSeconds
         const currentDate = currentDateObj.toDateString()
         const currentTime = currentDateObj.getTime()
         let idxEventUpcoming = 0
@@ -159,11 +166,25 @@ Scope {
     }
 
     Component.onCompleted: {
-        running = QD.Settings.stateGet('Provider.Calendar.running', false)
+        if (root.hasService) {
+
+            running = QD.Settings.stateGet('Provider.Calendar.running', false)
+
+            try {
+                calendarColors = JSON.parse(QD.Settings.stateGet('Provider.Calendar.calendarColors', '{}'))
+            }
+            catch (e) {
+                calendarColors = {}
+            }
+
+            calendarColorsLoaded = true
+        }
     }
 
     onRunningChanged: {
-        QD.Settings.stateSet('Provider.Calendar.running', running)
+        if (root.hasService) {
+            QD.Settings.stateSet('Provider.Calendar.running', running)
+        }
     }
 
     // Everything related to calendar application is below. Move it to a service?
@@ -192,7 +213,7 @@ Scope {
     Timer {
         id: initCalendarApplicationTimer
         interval: 500
-        running: true
+        running: root.hasService
         repeat: false
         onTriggered: root.refreshCalendarApplication()
     }
@@ -200,7 +221,7 @@ Scope {
     Timer {
         id: refreshCalendarApplicationTimer
         interval: 1000 * 60 * 5
-        running: true
+        running: root.hasService
         repeat: true
         onTriggered: root.refreshCalendarApplication()
     }
@@ -216,6 +237,29 @@ Scope {
             }
             root.refresh()
         }
+    }
+
+    function cycleCalendarColor(calendarId: string, maxColors: int): void {
+
+        let colorIdx = calendarId in calendarColors ? calendarColors[calendarId] : -1
+        colorIdx += 1
+        if (colorIdx >= maxColors) {
+            // Re-create an object to trigger changes in bindings
+            const calendarColorsNew = Object.assign({}, calendarColors)
+            delete calendarColorsNew[calendarId]
+            calendarColors = calendarColorsNew
+        } else {
+            // Re-create an object to trigger changes in bindings
+            calendarColors = Object.assign({}, calendarColors, { [calendarId]: colorIdx })
+        }
+
+    }
+
+    onCalendarColorsChanged: {
+        if (!calendarColorsLoaded) {
+            return
+        }
+        QD.Settings.stateSet('Provider.Calendar.calendarColors', JSON.stringify(calendarColors))
     }
 
 }

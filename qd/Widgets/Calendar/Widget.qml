@@ -40,27 +40,8 @@ Widget.Base {
         _chain: (root._chain ? root._chain + '.' : '') + root.type + '.fragments'
     }
 
-    property var calendarColors
-    property bool loaded: false
-
     readonly property date currentDate: root.providerSystemClock.dateDays
     readonly property string currentDateString: currentDate.toDateString()
-
-    function changeCalendarColor(calendarId) {
-
-        let colorIdx = calendarId in calendarColors ? calendarColors[calendarId] : -1
-        colorIdx += 1
-        if (colorIdx >= _theme.palette._names.length) {
-            // Re-create an object to trigger changes in bindings
-            const calendarColorsNew = Object.assign({}, calendarColors)
-            delete calendarColorsNew[calendarId]
-            calendarColors = calendarColorsNew
-        } else {
-            // Re-create an object to trigger changes in bindings
-            calendarColors = Object.assign({}, calendarColors, { [calendarId]: colorIdx })
-        }
-
-    }
 
     function changeMonth(direction) {
         if (direction === 0) {
@@ -410,27 +391,30 @@ Widget.Base {
                     _defaults: event.config.title
                     styles: undefined
                     color:
-                        event.modelData.calendarId in root.calendarColors
-                            ? root._theme.palette.getByIndex(root.calendarColors[event.modelData.calendarId])
+                        titleIcon.hasCalendarColor
+                            ? root._theme.palette.getByIndex(root.providerCalendar.calendarColors[event.modelData.calendarId])
                             : root._theme.getColor('text/primary')
                 }
+
+                readonly property bool hasCalendarColor:
+                    event.modelData.calendarId in root.providerCalendar.calendarColors
 
                 text:
                     event.isEmpty
                         ? ''
-                        : event.modelData.calendarId in root.calendarColors
+                        : hasCalendarColor
                             ? " \u25CF "
                             : " \u25CB "
                 anchors.left: titleText.right
                 anchors.right: parent.right
-                visible: (event.modelData.calendarId in root.calendarColors) || event.isHovered
+                visible: hasCalendarColor || event.isHovered
                 HoverHandler {
                     enabled: !event.isEmpty
                     acceptedButtons: Qt.NoButton
                     cursorShape: Qt.PointingHandCursor
                 }
                 TapHandler {
-                    onTapped: root.changeCalendarColor(event.modelData.calendarId)
+                    onTapped: root.providerCalendar.cycleCalendarColor(event.modelData.calendarId, root._theme.palette._names.length)
                 }
             }
 
@@ -537,21 +521,6 @@ Widget.Base {
             anchors.right: parent?.right
             visible: root.providerCalendar.running
         }
-    }
-
-    Component.onCompleted: {
-        try {
-            calendarColors = JSON.parse(QD.Settings.stateGet('Widget.Calendar.calendarColors', '{}'))
-        }
-        catch (e) {
-            calendarColors = {}
-        }
-        loaded = true
-    }
-
-    onCalendarColorsChanged: {
-        if (!loaded) return
-        QD.Settings.stateSet('Widget.Calendar.calendarColors', JSON.stringify(calendarColors))
     }
 
 }

@@ -22,6 +22,7 @@ pragma Singleton
 
 import Quickshell
 import QtQuick
+import qs.qd as QD
 
 // This is required for quickshell hot reload to work.
 // qmllint disable unused-imports
@@ -35,6 +36,6 @@ Singleton {
     Loader {
         id: loader
 
-        source: "Calendar/Provider.qml"
+        source: 'Calendar/' + (QD.Settings.isDemo ? 'Mock' : '') + 'Provider.qml'
     }
 }
