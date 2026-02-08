@@ -19,23 +19,16 @@
 
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import QtQuick
-import qs.qd.Services as Service
 
-Scope {
+Provider {
     id: root
 
-    property date dateSeconds: Service.SystemClock.dateSeconds
-    property date dateMinutes: Service.SystemClock.dateMinutes
-    property date dateHours:   Service.SystemClock.dateHours
-    property date dateDays:    Service.SystemClock.dateHours
+    // 2009-02-13T23:31:30Z + current local timezone shift
+    dateSeconds: new Date(1234567890 * 1000 + new Date().getTimezoneOffset() * 60000)
+    dateMinutes: dateSeconds
+    dateHours: dateSeconds
+    dateDays: dateSeconds
 
-    readonly property int hours:   dateHours.getHours()
-    readonly property int minutes: dateMinutes.getMinutes()
-    readonly property int seconds: dateSeconds.getSeconds()
-
-    property int firstDayOfWeek: {
-        return Qt.locale().firstDayOfWeek % 7
-    }
+    firstDayOfWeek: 1
 }

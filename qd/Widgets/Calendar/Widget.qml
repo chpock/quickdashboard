@@ -43,10 +43,6 @@ Widget.Base {
     property var calendarColors
     property bool loaded: false
 
-    readonly property int firstDayOfWeek: {
-        return Qt.locale().firstDayOfWeek % 7
-    }
-
     readonly property date currentDate: root.providerSystemClock.dateDays
     readonly property string currentDateString: currentDate.toDateString()
 
@@ -155,12 +151,13 @@ Widget.Base {
         id: calendar
 
         property date activeDate: root.currentDate
-        property string activeDateString: activeDate.toDateString()
         readonly property var config: root._fragments.calendar
+        readonly property int firstDayOfWeek: root.providerSystemClock.firstDayOfWeek
         readonly property date startDate: {
             const monthStartDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1)
             let dateDiff = monthStartDate.getDay()
-            dateDiff = (dateDiff + 7 - root.firstDayOfWeek) % 7
+            dateDiff = (dateDiff + 7 - firstDayOfWeek) % 7
+            dateDiff = dateDiff == 0 ? 7 : dateDiff
             monthStartDate.setDate(1 - dateDiff)
             return monthStartDate
         }
@@ -187,7 +184,7 @@ Widget.Base {
 
                 readonly property string dayText:
                     isDayName
-                        ? calendar.config.weekday_names[(index + root.firstDayOfWeek) % 7]
+                        ? calendar.config.weekday_names[(index + calendar.firstDayOfWeek) % 7]
                         : dayDate.getDate()
 
                 readonly property bool isWeekend: dayDate.getDay() % 6 === 0
