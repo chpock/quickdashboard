@@ -82,12 +82,12 @@ Scope {
         Component.onCompleted: {
             let stateCount = QD.Settings.stateGet('Provider.Disk.ListModel.count', 0)
             const sampleData = {
-                'device': '',
-                'mount': '',
-                'fstype': '',
-                'size': 0,
-                'used': 0,
-                'avail': 0,
+                device: '',
+                mount:  '',
+                fstype: '',
+                size:  0,
+                used:  0,
+                avail: 0,
             }
             while (stateCount-- > 0) {
                 append(sampleData)

@@ -18,24 +18,18 @@
 */
 
 pragma ComponentBehavior: Bound
-pragma Singleton
 
-import Quickshell
 import QtQuick
-import qs.qd as QD
 
-// This is required for quickshell hot reload to work.
-// qmllint disable unused-imports
-import qs.qd.Providers.Memory
-// qmllint enable unused-imports
+Provider {
+    id: root
 
-Singleton {
+    ramTotal: 2**35
+    ramAvailable: ramTotal * 0.57
 
-    property alias instance: loader.item
+    swapTotal: 2**34
+    swapFree: swapTotal * 0.81
+    swapIsInstalled: true
 
-    Loader {
-        id: loader
-
-        source: 'Memory/' + (QD.Settings.isDemo ? 'Mock' : '') + 'Provider.qml'
-    }
+    hasService: false
 }

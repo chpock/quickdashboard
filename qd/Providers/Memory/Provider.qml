@@ -33,16 +33,23 @@ Scope {
     property real swapFree: 0
     property bool swapIsInstalled: false
 
+    property bool hasService: true
+
     Component.onCompleted: {
-        Service.Dgop.subscribe('infoMemory')
+        if (hasService) {
+            Service.Dgop.subscribe('infoMemory')
+        }
     }
 
     Component.onDestruction: {
-        Service.Dgop.unsubscribe('infoMemory')
+        if (hasService) {
+            Service.Dgop.unsubscribe('infoMemory')
+        }
     }
 
     Connections {
         target: Service.Dgop
+        enabled: root.hasService
         function onUpdateInfoMemory(data) {
             root.ramTotal = data.total * 1024
             root.ramAvailable = data.available * 1024
