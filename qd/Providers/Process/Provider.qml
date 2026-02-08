@@ -26,21 +26,28 @@ import qs.qd.Services as Service
 Scope {
     id: root
 
+    property bool hasService: true
+
     signal updateProcessesByCPU(var info)
     signal updateProcessesByRAM(var info)
 
     Component.onCompleted: {
-        Service.Dgop.subscribe('processesByCPU')
-        Service.Dgop.subscribe('processesByRAM')
+        if (hasService) {
+            Service.Dgop.subscribe('processesByCPU')
+            Service.Dgop.subscribe('processesByRAM')
+        }
     }
 
     Component.onDestruction: {
-        Service.Dgop.unsubscribe('processesByCPU')
-        Service.Dgop.unsubscribe('processesByRAM')
+        if (hasService) {
+            Service.Dgop.unsubscribe('processesByCPU')
+            Service.Dgop.unsubscribe('processesByRAM')
+        }
     }
 
     Connections {
         target: Service.Dgop
+        enabled: root.hasService
         function onUpdateProcessesByCPU(data) {
             root.updateProcessesByCPU(data)
         }

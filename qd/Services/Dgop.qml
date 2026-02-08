@@ -47,6 +47,8 @@ Singleton {
         property int processesByRAM: 0
     }
 
+    property int limitProcessAmount: 0
+
     signal updateInfoCPU(var data)
     signal updateInfoMemory(var data)
     signal updateInfoNetwork(var data)
@@ -406,7 +408,7 @@ Singleton {
         return request('/gops/processes', {
             cursor: cursorProcessesByCPU,
             sort_by: 'cpu',
-            limit: 5,
+            limit: root.limitProcessAmount,
             merge_children: true,
         }, function(data) {
             if (!data) return
@@ -433,7 +435,7 @@ Singleton {
             cursor: cursorProcessesByRAM,
             disable_proc_cpu: true,
             sort_by: 'memory',
-            limit: 5,
+            limit: root.limitProcessAmount,
             merge_children: true,
         }, function(data) {
             if (!data) return

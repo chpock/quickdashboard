@@ -26,7 +26,7 @@ import qs.qd.Services as Service
 Scope {
     id: root
 
-property string model: "Unknown"
+    property string model: "Unknown"
     property int cores: 0
     property real frequency: 0
     property real usage: 0
@@ -37,7 +37,7 @@ property string model: "Unknown"
     signal updateUsage(var info)
     signal updateCoresUsage(var info)
 
-Component.onCompleted: {
+    Component.onCompleted: {
         if (hasService) {
             Service.Dgop.subscribe('infoCPU')
         }
