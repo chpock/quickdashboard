@@ -116,8 +116,6 @@ Provider {
             root.rate.download = lastPoint[0]
             root.rate.upload = lastPoint[1]
 
-            root.latency.time = 10
-
             latencyHostsModel.updateElements(root._latency)
             for (let idx = 0; idx < root._latency.length; ++idx) {
                 const value = root._latency[idx].time
