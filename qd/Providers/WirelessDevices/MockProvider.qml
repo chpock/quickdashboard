@@ -18,24 +18,28 @@
 */
 
 pragma ComponentBehavior: Bound
-pragma Singleton
 
-import Quickshell
 import QtQuick
-import qs.qd as QD
 
-// This is required for quickshell hot reload to work.
-// qmllint disable unused-imports
-import qs.qd.Providers.WirelessDevices
-// qmllint enable unused-imports
+Provider {
+    id: root
 
-Singleton {
+    hasService: false
 
-    property alias instance: loader.item
+    readonly property var _wlan_ifaces: [
+        {
+            iface:       'wlan0',
+            ssid:        'SkyNet_WiFi_5G',
+            signal:      97,
+            isConnected: true,
+        },
+    ]
 
-    Loader {
-        id: loader
-
-        source: 'WirelessDevices/' + (QD.Settings.isDemo ? 'Mock' : '') + 'Provider.qml'
+    Component.onCompleted: {
+        Qt.callLater(() => {
+            for (const item of root._wlan_ifaces) {
+                root.ifaceModel.append(item)
+            }
+        })
     }
 }

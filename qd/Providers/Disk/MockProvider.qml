@@ -105,19 +105,22 @@ Provider {
 
     Component.onCompleted: {
         Qt.callLater(() => {
+
             for (const item of root._mount_points) {
                 root.mountModel.append(item)
             }
-            // root.updateCoresUsage(root._coresUsage)
+
             for (const item of root._rates) {
                 root.updateDiskRate({
                     readrate: item[0],
                     writerate: item[1],
                 })
             }
+
             const lastPoint = root._rates[root._rates.length - 1]
             root.rate.read = lastPoint[0]
             root.rate.write = lastPoint[1]
+
         })
     }
 }

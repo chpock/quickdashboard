@@ -31,8 +31,11 @@ Scope {
     readonly property alias ifaceModel: ifaceModelObj
     property var ifaceModelList: []
 
+    property bool hasService: true
+
     Connections {
         target: Service.WirelessDevices
+        enabled: root.hasService
         function onUpdateInfoIface(name, data) {
             const idx = root.ifaceModelList.indexOf(name)
             // If we don't have this interface in ifaceModelObj
@@ -46,14 +49,14 @@ Scope {
         function onUpdateListIface(data) {
             root.ifaceModelList = []
             for (let i = 0; i < data.length; ++i) {
-                const iface = data[i]
+                const ifaceName = data[i]
                 const modelData = {
-                    "iface": iface,
-                    "ssid": "Waiting for data...",
-                    "signal": 0,
-                    "isConnected": false,
+                    iface: ifaceName,
+                    ssid: 'Waiting for data...',
+                    signal: 0,
+                    isConnected: false,
                 }
-                root.ifaceModelList.push(iface)
+                root.ifaceModelList.push(ifaceName)
                 if (i < ifaceModelObj.count) {
                     ifaceModelObj.set(i, modelData)
                 } else {
@@ -69,19 +72,23 @@ Scope {
     ListModel {
         id: ifaceModelObj
         Component.onCompleted: {
-            let stateCount = QD.Settings.stateGet('Provider.WirelessDevices.ListModel.count', 0)
-            const sampleData = {
-                'iface': '',
-                'ssid': '',
-                'signal': 0,
-                'isConnected': false,
-            }
-            while (stateCount-- > 0) {
-                append(sampleData)
+            if (root.hasService) {
+                let stateCount = QD.Settings.stateGet('Provider.WirelessDevices.ListModel.count', 0)
+                const sampleData = {
+                    iface: '',
+                    ssid: '',
+                    signal: 0,
+                    isConnected: false,
+                }
+                while (stateCount-- > 0) {
+                    append(sampleData)
+                }
             }
         }
         onCountChanged: {
-            QD.Settings.stateSet('Provider.WirelessDevices.ListModel.count', count)
+            if (root.hasService) {
+                QD.Settings.stateSet('Provider.WirelessDevices.ListModel.count', count)
+            }
         }
     }
 
