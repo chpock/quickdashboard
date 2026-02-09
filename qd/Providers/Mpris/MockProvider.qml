@@ -18,24 +18,32 @@
 */
 
 pragma ComponentBehavior: Bound
-pragma Singleton
 
-import Quickshell
 import QtQuick
-import qs.qd as QD
 
-// This is required for quickshell hot reload to work.
-// qmllint disable unused-imports
-import qs.qd.Providers.Mpris
-// qmllint enable unused-imports
+Provider {
+    id: root
 
-Singleton {
+    hasService: false
 
-    property alias instance: loader.item
+    length: 189
+    position: 145
+    track: 'Code Monkey'
+    artist: 'Jonathan Coulton'
+    trackArtUrl: 'https://i.scdn.co/image/ab67616d0000b273dfd5b5d99cf81f1864deef01'
 
-    Loader {
-        id: loader
-
-        source: 'Mpris/' + (QD.Settings.isDemo ? 'Mock' : '') + 'Provider.qml'
-    }
+    hasPlayer: true
+    isPaused: false
+    isPlaying: true
+    isStopped: false
+    hasLength: true
+    hasPosition: true
+    hasSeek: true
+    hasPlay: true
+    hasPause: true
+    hasStop: true
+    hasNext: true
+    hasPrev: true
+    hasToggle: true
+    hasRaise: true
 }
