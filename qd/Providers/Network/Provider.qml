@@ -44,20 +44,27 @@ Scope {
 
     readonly property alias latencyHostsModel: latencyHostsModelObj
 
-    readonly property real dnsCheckTime: Service.Getent.dnsCheckTime
+    property real dnsCheckTime: Service.Getent.dnsCheckTime
+
+    property bool hasService: true
 
     signal updateNetworkRate(var info)
 
     Component.onCompleted: {
-        Service.Dgop.subscribe('infoNetwork')
+        if (root.hasService) {
+            Service.Dgop.subscribe('infoNetwork')
+        }
     }
 
     Component.onDestruction: {
-        Service.Dgop.unsubscribe('infoNetwork')
+        if (root.hasService) {
+            Service.Dgop.unsubscribe('infoNetwork')
+        }
     }
 
     Connections {
         target: Service.Dgop
+        enabled: root.hasService
         function onUpdateInfoNetwork(data) {
             root.rate.download = data.rxrate
             root.rate.upload = data.txrate
@@ -67,6 +74,7 @@ Scope {
 
     Connections {
         target: Service.Ping
+        enabled: root.hasService
         function onUpdateInfoPing(data, value) {
             if (data.isGateway) {
                 if (data.isDefault) {
@@ -144,7 +152,9 @@ Scope {
         }
 
         Component.onCompleted: {
-            updateElements(Service.Ping.hostsList)
+            if (root.hasService) {
+                updateElements(Service.Ping.hostsList)
+            }
         }
     }
 
