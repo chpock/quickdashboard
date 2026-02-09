@@ -35,20 +35,27 @@ Scope {
         property real write: 0
     }
 
+    property bool hasService: true
+
     signal updateDiskRate(var info)
 
     Component.onCompleted: {
-        Service.Dgop.subscribe('infoDisk')
-        Service.Dgop.subscribe('infoMounts')
+        if (root.hasService) {
+            Service.Dgop.subscribe('infoDisk')
+            Service.Dgop.subscribe('infoMounts')
+        }
     }
 
     Component.onDestruction: {
-        Service.Dgop.unsubscribe('infoDisk')
-        Service.Dgop.unsubscribe('infoMounts')
+        if (root.hasService) {
+            Service.Dgop.unsubscribe('infoDisk')
+            Service.Dgop.unsubscribe('infoMounts')
+        }
     }
 
     Connections {
         target: Service.Dgop
+        enabled: root.hasService
         function onUpdateInfoDisk(data) {
             root.rate.read = data.readrate
             root.rate.write = data.writerate
@@ -57,13 +64,13 @@ Scope {
         function onUpdateInfoMounts(data) {
             const foundMounts = []
             for (let item of data) {
-                const mount = data.mount
+                const mount = item.mount
                 const idx = root.mountModelList.indexOf(mount)
                 if (idx === -1) {
-                    mountModelObj.append(data)
+                    mountModelObj.append(item)
                     root.mountModelList.push(mount)
                 } else {
-                    mountModelObj.set(idx, data)
+                    mountModelObj.set(idx, item)
                 }
                 foundMounts.push(mount)
             }
@@ -80,22 +87,26 @@ Scope {
     ListModel {
         id: mountModelObj
         Component.onCompleted: {
-            let stateCount = QD.Settings.stateGet('Provider.Disk.ListModel.count', 0)
-            const sampleData = {
-                device: '',
-                mount:  '',
-                fstype: '',
-                size:  0,
-                used:  0,
-                avail: 0,
-            }
-            while (stateCount-- > 0) {
-                append(sampleData)
-                root.mountModelList.push('')
+            if (root.hasService) {
+                let stateCount = QD.Settings.stateGet('Provider.Disk.ListModel.count', 0)
+                const sampleData = {
+                    device: '',
+                    mount:  '',
+                    fstype: '',
+                    size:  0,
+                    used:  0,
+                    avail: 0,
+                }
+                while (stateCount-- > 0) {
+                    append(sampleData)
+                    root.mountModelList.push('')
+                }
             }
         }
         onCountChanged: {
-            QD.Settings.stateSet('Provider.Disk.ListModel.count', count)
+            if (root.hasService) {
+                QD.Settings.stateSet('Provider.Disk.ListModel.count', count)
+            }
         }
     }
 
