@@ -20,7 +20,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs.qd
+import qs.qd as QD
 import qs.qd.Config as C
 
 Rectangle {
@@ -30,26 +30,27 @@ Rectangle {
         return objectName.slice(0, objectName.indexOf('_'))
     }
     property string _chain
+    property var _dashboard
 
     default property alias content: content.data
 
     property var theme: ({})
     readonly property C.Theme _theme: C.Theme {
-        _defaults: Defaults.theme
+        _defaults: root._dashboard?._theme ?? QD.Defaults.theme
         _custom: root.theme
         _chain: (root._chain ? root._chain + '.' : '') + root.type + '.theme'
     }
 
     property var defaults: ({})
     readonly property C.Defaults _defaults: C.Defaults {
-        _defaults: Defaults.defaults
+        _defaults: root._dashboard?._defaults ?? QD.Defaults.defaults
         _custom: root.defaults
         _chain: (root._chain ? root._chain + '.' : '') + root.type + '.defaults'
     }
 
     property var widget: ({})
     readonly property C.Widget _widget: C.Widget {
-        _defaults: Defaults.widget
+        _defaults: root._dashboard?._widget ?? QD.Defaults.widget
         _custom: root.widget
         _chain: (root._chain ? root._chain + '.' : '') + root.type + '.widget'
     }
