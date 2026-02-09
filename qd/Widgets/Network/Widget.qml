@@ -80,7 +80,7 @@ Widget.Base {
 
             text: parent.modelData.ssid
             anchors.left: iface.right
-            anchors.right: parent.modelData.isConnected ? signal.right : parent.right
+            anchors.right: parent.modelData.isConnected ? signal.left : parent.right
             style: !parent.modelData.isConnected ? 'error' : undefined
         }
 
