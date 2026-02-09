@@ -48,7 +48,9 @@ Item {
                 row.value = 0
             }
         }
-        list.recomputeRightWidth()
+        // We need to call it later as it doesn't work in demo mode when provider
+        // pushes values in Component.onCompleted event. Width remains as 0 in this case.
+        Qt.callLater(list.recomputeRightWidth)
     }
 
     Component {
@@ -61,12 +63,6 @@ Item {
             config: root.config.value
 
             text: modelValue
-            // text: 'foo1'
-            // preset: Theme.processList.preset
-            // color: Theme.processList.colors.value
-            // horizontalAlignment: Text.AlignRight
-            // width: list.colValueWidth
-            // visible: root.valueRenderer === null
         }
     }
 
