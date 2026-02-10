@@ -421,19 +421,19 @@ Singleton {
             thresholds {
                 ignore {
                     color: 'severity/ignore'
-                    value: '<=10'
+                    value: 'none'
                 }
                 good {
                     color: 'severity/good'
-                    value: '<=70'
+                    value: 'none'
                 }
                 warning {
                     color: 'severity/warning'
-                    value: '<=95'
+                    value: 'none'
                 }
                 critical {
                     color: 'severity/critical'
-                    value: '<=Inf'
+                    value: 'none'
                 }
                 enabled: true
             }
