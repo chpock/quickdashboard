@@ -20,11 +20,21 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
+import Quickshell.Io
 
 QtObject {
     id: root
 
     property var _custom
+    property var _customLoaded: ({})
+    readonly property var _customEffective:
+        (_custom && typeof _custom === 'object')
+            ? _custom
+            : (typeof _custom === 'string' && _custom !== '')
+                ? _customLoaded
+                : undefined
+
     property string _chain
     property bool _is_customized: false
     property var _validation: ({})
@@ -32,7 +42,7 @@ QtObject {
     function _reset() {
 
         function reportWrongCustom(message: string, prop: string) {
-            console.error(message + ':', _chain + '.' + prop + ':', JSON.stringify(_custom[prop]))
+            console.error(message + ':', _chain + '.' + prop + ':', JSON.stringify(_customEffective[prop]))
         }
 
         function reportWrongCustomType(prop: string, typeActual: string, typeExpected: var) {
@@ -93,8 +103,8 @@ QtObject {
 
         // console.log('Start reset on:', root, 'chain:', _chain)
 
-        if (_custom) {
-            for (const prop in _custom) {
+        if (_customEffective) {
+            for (const prop in _customEffective) {
                 if (prop === 'objectName' || prop.startsWith('_') || prop.endsWith('Changed')) {
                     reportWrongCustom('Unsuported property found', prop)
                 } else if (!root.hasOwnProperty(prop)) {
@@ -109,7 +119,7 @@ QtObject {
 
             const targetValue = root[prop]
             const targetType = Array.isArray(targetValue) ? 'array' : typeof targetValue
-            const customValue = _custom?.[prop]
+            const customValue = _customEffective?.[prop]
             const hasCustom = customValue !== undefined && customValue !== null
             const customType = Array.isArray(customValue) ? 'array' : typeof customValue
 
@@ -186,14 +196,47 @@ QtObject {
 
     }
 
-    on_CustomChanged: {
-        let isCustomEmpty = !_custom || (typeof _custom === 'object' && Object.keys(_custom).length === 0)
+    on_CustomEffectiveChanged: {
+        let isCustomEmpty = !_customEffective || (typeof _customEffective === 'object' && Object.keys(_customEffective).length === 0)
         if (!_is_customized && isCustomEmpty) {
             return
         }
-        // console.log("Custom changed on:", root, !(!_custom), typeof _custom)
         _reset()
         _is_customized = !isCustomEmpty
+    }
+
+    readonly property var _customLoader: Instantiator {
+        active: typeof root._custom === 'string' && root._custom !== ''
+        FileView {
+            id: jsonFile
+
+            property var previousHash
+
+            path: Quickshell.shellPath(root._custom)
+            watchChanges: true
+            printErrors: false
+            onFileChanged: reload()
+            onPathChanged: reload()
+            onLoadFailed: e => {
+                console.error(`[${path}] failed to load JSON file:`, FileViewError.toString(e))
+            }
+            onLoaded: {
+                // Due to unknown reason, onFileChanged fires twice for each change.
+                // To avoid multiple updates, we check whether the file has actually
+                // changed since the previous download.
+                const json = text()
+                const hash = Qt.md5(json)
+                if (hash === previousHash) {
+                    return
+                }
+                previousHash = hash
+                try {
+                    root._customLoaded = JSON.parse(text());
+                } catch (e) {
+                    console.error(`[${path}] failed to parse JSON file:`, e.message)
+                }
+            }
+        }
     }
 
 }
