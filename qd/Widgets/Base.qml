@@ -59,11 +59,11 @@ Rectangle {
     property var _fragments
 
     border {
-        color: _widget.border.color
+        color: _theme.getColor(_widget.border.color)
         width: _widget.border.width
     }
 
-    color: _widget.background.color
+    color: _theme.getColor(_widget.background.color)
 
     width: parent.width
     implicitHeight: content.implicitHeight

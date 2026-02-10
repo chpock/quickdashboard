@@ -22,20 +22,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 
 Base {
-    id: root
+    property ThemeColorWidget _defaults
 
-    property ThemeColor _defaults
-
-    readonly property ThemeColorText text: ThemeColorText {
-        _defaults: root._defaults?.text ?? null
-    }
-    readonly property ThemeColorInfo info: ThemeColorInfo {
-        _defaults: root._defaults?.info ?? null
-    }
-    readonly property ThemeColorSeverity severity: ThemeColorSeverity {
-        _defaults: root._defaults?.severity ?? null
-    }
-    readonly property ThemeColorWidget widget: ThemeColorWidget {
-        _defaults: root._defaults?.widget ?? null
-    }
+    property var background: _defaults?.background
+    property var border:     _defaults?.border
 }

@@ -41,11 +41,11 @@ Singleton {
         id: widget
 
         border {
-            color: '#33FFFFFF'
+            color: 'widget/border'
             width: 1
         }
         background {
-            color: '#ED1F2428'
+            color: 'widget/background'
         }
         padding {
             top:    8
@@ -100,6 +100,10 @@ Singleton {
                 good:     theme.palette.green
                 warning:  theme.palette.yellow_bright
                 critical: theme.palette.red_bright
+            }
+            widget {
+                background: '#20252b'
+                border:     '#516273'
             }
         }
         font {
