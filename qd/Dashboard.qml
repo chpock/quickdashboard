@@ -33,24 +33,25 @@ PanelWindow {
         return objectName.slice(0, objectName.indexOf('_'))
     }
     property string _chain
+    property var _quickdashboard
 
     property var theme: ({})
     readonly property C.Theme _theme: C.Theme {
-        _defaults: QD.Defaults.theme
+        _defaults: root._quickdashboard?._theme ?? QD.Defaults.theme
         _custom: root.theme
         _chain: (root._chain ? root._chain + '.' : '') + root.type + '.theme'
     }
 
     property var defaults: ({})
     readonly property C.Defaults _defaults: C.Defaults {
-        _defaults: QD.Defaults.defaults
+        _defaults: root._quickdashboard?._defaults ?? QD.Defaults.defaults
         _custom: root.defaults
         _chain: (root._chain ? root._chain + '.' : '') + root.type + '.defaults'
     }
 
     property var widget: ({})
     readonly property C.Widget _widget: C.Widget {
-        _defaults: QD.Defaults.widget
+        _defaults: root._quickdashboard?._widget ?? QD.Defaults.widget
         _custom: root.widget
         _chain: (root._chain ? root._chain + '.' : '') + root.type + '.widget'
     }
