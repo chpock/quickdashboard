@@ -20,7 +20,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs.qd as QD
 import qs.qd.Elements as E
 import qs.qd.Config as C
 import qs.qd.Providers as Provider

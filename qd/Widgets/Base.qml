@@ -88,48 +88,4 @@ Rectangle {
         anchors.topMargin:    root._widget.padding.top    + root._widget.border.width
         anchors.bottomMargin: root._widget.padding.bottom + root._widget.border.width
     }
-
-    // function recreateConfig() {
-    //     // _config.widget.destroy()
-    //     // _config.widget = configWidget.createObject(_config)
-    //     // _config.theme.destroy()
-    //     // _config.theme = configTheme.createObject(_config)
-    //     // _config.defaults.destroy()
-    //     // _config.defaults = configDefaults.createObject(_config)
-    //     if (configFragments) configFragments.destroy()
-    //     recreateConfigFragments()
-    // }
-    //
-    // function recreateConfigFragments() {
-    //     _config.fragments = null
-    // }
-    //
-    // function applyConfig(target, source, path) {
-    //     Object.entries(source).forEach(([key, value]) => {
-    //         if (target[key] === undefined) {
-    //             console.warn('Config property "' + path + key + '" does not exist on the target widget.')
-    //             return
-    //         }
-    //         if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-    //             applyConfig(target[key], value, path + key + '.')
-    //         } else {
-    //             try {
-    //                 target[key] = value;
-    //             } catch (e) {
-    //                 console.error('Failed to set config property "' + path + key + '": ' + e.message);
-    //             }
-    //         }
-    //     })
-    // }
-    //
-    // Component.onCompleted: {
-    //     // console.log("base completed!")
-    //     recreateConfig()
-    //     // console.log("apply config!")
-    //     // if (_config.fragments) {
-    //     //     applyConfig(_config.fragments, fragments, '.')
-    //     // }
-    //     // applyConfig(_config, config, '.')
-    //     // console.log("complete - done")
-    // }
 }
