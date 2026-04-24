@@ -34,6 +34,9 @@ Rectangle {
     property Component _details
     property int variant: 1
 
+    readonly property bool _isVariantNormal: variant === 0
+    readonly property bool _isVariantCompact: variant === 1
+
     default property alias content: content.data
 
     property var theme: ({})

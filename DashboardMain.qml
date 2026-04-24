@@ -7,6 +7,7 @@ import QtQuick
 Dashboard {
 
     W.Calendar {
+        // variant: W.Base.VariantCompact
     }
 
     W.Memory {

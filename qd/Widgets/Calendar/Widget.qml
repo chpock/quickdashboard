@@ -42,9 +42,6 @@ Widget.Base {
     readonly property date currentDate: root.providerSystemClock.dateDays
     readonly property string currentDateString: currentDate.toDateString()
 
-    readonly property bool isVariantNormal: variant == Widget.Base.VariantNormal
-    readonly property bool isVariantCompact: variant == Widget.Base.VariantCompact
-
     component Header: Item {
         id: header
 
@@ -514,19 +511,19 @@ Widget.Base {
 
     Header {
         id: header
-        isActive: root.isVariantNormal
+        isActive: root._isVariantNormal
         anchors.left: parent.left
         anchors.right: parent.right
     }
 
     Calendar {
-        isCompact: root.isVariantCompact
+        isCompact: root._isVariantCompact
         activeDate: header.activeDate
         anchors.horizontalCenter: parent.horizontalCenter
     }
 
     EventsHeader {
-        isActive: root.isVariantNormal
+        isActive: root._isVariantNormal
         anchors.left: parent.left
         anchors.right: parent.right
         visible: root.providerCalendar.running
@@ -539,7 +536,7 @@ Widget.Base {
             required property int index
             anchors.left: parent?.left
             anchors.right: parent?.right
-            visible: root.providerCalendar.running && (!root.isVariantCompact || index < 3)
+            visible: root.providerCalendar.running && (!root._isVariantCompact || index < 3)
         }
     }
 
@@ -582,6 +579,6 @@ Widget.Base {
         }
     }
 
-    _details: isVariantNormal ? null : detailsComponent
+    _details: _isVariantNormal ? null : detailsComponent
 
 }
