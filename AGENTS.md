@@ -31,3 +31,8 @@
 ## State and Local Files
 - Persistent UI state is stored via `QD.Settings` at `${XDG_CACHE_HOME}/quickdashboard/state.ini` (`qd/Settings.qml`).
 - `.qmlls.ini` is local and gitignored.
+
+## Commit conventions
+- Use Conventional Commits (`feat|fix|chore|docs|refactor|test|build|ci|perf`).
+- Subject format should stay `type(scope): summary` (scope optional) so release classification remains predictable.
+- Keep commit messages multi-line: subject first, then body with what/why.

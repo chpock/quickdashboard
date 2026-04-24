@@ -42,29 +42,34 @@ Widget.Base {
     readonly property date currentDate: root.providerSystemClock.dateDays
     readonly property string currentDateString: currentDate.toDateString()
 
-    function changeMonth(direction) {
-        if (direction === 0) {
-            calendar.activeDate = Qt.binding(() => root.currentDate)
-        } else {
-            const d = new Date(calendar.activeDate)
-            // reset to first day to avoid overflow when we increate month
-            d.setDate(1)
-            // increment month
-            d.setMonth(d.getMonth() + direction)
-            // bound to system time if result month/year match current month/year
-            if (d.getMonth() === root.currentDate.getMonth() && d.getYear() === root.currentDate.getYear()) {
-                changeMonth(0)
-            } else {
-                calendar.activeDate = d
-            }
-        }
-    }
+    readonly property bool isVariantNormal: variant == Widget.Base.VariantNormal
+    readonly property bool isVariantCompact: variant == Widget.Base.VariantCompact
 
     component Header: Item {
         id: header
 
         readonly property var config: root._fragments.calendar.header
         readonly property alias isHovered: hoverHandler.hovered
+        property bool isActive: true
+        property date activeDate: root.currentDate
+
+        function changeMonth(direction) {
+            if (direction === 0) {
+                header.activeDate = Qt.binding(() => root.currentDate)
+            } else {
+                const d = new Date(header.activeDate)
+                // reset to first day to avoid overflow when we increate month
+                d.setDate(1)
+                // increment month
+                d.setMonth(d.getMonth() + direction)
+                // bound to system time if result month/year match current month/year
+                if (d.getMonth() === root.currentDate.getMonth() && d.getYear() === root.currentDate.getYear()) {
+                    changeMonth(0)
+                } else {
+                    header.activeDate = d
+                }
+            }
+        }
 
         implicitHeight: Math.max(
             iconLeft.implicitHeight,
@@ -75,6 +80,7 @@ Widget.Base {
 
         HoverHandler {
             id: hoverHandler
+            enabled: header.isActive
         }
 
         E.Icon {
@@ -85,7 +91,7 @@ Widget.Base {
             style: 'month_previous'
             anchors.left: parent.left
             visible: parent.isHovered
-            onClicked: root.changeMonth(-1)
+            onClicked: header.changeMonth(-1)
         }
 
         E.TextTitle {
@@ -93,7 +99,7 @@ Widget.Base {
             theme: root._theme
             config: header.config.title
 
-            text: Qt.formatDate(calendar.activeDate, "MMMM, yyyy")
+            text: Qt.formatDate(header.activeDate, "MMMM, yyyy")
             anchors.left: parent.left
             anchors.right: parent.right
         }
@@ -106,7 +112,7 @@ Widget.Base {
             style: 'month_current'
             anchors.right: iconRight.left
             visible: parent.isHovered
-            onClicked: root.changeMonth(0)
+            onClicked: header.changeMonth(0)
         }
 
         E.Icon {
@@ -117,23 +123,27 @@ Widget.Base {
             style: 'month_next'
             anchors.right: parent.right
             visible: parent.isHovered
-            onClicked: root.changeMonth(1)
+            onClicked: header.changeMonth(1)
         }
 
-    }
-
-    Header {
-        anchors.left: parent.left
-        anchors.right: parent.right
     }
 
     component Calendar: Grid {
         id: calendar
 
+        property bool isCompact: false
         property date activeDate: root.currentDate
         readonly property var config: root._fragments.calendar
         readonly property int firstDayOfWeek: root.providerSystemClock.firstDayOfWeek
         readonly property date startDate: {
+            if (isCompact) {
+                const weekStartDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), activeDate.getDate())
+                let dateDiff = weekStartDate.getDay()
+                dateDiff = (dateDiff + 7 - firstDayOfWeek) % 7
+                weekStartDate.setDate(weekStartDate.getDate() - dateDiff)
+                return weekStartDate
+            }
+
             const monthStartDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1)
             let dateDiff = monthStartDate.getDay()
             dateDiff = (dateDiff + 7 - firstDayOfWeek) % 7
@@ -144,12 +154,12 @@ Widget.Base {
         property real dayCellWidth: 0
 
         columns: 7
-        rows: 7
+        rows: isCompact ? 2 : 7
         rowSpacing: config.spacing.vertical
         columnSpacing: config.spacing.horizontal
 
         Repeater {
-            model: 49
+            model: calendar.isCompact ? 14 : 49
 
             Rectangle {
                 id: day
@@ -214,15 +224,11 @@ Widget.Base {
         }
     }
 
-    Calendar {
-        id: calendar
-        anchors.horizontalCenter: parent.horizontalCenter
-    }
-
     component EventsHeader: Item {
-        id: header
+        id: eventsHeader
 
         readonly property var config: root._fragments.events.header
+        property bool isActive: true
         readonly property alias isHovered: hoverHandler.hovered
 
         implicitHeight: Math.max(
@@ -240,7 +246,7 @@ Widget.Base {
         E.TextTitle {
             id: title
             theme: root._theme
-            config: header.config.title
+            config: eventsHeader.config.title
 
             anchors.left: parent.left
         }
@@ -248,7 +254,7 @@ Widget.Base {
         E.Icon {
             id: buttonApplication
             theme: root._theme
-            config: header.config.button
+            config: eventsHeader.config.button
 
             style: 'application'
             anchors.right: buttonRefresh.left
@@ -260,7 +266,7 @@ Widget.Base {
         E.Icon {
             id: buttonRefresh
             theme: root._theme
-            config: header.config.button
+            config: eventsHeader.config.button
 
             style: 'refresh'
             anchors.right: buttonToggleVisibility.left
@@ -272,11 +278,11 @@ Widget.Base {
         E.Icon {
             id: buttonToggleVisibility
             theme: root._theme
-            config: header.config.button
+            config: eventsHeader.config.button
 
             style: 'visibility'
             isActive: root.providerCalendar.eventUpcomingShowHidden
-            anchors.right: buttonPlus.left
+            anchors.right: parent.isActive ? buttonPlus.left : parent.right
             anchors.bottom: title.bottom
             visible: parent.isHovered
             onClicked: root.providerCalendar.eventsUpcomingToggleVisibility()
@@ -285,32 +291,26 @@ Widget.Base {
         E.Icon {
             id: buttonPlus
             theme: root._theme
-            config: header.config.button
+            config: eventsHeader.config.button
 
             style: 'plus'
             anchors.right: buttonMinus.left
             anchors.bottom: title.bottom
-            visible: parent.isHovered
+            visible: parent.isActive && parent.isHovered
             onClicked: root.providerCalendar.eventsUpcomingChangeAmount(1)
         }
 
         E.Icon {
             id: buttonMinus
             theme: root._theme
-            config: header.config.button
+            config: eventsHeader.config.button
 
             style: 'minus'
             anchors.right: parent.right
             anchors.bottom: title.bottom
-            visible: parent.isHovered
+            visible: parent.isActive && parent.isHovered
             onClicked: root.providerCalendar.eventsUpcomingChangeAmount(-1)
         }
-    }
-
-    EventsHeader {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        visible: root.providerCalendar.running
     }
 
     component Event: Item {
@@ -512,14 +512,76 @@ Widget.Base {
         }
     }
 
+    Header {
+        id: header
+        isActive: root.isVariantNormal
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+
+    Calendar {
+        isCompact: root.isVariantCompact
+        activeDate: header.activeDate
+        anchors.horizontalCenter: parent.horizontalCenter
+    }
+
+    EventsHeader {
+        isActive: root.isVariantNormal
+        anchors.left: parent.left
+        anchors.right: parent.right
+        visible: root.providerCalendar.running
+    }
+
     Repeater {
         model: root.providerCalendar.eventsUpcomingModel
 
         Event {
+            required property int index
             anchors.left: parent?.left
             anchors.right: parent?.right
-            visible: root.providerCalendar.running
+            visible: root.providerCalendar.running && (!root.isVariantCompact || index < 3)
         }
     }
+
+    Component {
+        id: detailsComponent
+
+        Widget.Details {
+            // qmllint disable incompatible-type
+            base: root
+            // qmllint enable incompatible-type
+            implicitWidth: root.width
+
+            Header {
+                id: detailsHeader
+                anchors.left: parent.left
+                anchors.right: parent.right
+            }
+
+            Calendar {
+                id: detailsCalendar
+                anchors.horizontalCenter: parent.horizontalCenter
+                activeDate: detailsHeader.activeDate
+            }
+
+            EventsHeader {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                visible: root.providerCalendar.running
+            }
+
+            Repeater {
+                model: root.providerCalendar.eventsUpcomingModel
+
+                Event {
+                    anchors.left: parent?.left
+                    anchors.right: parent?.right
+                    visible: root.providerCalendar.running
+                }
+            }
+        }
+    }
+
+    _details: isVariantNormal ? null : detailsComponent
 
 }

@@ -20,50 +20,18 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import qs.qd as QD
 import qs.qd.Config as C
 
 Rectangle {
     id: root
-    readonly property string type: {
-        const objectName = root.toString()
-        return objectName.slice(0, objectName.indexOf('_'))
-    }
-    property string _chain
-    property var _dashboard
-    property Component _details
-    property int variant: 1
+
+    required property Base base
+
+    readonly property C.Theme _theme: base._theme
+    readonly property C.Defaults _defaults: base._defaults
+    readonly property C.Widget _widget: base._widget
 
     default property alias content: content.data
-
-    property var theme: ({})
-    readonly property C.Theme _theme: C.Theme {
-        _defaults: root._dashboard?._theme ?? QD.Defaults.theme
-        _custom: root.theme
-        _chain: (root._chain ? root._chain + '.' : '') + root.type + '.theme'
-    }
-
-    property var defaults: ({})
-    readonly property C.Defaults _defaults: C.Defaults {
-        _defaults: root._dashboard?._defaults ?? QD.Defaults.defaults
-        _custom: root.defaults
-        _chain: (root._chain ? root._chain + '.' : '') + root.type + '.defaults'
-    }
-
-    property var widget: ({})
-    readonly property C.Widget _widget: C.Widget {
-        _defaults: root._dashboard?._widget ?? QD.Defaults.widget
-        _custom: root.widget
-        _chain: (root._chain ? root._chain + '.' : '') + root.type + '.widget'
-    }
-
-    property var fragments: ({})
-    property var _fragments
-
-    enum Variant {
-        VariantNormal = 0,
-        VariantCompact = 1
-    }
 
     border {
         color: _theme.getColor(_widget.border.color)
@@ -72,26 +40,9 @@ Rectangle {
 
     color: _theme.getColor(_widget.background.color)
 
-    width: parent.width
     implicitHeight: content.implicitHeight
         + _widget.padding.top + _widget.padding.bottom
         + _widget.border.width * 2
-
-    HoverHandler {
-        id: hh
-        onHoveredChanged: {
-            if (!root._dashboard) {
-                return
-            }
-            if (hovered && root._details) {
-                root._dashboard.openDetails(root, root._details)
-            } else {
-                root._dashboard.closeDetails(root, hovered)
-            }
-        }
-    }
-
-    readonly property bool isHovered: hh.hovered
 
     Column {
         id: content

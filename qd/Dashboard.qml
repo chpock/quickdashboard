@@ -100,4 +100,17 @@ PanelWindow {
         }
     }
 
+    function openDetails(widget, details) {
+        detailsPopup.openDetails(widget, details)
+    }
+
+    function closeDetails(widget, widgetHovered) {
+        detailsPopup.closeDetails(widget, widgetHovered)
+    }
+
+    DetailsPopup {
+        id: detailsPopup
+        dashboardAlign: root.align
+    }
+
 }

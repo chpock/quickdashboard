@@ -8,7 +8,7 @@ import QtQuick
 QuickDashboard {
     id: root
 
-    // theme: "theme.json"
+    // theme: "debug-theme.json"
 
     DashboardMain {
         // screen: Quickshell.screens[0]
