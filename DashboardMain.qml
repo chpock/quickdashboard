@@ -6,6 +6,8 @@ import QtQuick
 
 Dashboard {
 
+    name: 'main'
+
     W.Calendar {
         // variant: W.Base.VariantCompact
     }

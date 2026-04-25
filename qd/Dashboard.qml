@@ -22,11 +22,14 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 import qs.qd as QD
 import qs.qd.Config as C
 
 PanelWindow {
     id: root
+
+    property string name: 'unknown_name'
 
     readonly property string type: {
         const objectName = root.toString()
@@ -76,6 +79,10 @@ PanelWindow {
     }
 
     color: 'transparent'
+
+    WlrLayershell.namespace:
+        'quickdashboard:dashboard:' + name.toLowerCase().replace(/[^a-z0-9_:-]/g, '')
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     ColumnLayout {
         id: content
