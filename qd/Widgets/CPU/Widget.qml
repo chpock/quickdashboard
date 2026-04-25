@@ -127,17 +127,13 @@ Widget.Base {
         }
     }
 
-    E.ProcessList {
+    component ProcessList: E.ProcessList {
         id: processList
 
         theme: root._theme
         config: root._fragments.processes.list
 
         model: root.providerCPU.processListModel
-        maxLines: 3
-
-        anchors.left: parent.left
-        anchors.right: parent.right
 
         E.TextPercent {
             theme: root._theme
@@ -149,5 +145,30 @@ Widget.Base {
             // qmllint enable unqualified
         }
     }
+
+    ProcessList {
+        maxLines: 3
+        visible: root._isVariantNormal
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+
+    Component {
+        id: detailsComponent
+
+        Widget.Details {
+            // qmllint disable incompatible-type
+            base: root
+            // qmllint enable incompatible-type
+            implicitWidth: root.width
+
+            ProcessList {
+                anchors.left: parent.left
+                anchors.right: parent.right
+            }
+        }
+    }
+
+    _details: _isVariantNormal ? null : detailsComponent
 
 }
