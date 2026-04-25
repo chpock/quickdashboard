@@ -28,7 +28,6 @@ Widget.Base {
     id: root
 
     readonly property var providerCPU: Provider.CPU.instance
-    readonly property var providerProcess: Provider.Process.instance
 
     _fragments: Fragments {
         _defaults: Defaults {
@@ -45,13 +44,6 @@ Widget.Base {
         }
         function onUpdateCoresUsage(data) {
             cores_usage.pushValues(data)
-        }
-    }
-
-    Connections {
-        target: root.providerProcess
-        function onUpdateProcessesByCPU(data) {
-            processList.pushValues(data)
         }
     }
 
@@ -140,6 +132,9 @@ Widget.Base {
 
         theme: root._theme
         config: root._fragments.processes.list
+
+        model: root.providerCPU.processListModel
+        maxLines: 3
 
         anchors.left: parent.left
         anchors.right: parent.right

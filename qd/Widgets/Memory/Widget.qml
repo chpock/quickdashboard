@@ -28,7 +28,6 @@ Widget.Base {
     id: root
 
     readonly property var providerMemory: Provider.Memory.instance
-    readonly property var providerProcess: Provider.Process.instance
 
     _fragments: Fragments {
         _defaults: Defaults {
@@ -36,13 +35,6 @@ Widget.Base {
         }
         _custom: root.fragments
         _chain: (root._chain ? root._chain + '.' : '') + root.type + '.fragments'
-    }
-
-    Connections {
-        target: root.providerProcess
-        function onUpdateProcessesByRAM(data) {
-            processList.pushValues(data)
-        }
     }
 
     readonly property int titleWidth: Math.max(meterRAM.titleWidth, meterSwap.titleWidth)
@@ -146,6 +138,9 @@ Widget.Base {
         id: processList
         theme: root._theme
         config: root._fragments.processes.list
+
+        model: root.providerMemory.processListModel
+        maxLines: 3
 
         anchors.left: parent.left
         anchors.right: parent.right

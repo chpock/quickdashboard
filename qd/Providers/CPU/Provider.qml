@@ -26,6 +26,8 @@ import qs.qd.Services as Service
 Scope {
     id: root
 
+    readonly property alias processListModel: processListModelObj
+
     property string model: "Unknown"
     property int cores: 0
     property real frequency: 0
@@ -40,14 +42,17 @@ Scope {
     Component.onCompleted: {
         if (hasService) {
             Service.Dgop.subscribe('infoCPU')
+            Service.Dgop.subscribe('processesByCPU')
         }
     }
 
     Component.onDestruction: {
         if (hasService) {
             Service.Dgop.unsubscribe('infoCPU')
+            Service.Dgop.unsubscribe('processesByCPU')
         }
     }
+
 
     Connections {
         target: Service.Dgop
@@ -67,6 +72,41 @@ Scope {
 
             root.updateUsage(infoCPU)
             root.updateCoresUsage(data.coreUsage)
+        }
+        function onUpdateProcessesByCPU(data) {
+            processListModelObj.updateData(data)
+        }
+    }
+
+    ListModel {
+        id: processListModelObj
+
+        function updateData(data) {
+            for (let i = 0; i < count; ++i) {
+                const row = get(i)
+                if (i < data.length) {
+                    const rowValues = data[i]
+                    row.command = rowValues.command
+                    row.args = rowValues.args
+                    row.value = rowValues.value
+                } else {
+                    row.command = ""
+                    row.args = ""
+                    row.value = 0
+                }
+            }
+        }
+
+        Component.onCompleted: {
+            let maxProcesses = 10
+            const sampleData = {
+                'command': '',
+                'args': '',
+                'value': 0,
+            }
+            while (maxProcesses-- > 0) {
+                append(sampleData)
+            }
         }
     }
 
