@@ -44,7 +44,7 @@ C.Base {
     readonly property C.Text details: C.Text {
         _defaults: root._defaults?.details ?? null
     }
-    readonly property C.Text timer: C.Text {
+    readonly property C.TextDuration timer: C.TextDuration {
         _defaults: root._defaults?.timer ?? null
     }
 

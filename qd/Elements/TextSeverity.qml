@@ -31,6 +31,7 @@ Item {
 
     property real value: NaN
     property alias text: text.text
+    property alias args: text.args
 
     implicitHeight: text.implicitHeight
     implicitWidth: text.implicitWidth

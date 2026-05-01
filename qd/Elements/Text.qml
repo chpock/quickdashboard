@@ -30,6 +30,7 @@ Item {
     required property C.Theme theme
 
     property var text
+    property var args
     property var fontVariableAxes: ({})
     property var style
     property var strikeout
@@ -102,7 +103,15 @@ Item {
         readonly property bool needsScrolling:
             root._config._overflow === C.Text.OverflowScroll && root.visible && root.width > 0 && root.width < implicitWidth
 
-        text: root.text == null ? root._config.text : root.text
+        text: {
+            let text = root.text == null ? root._config.text : root.text
+            if (Array.isArray(root.args)) {
+                for (let i = 0; i < root.args.length; ++i) {
+                    text = text.arg(root.args[i])
+                }
+            }
+            return text
+        }
         textFormat: Text.PlainText
         wrapMode: Text.NoWrap
         color: root.theme.getColor(root._config.color)

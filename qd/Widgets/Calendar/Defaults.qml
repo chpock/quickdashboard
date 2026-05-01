@@ -256,9 +256,12 @@ Fragments {
         }
 
         timer {
-            _defaults: widget._defaults.text
+            _defaults: widget._defaults.text_duration
             padding {
                 top: 2
+            }
+            thresholds {
+                enabled: false
             }
 
             styles: ({

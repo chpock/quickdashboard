@@ -316,19 +316,16 @@ Widget.Base {
         required property var modelData
 
         readonly property var config: root._fragments.events
-        readonly property var eventTime: event.modelData.start.getTime()
-        readonly property var currentTime: root.providerSystemClock.dateSeconds.getTime()
-        readonly property int eventTimeDelta: Math.abs((eventTime - currentTime) / 10 ** 3)
-        readonly property bool isInProgress: currentTime >= eventTime ? true : false
 
         readonly property bool isHidden: root.providerCalendar.eventsUpcomingIsHidden(modelData.eventId)
         readonly property bool isEmpty: modelData.eventId === ''
 
-        readonly property bool isSoon: !isInProgress && eventTimeDelta <= config.alarm_offset_seconds
+        readonly property bool isInProgress: leftTime.seconds <= 0 ? true : false
+        readonly property bool isSoon: !isInProgress && leftTime.seconds <= config.alarm_offset_seconds
         readonly property bool isFarInFuture:
             !isInProgress &&
             modelData.start.toDateString() !== root.currentDateString &&
-            eventTimeDelta > config.far_in_future_offset_seconds
+            leftTime.seconds > config.far_in_future_offset_seconds
 
         readonly property var style:
             isInProgress
@@ -477,32 +474,13 @@ Widget.Base {
             anchors.bottom: leftTime.bottom
         }
 
-        E.Text {
+        E.TextDuration {
             id: leftTime
             theme: root._theme
             config: event.config.timer
 
-            text: {
-                if (event.modelData.eventId === '') return ''
-                const sign = event.isInProgress && event.eventTimeDelta > 0 ? '-' : ''
-                const days = Math.floor(event.eventTimeDelta / 86400)
-                const hours = Math.floor((event.eventTimeDelta % 86400) / 3600)
-                if (days > 0) {
-                    return `${sign}${days}d ${hours}h`
-                }
-                const minutes = Math.floor((event.eventTimeDelta % 3600) / 60)
-                if (hours > 0) {
-                    return `${sign}${hours}h ${minutes}m`
-                }
-                if (minutes > 9) {
-                    return `${sign}${minutes}m`
-                }
-                const seconds = event.eventTimeDelta % 60
-                if (minutes > 0) {
-                    return `${sign}${minutes}m ${seconds}s`
-                }
-                return `${sign}${seconds}s`
-            }
+            targetDate: event.modelData.start
+            visible: !event.isEmpty
             style: event.style
             anchors.right: parent.right
             anchors.top: title.bottom

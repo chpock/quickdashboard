@@ -333,6 +333,44 @@ Singleton {
             text:       defaults.text.text
             color:      defaults.text.color
         }
+        text_duration {
+            font {
+                _defaults: defaults.text.font
+            }
+            padding {
+                _defaults: defaults.text.padding
+            }
+            alignment {
+                _defaults: defaults.text.alignment
+            }
+            hover {
+                _defaults: defaults.text.hover
+            }
+            thresholds {
+                ignore {
+                    color: 'severity/ignore'
+                    value: 'none'
+                }
+                good {
+                    color: 'severity/good'
+                    value: 'none'
+                }
+                warning {
+                    color: 'severity/warning'
+                    value: 'none'
+                }
+                critical {
+                    color: 'severity/critical'
+                    value: 'none'
+                }
+                enabled: true
+            }
+            word_spacing_font_family: defaults.text.word_spacing_font_family
+            heightMode: defaults.text.heightMode
+            background: defaults.text.background
+            text:       defaults.text.text
+            color:      defaults.text.color
+        }
         text_bytes {
             font {
                 _defaults: defaults.text.font
