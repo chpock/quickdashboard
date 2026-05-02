@@ -30,9 +30,9 @@ Item {
     required property C.GraphTimeseries config
     required property C.Theme theme
 
-    // property real maxValue: 100.0
+    // property real valueMax: 100.0
     // property real minValue: 0.0
-    // property bool maxValueAuto: false
+    // property bool valueMaxAuto: false
     //
     readonly property var calculateMax: Utils.calculateMax(() => config.points)
 
@@ -52,7 +52,7 @@ Item {
             // Set the leftmost value to 0
             points.replace(0, minX, 0)
         }
-        if (config.axisY.extend) axisY.maxValueCalc = calculateMax.push(value)
+        if (config.axisY.extend) axisY.valueMaxCalc = calculateMax.push(value)
         // Visible area should be minX+1 as we keep 1 invisible point with 0 value
         axisX.min = minX + 1
         axisX.max = graph.counter
@@ -108,15 +108,15 @@ Item {
             axisY: ValueAxis {
                 id: axisY
 
-                property real maxValueCalc: 0
+                property real valueMaxCalc: 0
 
                 visible: false
                 lineVisible: false
                 gridVisible: true
                 subGridVisible: false
                 max:
-                    root.config.axisY.extend && maxValueCalc > root.config.axisY.max
-                        ? maxValueCalc
+                    root.config.axisY.extend && valueMaxCalc > root.config.axisY.max
+                        ? valueMaxCalc
                         : root.config.axisY.max
                 min: root.config.axisY.min
                 Behavior on max {

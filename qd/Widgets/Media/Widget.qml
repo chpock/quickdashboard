@@ -267,7 +267,7 @@ Widget.Base {
             config: player.config.slider
 
             value: root.providerMpris.position
-            maxValue: root.providerMpris.length
+            valueMax: root.providerMpris.length
             anchors.top: status_box.bottom
             anchors.left: parent.left
             anchors.right: parent.right

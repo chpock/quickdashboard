@@ -28,7 +28,7 @@ Item {
     required property C.Bar config
     required property C.Theme theme
 
-    property real maxValue: 100.0
+    property real valueMax: 100.0
     property real value: 0
 
     readonly property real effectiveWidth: Math.max(0, width - root.config.padding.left - root.config.padding.right)
@@ -59,9 +59,9 @@ Item {
         anchors.topMargin: root.config.padding.top
         height: root.config.height
         width:
-            root.maxValue <= 0
+            root.valueMax <= 0
                 ? 0
-                : root.effectiveWidth * root.value / root.maxValue
+                : root.effectiveWidth * root.value / root.valueMax
         color: root.theme.getColor(root.config.color.active)
     }
 }

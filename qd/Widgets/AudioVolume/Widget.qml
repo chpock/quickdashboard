@@ -135,7 +135,7 @@ Widget.Base {
             config: item.config.slider
 
             value: parent.volume
-            maxValue: 1.0
+            valueMax: 1.0
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right

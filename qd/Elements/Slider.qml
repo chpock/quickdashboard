@@ -28,7 +28,7 @@ Item {
     required property C.Slider config
     required property C.Theme theme
 
-    property real maxValue: 100.0
+    property real valueMax: 100.0
     property real value: 0
     property bool canSeek: true
     property real mouseWheelResolution: 5
@@ -75,9 +75,9 @@ Item {
         anchors.topMargin: background.topMargin
         height: root.config.bar.height
         width:
-            root.maxValue <= 0
+            root.valueMax <= 0
                 ? 0
-                : (root.effectiveWidth - thumbWidth) * root.value / root.maxValue
+                : (root.effectiveWidth - thumbWidth) * root.value / root.valueMax
         color: root.theme.getColor(root.config.bar.color.active)
     }
 
@@ -122,7 +122,7 @@ Item {
                 root.effectiveWidth === 0
                     ? 0
                     : Math.max(0, Math.min(root.effectiveWidth, point.position.x - root.config.padding.left)) / root.effectiveWidth
-            root.slide(slide * root.maxValue)
+            root.slide(slide * root.valueMax)
         }
     }
 
@@ -137,7 +137,7 @@ Item {
                 root.effectiveWidth === 0
                     ? 0
                     : Math.max(0, Math.min(root.effectiveWidth, centroid.position.x)) / root.effectiveWidth
-            root.slide(slide * root.maxValue)
+            root.slide(slide * root.valueMax)
         }
     }
 
@@ -167,8 +167,8 @@ Item {
             isMouseWheel
                 ? mouseWheelResolution * deltaY / 120
                 : touchpadResolution * deltaY
-        const deltaAbs = root.maxValue * deltaRel / 100
-        const slide = Math.max(0, Math.min(root.maxValue, root.value + deltaAbs))
+        const deltaAbs = root.valueMax * deltaRel / 100
+        const slide = Math.max(0, Math.min(root.valueMax, root.value + deltaAbs))
         event.accepted = true
         root.slide(slide)
     }

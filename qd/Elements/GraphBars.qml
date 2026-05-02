@@ -31,7 +31,7 @@ Item {
 
     // required property color color
 
-    property real maxValue: 100.0
+    property real valueMax: 100.0
 
     implicitHeight: config.height + config.padding.top + config.padding.bottom
 
@@ -92,7 +92,7 @@ Item {
             axisY: ValueAxis {
                 id: axisY
                 min: 0
-                max: root.maxValue
+                max: root.valueMax
                 visible: false
                 labelsVisible: false
                 lineVisible: false
