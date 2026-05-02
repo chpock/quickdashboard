@@ -114,7 +114,8 @@ Widget.Base {
             theme: root._theme
             config: line.config.bar
 
-            value: percent.calcValue
+            value: parent.modelData.percent
+            maxValue: 1.0
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: label.bottom
