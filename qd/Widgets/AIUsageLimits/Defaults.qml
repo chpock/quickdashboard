@@ -43,14 +43,29 @@ Fragments {
                 },
             })
         }
+        spacing {
+            vertical: 3
+        }
     }
 
     line {
         label {
             _defaults: widget._defaults.text
+            padding {
+                top: 2
+                right: '1ch'
+            }
         }
         duration {
-            _defaults: widget._defaults.text
+            _defaults: widget._defaults.text_duration
+            font {
+                size: 'small'
+            }
+            thresholds {
+                enabled: false
+            }
+            text: '(%1)'
+            color: 'text/secondary'
         }
         percent {
             _defaults: widget._defaults.text_percent
@@ -62,7 +77,7 @@ Fragments {
                     value: '<70'
                 }
                 warning {
-                    value: '<90'
+                    value: '<80'
                 }
                 critical {
                     value: 'any'
@@ -73,15 +88,23 @@ Fragments {
             _defaults: widget._defaults.bar
             padding {
                 top:    3
-                bottom: 2
+                bottom: 3
             }
         }
         resets {
             label {
                 _defaults: widget._defaults.text
+                text: 'Resets in:'
+                font {
+                    size: 'small'
+                }
+                color: 'text/secondary'
             }
             time {
-                _defaults: widget._defaults.text
+                _defaults: widget._defaults.text_duration
+                thresholds {
+                    enabled: false
+                }
             }
         }
     }

@@ -32,5 +32,8 @@ C.Base {
     readonly property C.Text plan: C.Text {
         _defaults: root._defaults?.plan ?? null
     }
+    readonly property C.Spacing spacing: C.Spacing {
+        _defaults: root._defaults?.spacing ?? null
+    }
 
 }

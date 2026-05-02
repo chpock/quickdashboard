@@ -29,7 +29,7 @@ C.Base {
     readonly property C.Text label: C.Text {
         _defaults: root._defaults?.label ?? null
     }
-    readonly property C.Text time: C.Text {
+    readonly property C.TextDuration time: C.TextDuration {
         _defaults: root._defaults?.time ?? null
     }
 

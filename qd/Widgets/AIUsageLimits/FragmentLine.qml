@@ -30,7 +30,7 @@ C.Base {
         _defaults: root._defaults?.label ?? null
     }
 
-    readonly property C.Text duration: C.Text {
+    readonly property C.TextDuration duration: C.TextDuration {
         _defaults: root._defaults?.duration ?? null
     }
 

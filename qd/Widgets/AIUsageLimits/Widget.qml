@@ -43,6 +43,31 @@ Widget.Base {
         required property var modelData
         readonly property var config: root._fragments.line
 
+        // implicitHeight:
+        //     bar.implicitHeight
+        //
+        // E.Bar {
+        //     id: bar
+        //     theme: root._theme
+        //     config: line.config.bar
+        //
+        //     value: percent.calcValue
+        //     anchors.left: parent.left
+        //     anchors.right: parent.right
+        //     anchors.top: parent.top
+        // }
+        //
+        // E.TextPercent {
+        //     id: percent
+        //     theme: root._theme
+        //     config: line.config.percent
+        //
+        //     valueCurrent: parent.modelData.percent
+        //     valueMax: 1
+        //     anchors.right: parent.right
+        //     visible: false
+        // }
+
         implicitHeight:
             Math.max(
                 label.implicitHeight,
@@ -62,12 +87,12 @@ Widget.Base {
             anchors.left: parent.left
         }
 
-        E.Text {
+        E.TextDuration {
             id: duration
             theme: root._theme
             config: line.config.duration
 
-            text: parent.modelData.periodDurationSeconds
+            seconds: parent.modelData.periodDurationSeconds
             anchors.left: label.right
             anchors.right: percent.left
             anchors.bottom: label.bottom
@@ -102,16 +127,16 @@ Widget.Base {
 
             anchors.top: bar.bottom
             anchors.left: parent.left
+            anchors.bottom: resetsTime.bottom
         }
 
-        E.Text {
+        E.TextDuration {
             id: resetsTime
             theme: root._theme
             config: line.config.resets.time
 
-            // text: parent.modelData.resetsAt
-            text: 'foo'
-            anchors.bottom: resetsLabel.bottom
+            targetDate: parent.modelData.resetsAt
+            anchors.top: bar.bottom
             anchors.right: parent.right
         }
     }
@@ -169,7 +194,7 @@ Widget.Base {
             // anchors.topMargin: root.config.padding.top
             // anchors.bottomMargin: root.config.padding.bottom
             //
-            // spacing: root.config.spacing.horizontal
+            spacing: provider.config.spacing.vertical
 
             Repeater {
                 model: provider.modelData.lines
