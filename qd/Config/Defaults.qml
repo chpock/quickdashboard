@@ -51,6 +51,9 @@ Base {
     readonly property TextDuration text_duration: TextDuration {
         _defaults: root._defaults?.text_duration ?? null
     }
+    readonly property TextDateTime text_datetime: TextDateTime {
+        _defaults: root._defaults?.text_datetime ?? null
+    }
     readonly property TextBytes text_bytes: TextBytes {
         _defaults: root._defaults?.text_bytes ?? null
     }

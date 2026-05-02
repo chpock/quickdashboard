@@ -22,25 +22,17 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.qd.Elements as E
 import qs.qd.Config as C
-import qs.qd.Services as Service
 
 Item {
     id: root
 
-    required property C.TextDuration config
+    required property C.TextDateTime config
     required property C.Theme theme
 
+    required property date datetime
     property var text
     property var style
-    readonly property C.TextDuration _config: (config._styles_loaded && style && config.getStyle(style)) || config
-
-    property int seconds: {
-        const result = (targetDate.getTime() - baseDate.getTime()) / 10 ** 3
-        return (!allowNegative && result < 0) ? 0 : result
-    }
-    property var targetDate: null
-    property date baseDate: Service.SystemClock.dateSeconds
-    property bool allowNegative: true
+    readonly property C.TextDateTime _config: (config._styles_loaded && style && config.getStyle(style)) || config
 
     implicitHeight: textObj.implicitHeight
     implicitWidth: textObj.implicitWidth
@@ -49,30 +41,7 @@ Item {
         id: textObj
         theme: root.theme
 
-        property string duration: {
-            const sign = root.seconds < 0 ? '-' : ''
-            const delta = Math.abs(root.seconds)
-            const days = Math.floor(delta / 86400)
-            const hours = Math.floor((delta % 86400) / 3600)
-            if (days > 0) {
-                const result = sign + days + 'd'
-                return hours <= 0 ? result : (result + ' ' + hours + 'h')
-            }
-            const minutes = Math.floor((delta % 3600) / 60)
-            if (hours > 0) {
-                const result = sign + hours + 'h'
-                return minutes <= 0 ? result : (result + ' ' + minutes + 'm')
-            }
-            if (minutes > 9) {
-                return sign + minutes + 'm'
-            }
-            const seconds = delta % 60
-            if (minutes > 0) {
-                const result = sign + minutes + 'm'
-                return seconds <= 0 ? result : (result + ' ' + seconds + 's')
-            }
-            return sign + seconds + 's'
-        }
+        property string datetime: Qt.formatDateTime(root.datetime, root._config.format)
         property string draft: root.text ?? root._config.text
         property bool hasFormat: draft.includes('%1')
 
@@ -98,13 +67,10 @@ Item {
             background: root._config.background
             overflow:   'none'
             heightMode: root._config.heightMode
-            color:
-                root._config.thresholds.enabled
-                    ? root._config.thresholds.getColor(root.seconds, root.theme)
-                    : root._config.color
+            color:      root._config.color
         }
-        text: hasFormat ? draft : duration
-        args: hasFormat ? [duration] : null
+        text: hasFormat ? draft : datetime
+        args: hasFormat ? [datetime] : null
         anchors.fill: parent
     }
 }
