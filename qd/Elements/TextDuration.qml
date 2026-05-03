@@ -22,7 +22,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.qd.Elements as E
 import qs.qd.Config as C
-import qs.qd.Services as Service
+import qs.qd.Providers as Providers
 
 Item {
     id: root
@@ -39,7 +39,9 @@ Item {
         return (!allowNegative && result < 0) ? 0 : result
     }
     property var targetDate: null
-    property date baseDate: Service.SystemClock.dateSeconds
+    // qmllint disable missing-property
+    property date baseDate: Providers.SystemClock.instance.dateSeconds
+    // qmllint enable missing-property
     property bool allowNegative: true
 
     implicitHeight: textObj.implicitHeight
