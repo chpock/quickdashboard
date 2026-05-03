@@ -18,27 +18,19 @@
 */
 
 pragma ComponentBehavior: Bound
-pragma Singleton
 
-import Quickshell
-import QtQuick
-import QtCore
+import qs.qd.Config as C
 
-Singleton {
+C.Base {
     id: root
 
-    readonly property bool isDemo: true
+    property FragmentNotice _defaults
 
-    Settings {
-        id: stateStore
-        location: StandardPaths.writableLocation(StandardPaths.CacheLocation) + "/quickdashboard/state.ini"
+    readonly property C.TextTitle title: C.TextTitle {
+        _defaults: root._defaults?.title ?? null
+    }
+    readonly property C.Text message: C.Text {
+        _defaults: root._defaults?.message ?? null
     }
 
-    function stateSet(key, value) {
-        return stateStore.setValue(key, value)
-    }
-
-    function stateGet(key, defaultValue) {
-        return stateStore.value(key, defaultValue)
-    }
 }

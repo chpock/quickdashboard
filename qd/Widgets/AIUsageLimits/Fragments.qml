@@ -26,6 +26,9 @@ C.Base {
 
     property Fragments _defaults
 
+    readonly property FragmentNotice notice: FragmentNotice {
+        _defaults: root._defaults?.notice ?? null
+    }
     readonly property FragmentProvider provider: FragmentProvider {
         _defaults: root._defaults?.provider ?? null
     }

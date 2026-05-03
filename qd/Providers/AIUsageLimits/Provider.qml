@@ -40,12 +40,17 @@ Scope {
         target: Service.Openusage
         enabled: root.hasService
         function onUpdateProviders(data) {
-            root.notice = data.notice
             const providersData = data.data
             const currentLatestProviders = []
             let latestProvidersDirty = false
             const currentLatestProvidersLines = {}
             let latestProvidersLinesDirty = false
+            let noticeDirty = false
+
+            if (data.notice !== root.notice) {
+                root.notice = data.notice
+                noticeDirty = true
+            }
 
             if (root.latestProviders.length !== providersData.length) {
                 latestProvidersDirty = true
@@ -161,6 +166,10 @@ Scope {
                 root.latestProvidersLines = currentLatestProvidersLines
                 QD.Settings.stateSet('Provider.AIUsageLimits.latestProvidersLines', JSON.stringify(root.latestProvidersLines))
             }
+
+            if (noticeDirty) {
+                QD.Settings.stateSet('Provider.AIUsageLimits.notice', JSON.stringify(root.notice))
+            }
         }
         function onAvailable() {
             root.running = true
@@ -175,6 +184,8 @@ Scope {
         Component.onCompleted: {
             if (root.hasService) {
                 try {
+
+                    root.notice = JSON.parse(QD.Settings.stateGet('Provider.AIUsageLimits.notice', 'null'))
 
                     const currentLatestProviders =
                         JSON.parse(QD.Settings.stateGet('Provider.AIUsageLimits.latestProviders', '[]'))
@@ -218,10 +229,6 @@ Scope {
 
                     root.latestProviders = currentLatestProviders
                     root.latestProvidersLines = currentLatestProvidersLines
-
-                    console.log(JSON.stringify(currentLatestProviders))
-                    console.log(JSON.stringify(currentLatestProvidersLines))
-
                 }
                 catch (e) {
                     console.warn('[Provider/AIUsageLimits]', 'could not load provider state:', e)

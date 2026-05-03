@@ -37,6 +37,32 @@ Widget.Base {
         _chain: (root._chain ? root._chain + '.' : '') + root.type + '.fragments'
     }
 
+    component Notice: Item {
+        id: line
+
+        readonly property var config: root._fragments.notice
+
+        implicitHeight: Math.max(title.implicitHeight, message.implicitHeight)
+
+        E.TextTitle {
+            id: title
+            theme: root._theme
+            config: line.config.title
+
+            anchors.left: parent.left
+        }
+
+        E.Text {
+            id: message
+            theme: root._theme
+            config: line.config.message
+
+            text: root.providerAIUsageLimits.notice
+            anchors.left: title.right
+            anchors.right: parent.right
+        }
+    }
+
     component Line: Item {
         id: line
 
@@ -174,6 +200,12 @@ Widget.Base {
                 }
             }
         }
+    }
+
+    Notice {
+        visible: root.providerAIUsageLimits.notice
+        anchors.left: parent.left
+        anchors.right: parent.right
     }
 
     Repeater {

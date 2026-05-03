@@ -26,6 +26,21 @@ Fragments {
 
     property Widget.Base widget
 
+    notice {
+        title {
+            _defaults: widget._defaults.text_title
+            padding {
+                right: '1ch'
+            }
+            color: 'severity/critical'
+            text:  'Notice'
+        }
+        message {
+            _defaults: widget._defaults.text
+            overflow: 'scroll'
+        }
+    }
+
     provider {
         title {
             _defaults: widget._defaults.text_title
