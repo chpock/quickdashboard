@@ -20,7 +20,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-// import qs
 import qs.qd.Config as C
 
 Item {
@@ -39,6 +38,7 @@ Item {
 
     readonly property real leftMargin: calcMargin(_config.padding.left)
     readonly property real rightMargin: calcMargin(_config.padding.right)
+    readonly property real effectiveWidth: Math.max(0, width - leftMargin - rightMargin)
     readonly property real wordSpacing: Math.round(spaceMetrics2.boundingRect.width - spaceMetrics1.boundingRect.width)
 
     implicitHeight:
@@ -101,7 +101,7 @@ Item {
 
         property real scrollOffset: 0
         readonly property bool needsScrolling:
-            root._config._overflow === C.Text.OverflowScroll && root.visible && root.width > 0 && root.width < implicitWidth
+            root._config._overflow === C.Text.OverflowScroll && root.visible && root.effectiveWidth > 0 && root.effectiveWidth < implicitWidth
 
         text: {
             let text = root.text == null ? root._config.text : root.text
@@ -124,42 +124,15 @@ Item {
         verticalAlignment: root._config.alignment._vertical
         // verticalAlignment: Text.AlignVCenter
         elide: root._config._overflow === C.Text.OverflowElide ? Text.ElideRight : Text.ElideNone
-        x: needsScrolling ? -scrollOffset : 0
-        // width:
-        //     root._config._overflow === C.Text.OverflowNone && implicitWidth > parent.width
-        //         ? undefined
-        //         : parent.width
-
-        // anchors.fill: parent
-        // anchors.topMargin: root._config.padding.top
-        // anchors.bottomMargin: root._config.padding.bottom
-        // anchors.leftMargin: root.leftMargin
-        // anchors.rightMargin: root.rightMargin
+        // TODO: leftMargin doesn't work with scrolled text. It is just ignored.
+        // We need to place Text in a container (Item) with strict boundaries.
+        x: needsScrolling ? root.leftMargin - scrollOffset : root.leftMargin
+        width: root.effectiveWidth
 
         anchors.top: parent.top
         anchors.topMargin: root._config.padding.top
         anchors.bottom: parent.bottom
         anchors.bottomMargin: root._config.padding.bottom
-
-        // TODO: left/right paddings will not work for C.Text.OverflowScroll
-        // I need to figure out how to make them work.
-
-        anchors.left:
-            root._config._overflow === C.Text.OverflowScroll
-                ? undefined
-                : parent.left
-        anchors.leftMargin:
-            root._config._overflow === C.Text.OverflowScroll
-                ? undefined
-                : root.leftMargin
-        anchors.right:
-            root._config._overflow === C.Text.OverflowScroll
-                ? undefined
-                : parent.right
-        anchors.rightMargin:
-            root._config._overflow === C.Text.OverflowScroll
-                ? undefined
-                : root.rightMargin
 
         onTextChanged: {
             scrollOffset = 0
@@ -174,7 +147,7 @@ Item {
             readonly property real duration:
                 textObj.implicitWidth === 0
                     ? 1000
-                    : Math.max(1000, 1000 * root._config.scroll.duration * (textObj.implicitWidth - root.width) / root.width)
+                    : Math.max(1000, 1000 * root._config.scroll.duration * (textObj.implicitWidth - root.effectiveWidth) / root.effectiveWidth)
 
             PauseAnimation {
                 duration: root._config.scroll.pauseStart
@@ -184,7 +157,7 @@ Item {
                 target: textObj
                 property: 'scrollOffset'
                 from: 0
-                to: textObj.implicitWidth - root.width
+                to: textObj.implicitWidth - root.effectiveWidth
                 duration: animation.duration
                 easing.type: Easing.Linear
             }
