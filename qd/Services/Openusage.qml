@@ -1,0 +1,210 @@
+/*
+    This file is a part of quickdashboard: https://github.com/chpock/quickdashboard
+
+    Copyright (C) 2025-2026 Kostiantyn Kushnir <chpock@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+pragma ComponentBehavior: Bound
+pragma Singleton
+
+import Quickshell
+import Quickshell.Io
+import QtQuick
+
+Singleton {
+    id: root
+
+    property bool running: false
+    property bool openusageAvailable: false
+    property var closestResetData: null
+
+    signal updateProviders(var data)
+    signal available()
+    signal unavailable()
+
+    Timer {
+        id: avalabilityCheckTimer
+        interval: 500
+        running: true
+        repeat: false
+        onTriggered: avalabilityCheckProc.running = true
+    }
+
+    Timer {
+        id: checkTimer
+        interval: 1000 * 60
+        running: root.running
+        repeat: true
+        onTriggered: checkProc.running = true
+    }
+
+    Timer {
+        id: checkAgressiveTimer
+        interval: 1000 * 3
+        running: false
+        repeat: true
+        onTriggered: checkProc.running = true
+    }
+
+    Timer {
+        id: activateAgressiveTimer
+        running: false
+        repeat: false
+        onTriggered: {
+            checkProc.running = true
+            checkAgressiveTimer.start()
+        }
+    }
+
+    onClosestResetDataChanged: {
+        if (!closestResetData) {
+            activateAgressiveTimer.stop()
+            checkAgressiveTimer.stop()
+            return
+        }
+        const now = Date.now()
+        const delayMs = closestResetData.getTime() - now
+        if (delayMs <= 0) {
+            // console.log("START agressive check now, delay secs is negative:", delayMs / 1000)
+            activateAgressiveTimer.stop()
+            if (!checkAgressiveTimer.running) {
+                checkAgressiveTimer.start()
+                checkProc.running = true
+            }
+        } else if (delayMs > checkTimer.interval) {
+            // console.log("Delay secs is too hight:", delayMs / 1000)
+            activateAgressiveTimer.stop()
+            checkAgressiveTimer.stop()
+        } else {
+            // console.log("SCHEDULE aggressive check by delay secs:", delayMs / 1000)
+            activateAgressiveTimer.interval = delayMs
+            activateAgressiveTimer.restart()
+            checkAgressiveTimer.stop()
+        }
+    }
+
+    function processOpenusageData(outcome: var) {
+        let closestResetDate = null
+
+        const data = outcome.data
+        const state = outcome.state
+
+        const notice = state.queryMode === 'cache' ? null : "Query mode is not 'cache': " + state.queryMode
+
+        const result = data.map(provider => {
+            const processedLines = (provider.lines || [])
+                .filter(line => {
+                    return line.format && line.format.kind === 'percent' && line.resetsAt !== null;
+                })
+                .map(line => {
+                    const resetDate = new Date(line.resetsAt);
+
+                    if (closestResetDate === null || resetDate < closestResetDate) {
+                        closestResetDate = resetDate
+                    }
+
+                    return {
+                        label: line.label,
+                        periodDurationSeconds: line.periodDurationMs ? (line.periodDurationMs / 1000) : 0,
+                        percent: line.limit > 0 ? (line.used / line.limit) : 0,
+                        resetsAt: resetDate
+                    }
+                })
+            const errorBadge = (provider.lines || []).find(line => {
+                return line.type === 'badge' && line.label === 'Error'
+            })
+
+            return {
+                id: provider.providerId,
+                displayName: provider.displayName,
+                plan: provider.plan,
+                lines: processedLines,
+                error: errorBadge ? errorBadge.text : null,
+            }
+        }).filter(item => item.lines.length > 0 || item.error).sort((a, b) => a.id.localeCompare(b.id))
+
+        root.closestResetData = closestResetDate
+
+        root.updateProviders({
+            data: result,
+            notice: notice,
+        })
+    }
+
+    Process {
+        id: checkProc
+        command: ['openusage-cli', 'query', '--with-state']
+        running: false
+        stderr: SplitParser {
+            splitMarker: "\n"
+            onRead: line => {
+                console.warn('[Services/Openusage@checkProc]', '[stderr]', line)
+            }
+        }
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let data
+                try {
+                     data = JSON.parse(text)
+                }
+                catch (e) {
+                    console.warn(
+                        '[Services/Openusage@checkProc]',
+                        'unable to parse JSON from openusage-cli output:', e,
+                        'output:', text
+                    )
+                    return
+                }
+                root.processOpenusageData(data)
+            }
+        }
+        // qmllint disable signal-handler-parameters
+        onExited: (exitCode, _) => {
+        // qmllint enable signal-handler-parameters
+            if (exitCode !== 0) {
+                console.warn('[Services/Openusage@checkProc]', 'exited with code:', exitCode)
+            }
+        }
+    }
+
+    Process {
+        id: avalabilityCheckProc
+        command: ['openusage-cli', 'version']
+        running: false
+        property bool isInitialLoading: true
+        // qmllint disable signal-handler-parameters
+        onExited: (exitCode, _) => {
+        // qmllint enable signal-handler-parameters
+            if (exitCode !== 0) {
+                console.info('[Service.Openusage/checkOpenusageProc]', 'openusage-cli: unavailable')
+                root.openusageAvailable = false
+                isInitialLoading = true
+                root.running = false
+                root.unavailable()
+            } else {
+                if (isInitialLoading) {
+                    console.info('[Service.Openusage/checkOpenusageProc]', 'openusage-cli: available')
+                    isInitialLoading = false
+                }
+                root.openusageAvailable = true
+                root.running = true
+                root.available()
+                checkProc.running = true
+            }
+        }
+    }
+
+}

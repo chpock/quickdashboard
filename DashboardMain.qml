@@ -24,6 +24,9 @@ Dashboard {
     W.Disk {
     }
 
+    W.AIUsageLimits {
+    }
+
     W.Media {
     }
 
