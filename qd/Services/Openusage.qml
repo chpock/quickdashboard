@@ -78,18 +78,18 @@ Singleton {
         const now = Date.now()
         const delayMs = closestResetData.getTime() - now
         if (delayMs <= 0) {
-            console.log("START agressive check now, delay secs is negative:", delayMs / 1000)
+            // console.log("START agressive check now, delay secs is negative:", delayMs / 1000)
             activateAgressiveTimer.stop()
             if (!checkAgressiveTimer.running) {
                 checkAgressiveTimer.start()
                 checkProc.running = true
             }
         } else if (delayMs > checkTimer.interval) {
-            console.log("Delay secs is too hight:", delayMs / 1000)
+            // console.log("Delay secs is too hight:", delayMs / 1000)
             activateAgressiveTimer.stop()
             checkAgressiveTimer.stop()
         } else {
-            console.log("SCHEDULE aggressive check by delay secs:", delayMs / 1000)
+            // console.log("SCHEDULE aggressive check by delay secs:", delayMs / 1000)
             activateAgressiveTimer.interval = delayMs
             activateAgressiveTimer.restart()
             checkAgressiveTimer.stop()
@@ -137,11 +137,6 @@ Singleton {
         }).filter(item => item.lines.length > 0 || item.error).sort((a, b) => a.id.localeCompare(b.id))
 
         root.closestResetData = closestResetDate
-
-        // console.log("closestReset:", JSON.stringify(closestResetDate))
-        // console.log("left:", JSON.stringify((closestResetDate - new Date()) / 1000 ))
-        // console.log("Processed:", JSON.stringify(result))
-        // console.log("Notice:", JSON.stringify(notice))
 
         root.updateProviders({
             data: result,

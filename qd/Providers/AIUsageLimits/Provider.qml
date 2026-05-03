@@ -22,6 +22,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import QtQuick
 import qs.qd.Services as Service
+import qs.qd as QD
 
 Scope {
     id: root
@@ -32,27 +33,54 @@ Scope {
 
     property var notice: null
 
-    property string latestProviders: ''
+    property var latestProviders: []
     property var latestProvidersLines: ({})
 
     Connections {
         target: Service.Openusage
         enabled: root.hasService
         function onUpdateProviders(data) {
-            // root.dataProviders = data
-            // root.updateModels()
-            console.log("Got data:", JSON.stringify(data))
             root.notice = data.notice
             const providersData = data.data
+            const currentLatestProviders = []
+            let latestProvidersDirty = false
+            const currentLatestProvidersLines = {}
+            let latestProvidersLinesDirty = false
+
+            if (root.latestProviders.length !== providersData.length) {
+                latestProvidersDirty = true
+            }
+
             for (let i = 0; i < providersData.length; ++i) {
 
                 const providerData = providersData[i]
+
+                const previousLines =
+                    root.latestProvidersLines.hasOwnProperty(providerData.id)
+                        ? root.latestProvidersLines[providerData.id]
+                        : []
 
                 const modelData = {
                     id: providerData.id,
                     displayName: providerData.displayName,
                     plan: providerData.plan ?? '',
                     error: providerData.error ?? '',
+                }
+
+                currentLatestProviders.push({
+                    id: providerData.id,
+                    displayName: providerData.displayName,
+                })
+                if (root.latestProviders.length <= i) {
+                    latestProvidersDirty = true
+                    latestProvidersLinesDirty = true
+                } else {
+                    const latestProviderItem = root.latestProviders[i]
+                    if (latestProviderItem.id !== providerData.id || latestProviderItem.displayName !== providerData.displayName) {
+                        latestProvidersDirty = true
+                        latestProvidersLinesDirty = true
+                        modelData.lines = []
+                    }
                 }
 
                 if (i < providersModelObj.count) {
@@ -68,6 +96,13 @@ Scope {
 
                     const providerModel = providersModelObj.get(i)
                     const linesModel = providerModel.lines
+                    const currentLines = []
+
+                    if (!latestProvidersLinesDirty) {
+                        if (previousLines.length !== lines.length) {
+                            latestProvidersLinesDirty = true
+                        }
+                    }
 
                     for (let j = 0; j < lines.length; ++j) {
                         const line = lines[j]
@@ -77,6 +112,22 @@ Scope {
                             percent: line.percent,
                             resetsAt: line.resetsAt,
                         }
+
+                        currentLines.push({
+                            label: line.label,
+                            periodDurationSeconds: line.periodDurationSeconds,
+                        })
+                        if (!latestProvidersLinesDirty) {
+                            if (previousLines.length <= j) {
+                                latestProvidersLinesDirty = true
+                            } else {
+                                const previousLineItem = previousLines[j]
+                                if (previousLineItem.label !== line.label || previousLineItem.periodDurationSeconds !== line.periodDurationSeconds) {
+                                    latestProvidersLinesDirty = true
+                                }
+                            }
+                        }
+
                         if (j < linesModel.count) {
                             linesModel.set(j, linesModelData)
                         } else {
@@ -88,10 +139,27 @@ Scope {
                         linesModel.remove(lines.length, linesModel.count - lines.length)
                     }
 
+                    currentLatestProvidersLines[providerData.id] = currentLines
+
+                } else if (root.latestProvidersLines.hasOwnProperty(providerData.id)) {
+                    currentLatestProvidersLines[providerData.id] = root.latestProvidersLines[providerData.id]
+                } else {
+                    currentLatestProvidersLines[providerData.id] = []
+                    latestProvidersLinesDirty = true
                 }
             }
             if (providersData.length < providersModelObj.count) {
                 providersModelObj.remove(providersData.length, providersModelObj.count - providersData.length)
+            }
+
+            if (latestProvidersDirty) {
+                root.latestProviders = currentLatestProviders
+                QD.Settings.stateSet('Provider.AIUsageLimits.latestProviders', JSON.stringify(root.latestProviders))
+            }
+
+            if (latestProvidersLinesDirty) {
+                root.latestProvidersLines = currentLatestProvidersLines
+                QD.Settings.stateSet('Provider.AIUsageLimits.latestProvidersLines', JSON.stringify(root.latestProvidersLines))
             }
         }
         function onAvailable() {
@@ -104,27 +172,62 @@ Scope {
 
     ListModel {
         id: providersModelObj
-        // Component.onCompleted: {
-        //     if (root.hasService) {
-        //         let stateCount = QD.Settings.stateGet('Provider.Disk.ListModel.count', 0)
-        //         const sampleData = {
-        //             device: '',
-        //             mount:  '',
-        //             fstype: '',
-        //             size:  0,
-        //             used:  0,
-        //             avail: 0,
-        //         }
-        //         while (stateCount-- > 0) {
-        //             append(sampleData)
-        //             root.mountModelList.push('')
-        //         }
-        //     }
-        // }
-        // onCountChanged: {
-        //     if (root.hasService) {
-        //         QD.Settings.stateSet('Provider.Disk.ListModel.count', count)
-        //     }
-        // }
+        Component.onCompleted: {
+            if (root.hasService) {
+                try {
+
+                    const currentLatestProviders =
+                        JSON.parse(QD.Settings.stateGet('Provider.AIUsageLimits.latestProviders', '[]'))
+                    const currentLatestProvidersLines =
+                        JSON.parse(QD.Settings.stateGet('Provider.AIUsageLimits.latestProvidersLines', '{}'))
+                    const currentDate = new Date()
+
+                    for (let i = 0; i < currentLatestProviders.length; ++i) {
+
+                        const providerData = currentLatestProviders[i]
+                        const lines = currentLatestProvidersLines[providerData.id]
+
+                        const modelData = {
+                            id: providerData.id,
+                            displayName: providerData.displayName,
+                            plan: '',
+                            error: 'Not initialized',
+                            lines: [],
+                        }
+                        providersModelObj.append(modelData)
+
+                        const providerModel = providersModelObj.get(i)
+                        const linesModel = providerModel.lines
+
+                        for (let j = 0; j < lines.length; ++j) {
+
+                            const line = lines[j]
+
+                            const linesModelData = {
+                                label: line.label,
+                                periodDurationSeconds: line.periodDurationSeconds,
+                                percent: -1,
+                                resetsAt: currentDate,
+                            }
+
+                            linesModel.append(linesModelData)
+
+                        }
+
+                    }
+
+                    root.latestProviders = currentLatestProviders
+                    root.latestProvidersLines = currentLatestProvidersLines
+
+                    console.log(JSON.stringify(currentLatestProviders))
+                    console.log(JSON.stringify(currentLatestProvidersLines))
+
+                }
+                catch (e) {
+                    console.warn('[Provider/AIUsageLimits]', 'could not load provider state:', e)
+                    providersModelObj.clear()
+                }
+            }
+        }
     }
 }

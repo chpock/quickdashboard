@@ -42,31 +42,7 @@ Widget.Base {
 
         required property var modelData
         readonly property var config: root._fragments.line
-
-        // implicitHeight:
-        //     bar.implicitHeight
-        //
-        // E.Bar {
-        //     id: bar
-        //     theme: root._theme
-        //     config: line.config.bar
-        //
-        //     value: percent.calcValue
-        //     anchors.left: parent.left
-        //     anchors.right: parent.right
-        //     anchors.top: parent.top
-        // }
-        //
-        // E.TextPercent {
-        //     id: percent
-        //     theme: root._theme
-        //     config: line.config.percent
-        //
-        //     valueCurrent: parent.modelData.percent
-        //     valueMax: 1
-        //     anchors.right: parent.right
-        //     visible: false
-        // }
+        readonly property bool initialized: modelData.percent >= 0
 
         implicitHeight:
             Math.max(
@@ -103,6 +79,7 @@ Widget.Base {
             theme: root._theme
             config: line.config.percent
 
+            visible: line.initialized
             valueCurrent: parent.modelData.percent
             valueMax: 1
             anchors.right: parent.right
@@ -114,8 +91,8 @@ Widget.Base {
             theme: root._theme
             config: line.config.bar
 
-            value: parent.modelData.percent
-            maxValue: 1.0
+            value: line.initialized ? parent.modelData.percent : 0
+            valueMax: 1.0
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: label.bottom
@@ -136,6 +113,7 @@ Widget.Base {
             theme: root._theme
             config: line.config.resets.time
 
+            visible: line.initialized
             targetDate: parent.modelData.resetsAt
             anchors.top: bar.bottom
             anchors.right: parent.right
@@ -160,10 +138,6 @@ Widget.Base {
 
             text: parent.modelData.displayName
             anchors.left: parent.left
-            // onImplicitWidthChanged: {
-            //     if (implicitWidth > root.wirelessIfaceWidth)
-            //         root.wirelessIfaceWidth = implicitWidth
-            // }
         }
 
         E.Text {
@@ -188,72 +162,26 @@ Widget.Base {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: title.bottom
-            // anchors.bottom: parent.bottom
-            // anchors.fill: parent
-            // anchors.leftMargin: root.config.padding.left
-            // anchors.rightMargin: root.config.padding.right
-            // anchors.topMargin: root.config.padding.top
-            // anchors.bottomMargin: root.config.padding.bottom
-            //
+
             spacing: provider.config.spacing.vertical
 
             Repeater {
                 model: provider.modelData.lines
 
                 Line {
-                    anchors.left: parent.left
-                    anchors.right: parent.right
+                    anchors.left: parent?.left
+                    anchors.right: parent?.right
                 }
             }
         }
     }
 
-    // Item {
-    //     id: clock
-    //
-    //     readonly property var config: root._fragments
-    //
-    //     implicitHeight: Math.max(hours.implicitHeight, separator.implicitHeight, minutes.implicitHeight)
-    //     implicitWidth: hours.implicitWidth + separator.implicitWidth + minutes.implicitWidth
-    //     anchors.horizontalCenter: parent.horizontalCenter
-    //
-    //     E.Text {
-    //         id: hours
-    //         theme: root._theme
-    //         config: clock.config.hours
-    //
-    //         text: Qt.formatDateTime(root.providerSystemClock.dateMinutes, "hh")
-    //         anchors.left: parent.left
-    //         anchors.top: parent.top
-    //     }
-    //
-    //     E.Text {
-    //         id: separator
-    //         theme: root._theme
-    //         config: clock.config.separator
-    //
-    //         anchors.left: hours.right
-    //         anchors.top: parent.top
-    //     }
-    //
-    //     E.Text {
-    //         id: minutes
-    //         theme: root._theme
-    //         config: clock.config.minutes
-    //
-    //         text: Qt.formatDateTime(root.providerSystemClock.dateMinutes, "mm")
-    //         anchors.left: separator.right
-    //         anchors.top: parent.top
-    //     }
-    //
-    // }
-
     Repeater {
         model: root.providerAIUsageLimits.providersModel
 
         AIProvider {
-            anchors.left: parent.left
-            anchors.right: parent.right
+            anchors.left: parent?.left
+            anchors.right: parent?.right
         }
     }
 
