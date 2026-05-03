@@ -69,16 +69,19 @@ Widget.Base {
         required property var modelData
         readonly property var config: root._fragments.line
         readonly property bool initialized: modelData.percent >= 0
+        property bool isCompact: false
 
         implicitHeight:
             Math.max(
                 label.implicitHeight,
             )
             + bar.implicitHeight
-            + Math.max(
-                resetsLabel.implicitHeight,
-                resetsTime.implicitHeight,
-            )
+            + (isCompact
+                ? 0
+                : Math.max(
+                    resetsLabel.implicitHeight,
+                    resetsTime.implicitHeight,
+                ))
 
         E.Text {
             id: label
@@ -112,6 +115,18 @@ Widget.Base {
             anchors.bottom: label.bottom
         }
 
+        E.TextDuration {
+            id: resets_compact
+            theme: root._theme
+            config: line.config.resets_compact
+
+            visible: line.initialized && line.isCompact
+            targetDate: parent.modelData.resetsAt
+            allowNegative: false
+            anchors.right: parent.right
+            anchors.bottom: label.bottom
+        }
+
         E.Bar {
             id: bar
             theme: root._theme
@@ -129,6 +144,7 @@ Widget.Base {
             theme: root._theme
             config: line.config.resets.label
 
+            visible: !line.isCompact
             anchors.top: bar.bottom
             anchors.left: parent.left
             anchors.bottom: resetsTime.bottom
@@ -139,8 +155,9 @@ Widget.Base {
             theme: root._theme
             config: line.config.resets.time
 
-            visible: line.initialized
+            visible: line.initialized && !line.isCompact
             targetDate: parent.modelData.resetsAt
+            allowNegative: false
             anchors.top: bar.bottom
             anchors.right: parent.right
         }
@@ -151,6 +168,7 @@ Widget.Base {
 
         required property var modelData
         readonly property var config: root._fragments.provider
+        property bool isCompact: false
 
         implicitHeight: Math.max(
             title.implicitHeight,
@@ -195,6 +213,7 @@ Widget.Base {
                 model: provider.modelData.lines
 
                 Line {
+                    isCompact: provider.isCompact
                     anchors.left: parent?.left
                     anchors.right: parent?.right
                 }
@@ -212,9 +231,38 @@ Widget.Base {
         model: root.providerAIUsageLimits.providersModel
 
         AIProvider {
+            isCompact: root._isVariantCompact
             anchors.left: parent?.left
             anchors.right: parent?.right
         }
     }
+
+    Component {
+        id: detailsComponent
+
+        Widget.Details {
+            // qmllint disable incompatible-type
+            base: root
+            // qmllint enable incompatible-type
+            implicitWidth: root.width
+
+            Notice {
+                visible: root.providerAIUsageLimits.notice
+                anchors.left: parent.left
+                anchors.right: parent.right
+            }
+
+            Repeater {
+                model: root.providerAIUsageLimits.providersModel
+
+                AIProvider {
+                    anchors.left: parent?.left
+                    anchors.right: parent?.right
+                }
+            }
+        }
+    }
+
+    _details: _isVariantNormal ? null : detailsComponent
 
 }

@@ -42,6 +42,10 @@ C.Base {
         _defaults: root._defaults?.bar ?? null
     }
 
+    readonly property C.TextDuration resets_compact: C.TextDuration {
+        _defaults: root._defaults?.resets_compact ?? null
+    }
+
     readonly property FragmentLineResets resets: FragmentLineResets {
         _defaults: root._defaults?.resets ?? null
     }

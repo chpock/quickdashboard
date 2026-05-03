@@ -46,6 +46,7 @@ Fragments {
             _defaults: widget._defaults.text_title
             padding {
                 right: '1ch'
+                bottom: 1
             }
         }
         plan {
@@ -59,7 +60,7 @@ Fragments {
             })
         }
         spacing {
-            vertical: 3
+            vertical: 2
         }
     }
 
@@ -105,6 +106,20 @@ Fragments {
                 top:    3
                 bottom: 3
             }
+        }
+        resets_compact {
+            _defaults: widget._defaults.text_duration
+            thresholds {
+                enabled: false
+            }
+            padding {
+                right: 45
+            }
+            font {
+                size: 'small'
+            }
+            color: 'text/secondary'
+            text: '[%1]'
         }
         resets {
             label {

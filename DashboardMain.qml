@@ -21,11 +21,14 @@ Dashboard {
     W.Network {
     }
 
-    // W.Disk {
-    // }
+    W.Disk {
+    }
 
-    // W.Media {
-    // }
+    W.AIUsageLimits {
+    }
+
+    W.Media {
+    }
 
     W.Separator {
     }
@@ -51,9 +54,6 @@ Dashboard {
     }
 
     W.Clock {
-    }
-
-    W.AIUsageLimits {
     }
 
 }

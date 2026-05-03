@@ -36,8 +36,8 @@ Provider {
                 {
                     label: "Session",
                     periodDurationSeconds: 18000,
-                    percent: 0,
-                    resetsAt: "3h37m",
+                    percent: 0.78,
+                    resetsAt: "1h37m",
                 },
                 {
                     label: "Weekly",
@@ -63,19 +63,19 @@ Provider {
                 {
                     label: "Session",
                     periodDurationSeconds: 18000,
-                    percent: 0.006,
-                    resetsAt: "3h57m",
+                    percent: 0.91,
+                    resetsAt: "9m5s",
                 },
                 {
                     label: "Weekly",
                     periodDurationSeconds: 604800,
-                    percent: 0.005,
+                    percent: 0.37,
                     resetsAt: "8h13m",
                 },
                 {
                     label: "Monthly",
                     periodDurationSeconds: 2592000,
-                    percent: 0.47100000000000003,
+                    percent: 0.57100000000000003,
                     resetsAt: "1d5h",
                 }
             ],
@@ -98,7 +98,6 @@ Provider {
 
         const totalSeconds = (days * 86400) + (hours * 3600) + (minutes * 60) + seconds
 
-        console.log("Offset:", value, "Seconds:", totalSeconds)
         return isNegative ? -totalSeconds : totalSeconds;
     }
 
