@@ -307,7 +307,7 @@ Singleton {
     function getInfoCPU() {
         if (!ready) return null
         return request('/gops/cpu', {
-            'cursor': cursorInfoCPU,
+            cursor: cursorInfoCPU,
         }, function(data) {
             if (!data) return
             cursorInfoCPU = data.data.cursor
@@ -324,20 +324,20 @@ Singleton {
     function getInfoDisk() {
         if (!ready) return null
         return request('/gops/disk-rate', {
-            'cursor': cursorInfoDisk,
+            cursor: cursorInfoDisk,
         }, function(data) {
             if (!data) return
             cursorInfoDisk = data.cursor
-            let readrate = 0
-            let writerate = 0
+            let sum_readrate = 0
+            let sum_writerate = 0
             for (let i = 0; i < data.disks.length; ++i) {
                 const diskData = data.disks[i]
-                readrate += diskData.readrate
-                writerate += diskData.writerate
+                sum_readrate += diskData.readrate
+                sum_writerate += diskData.writerate
             }
             root.updateInfoDisk({
-                "readrate": readAvgDiskRate.push(Math.trunc(readrate)),
-                "writerate": writeAvgDiskRate.push(Math.trunc(writerate)),
+                readrate: readAvgDiskRate.push(Math.trunc(sum_readrate)),
+                writerate: writeAvgDiskRate.push(Math.trunc(sum_writerate)),
             })
         })
     }
@@ -361,16 +361,16 @@ Singleton {
         if (!ready) return null
         return request('/gops/disk/mounts', {}, function(data) {
             if (!data) return
-            const callbackData = data.data.map(function(item) {
-                return {
-                    'device': item.device,
-                    'mount':  item.mount,
-                    'fstype': item.fstype,
-                    "size":   root.unformatBytes(item.size),
-                    "used":   root.unformatBytes(item.used),
-                    "avail":  root.unformatBytes(item.avail),
-                }
-            })
+            const callbackData = data.data
+                .filter(item => item.device !== 'none')
+                .map(item => ({
+                    device: item.device,
+                    mount:  item.mount,
+                    fstype: item.fstype,
+                    size:   root.unformatBytes(item.size),
+                    used:   root.unformatBytes(item.used),
+                    avail:  root.unformatBytes(item.avail),
+                }))
             root.updateInfoMounts(callbackData)
         })
     }
@@ -462,7 +462,7 @@ Singleton {
     function getInfoNetwork(callback) {
         if (!ready) return null
         return request('/gops/net-rate', {
-            'cursor': cursorInfoNetwork,
+            cursor: cursorInfoNetwork,
         }, function(data) {
             if (!data) return
             cursorInfoNetwork = data.cursor
