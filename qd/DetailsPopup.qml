@@ -61,10 +61,7 @@ PopupWindow {
         if (visible && currentWidget && currentDetails) {
             queuedWidget = widget
             queuedDetails = details
-            if (!isClosing) {
-                isClosing = true
-                progress = 0
-            }
+            startCloseTransition()
             return
         }
 
@@ -114,6 +111,36 @@ PopupWindow {
         progress = 1.0
     }
 
+    function finalizeCloseTransition() {
+        const nextWidget = queuedWidget
+        const nextDetails = queuedDetails
+
+        if (visible) {
+            visible = false
+        }
+        currentDetails = null
+        targetDetails = null
+        isClosing = false
+        popupHovered = false
+        queuedWidget = null
+        queuedDetails = null
+
+        if (nextWidget && nextDetails) {
+            openDetails(nextWidget, nextDetails)
+        }
+    }
+
+    function startCloseTransition() {
+        isClosing = true
+
+        if (progress <= 0.001) {
+            finalizeCloseTransition()
+            return
+        }
+
+        progress = 0
+    }
+
     function cancelCloseDetails() {
         closeEpoch += 1
         closeDetailsTimer.stop()
@@ -128,20 +155,7 @@ PopupWindow {
 
     onProgressChanged: {
         if (isClosing && progress <= 0.001) {
-            const nextWidget = queuedWidget
-            const nextDetails = queuedDetails
-
-            visible = false
-            currentDetails = null
-            targetDetails = null
-            isClosing = false
-            popupHovered = false
-            queuedWidget = null
-            queuedDetails = null
-
-            if (nextWidget && nextDetails) {
-                openDetails(nextWidget, nextDetails)
-            }
+            finalizeCloseTransition()
         }
     }
 
@@ -161,8 +175,7 @@ PopupWindow {
                 return
             }
 
-            root.isClosing = true
-            root.progress = 0
+            root.startCloseTransition()
         }
     }
 
