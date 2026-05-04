@@ -28,10 +28,12 @@ Fragments {
     mount {
 
         point {
-            _defaults: widget._defaults.text_title
-            separator {
-                enabled: false
+            _defaults: widget._defaults.text
+            font {
+                weight: 'medium'
             }
+            color: 'text/title'
+            overflow: 'elide'
         }
 
         used {

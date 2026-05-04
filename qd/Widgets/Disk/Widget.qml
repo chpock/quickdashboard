@@ -57,7 +57,7 @@ Widget.Base {
             anchors.left: parent.left
             anchors.right: parent.right
 
-            E.TextTitle {
+            E.Text {
                 id: point
                 theme: root._theme
                 config: mount.config.point

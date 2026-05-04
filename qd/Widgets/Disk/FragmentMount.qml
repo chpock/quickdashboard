@@ -26,7 +26,7 @@ C.Base {
 
     property FragmentMount _defaults
 
-    readonly property C.TextTitle point: C.TextTitle {
+    readonly property C.Text point: C.Text {
         _defaults: root._defaults.point
     }
 
