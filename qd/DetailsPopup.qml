@@ -34,22 +34,47 @@ PopupWindow {
     property Component targetDetails: null
     property W.Base queuedWidget: null
     property Component queuedDetails: null
+    property W.Base pendingWidget: null
+    property Component pendingDetails: null
+    property bool hasPendingOpen: false
     property int closeEpoch: 0
     property real progress: 0
     property int openDuration: 160
     property int closeDuration: 110
+    property int openDebounceInterval: 500
+    property int reopenGraceInterval: 500
     property int slideDir: dashboardAlign === Dashboard.AlignRight ? 1 : -1
     property bool isClosing: false
     property bool popupHovered: false
+    property double lastCloseTimestamp: -1
 
     function openDetails(widget, details) {
         cancelCloseDetails()
-        const sameTarget = currentWidget === widget
-            && currentDetails === details
 
-        if (sameTarget) {
-            queuedWidget = null
-            queuedDetails = null
+        if (!widget || !details) {
+            cancelDebouncedOpen()
+            return
+        }
+
+        const nowMs = Date.now()
+        const withinReopenGrace = lastCloseTimestamp >= 0
+            && nowMs - lastCloseTimestamp <= reopenGraceInterval
+        const instantOpen = visible || isClosing || withinReopenGrace
+
+        if (instantOpen) {
+            cancelDebouncedOpen()
+            openDetailsNow(widget, details)
+            return
+        }
+
+        queueDebouncedOpen(widget, details)
+    }
+
+    function openDetailsNow(widget, details) {
+        cancelCloseDetails()
+
+        if (currentWidget === widget && currentDetails === details) {
+            clearQueuedTarget()
             isClosing = false
             if (progress < 1.0) {
                 progress = 1.0
@@ -66,8 +91,7 @@ PopupWindow {
         }
 
         isClosing = false
-        queuedWidget = null
-        queuedDetails = null
+        clearQueuedTarget()
         currentWidget = widget
         targetDetails = details
 
@@ -77,20 +101,26 @@ PopupWindow {
             visible = false
         }
 
-        if (currentDetails !== targetDetails) {
-            currentDetails = targetDetails
+        if (currentDetails !== details) {
+            currentDetails = details
         }
 
         showDetailsIfReady()
     }
 
     function closeDetails(widget, widgetHovered) {
+        if (hasPendingOpen && (!widget || widget === pendingWidget)) {
+            cancelDebouncedOpen()
+        }
+
         if (!visible) {
             return
         }
+
         if (widget && widget !== currentWidget && widgetHovered === false) {
             return
         }
+
         closeDetailsTimer.epoch = closeEpoch
         closeDetailsTimer.restart()
     }
@@ -124,9 +154,10 @@ PopupWindow {
         popupHovered = false
         queuedWidget = null
         queuedDetails = null
+        lastCloseTimestamp = Date.now()
 
         if (nextWidget && nextDetails) {
-            openDetails(nextWidget, nextDetails)
+            openDetailsNow(nextWidget, nextDetails)
         }
     }
 
@@ -144,6 +175,25 @@ PopupWindow {
     function cancelCloseDetails() {
         closeEpoch += 1
         closeDetailsTimer.stop()
+    }
+
+    function clearQueuedTarget() {
+        queuedWidget = null
+        queuedDetails = null
+    }
+
+    function queueDebouncedOpen(widget, details) {
+        pendingWidget = widget
+        pendingDetails = details
+        hasPendingOpen = true
+        openDebounceTimer.restart()
+    }
+
+    function cancelDebouncedOpen() {
+        hasPendingOpen = false
+        pendingWidget = null
+        pendingDetails = null
+        openDebounceTimer.stop()
     }
 
     Behavior on progress {
@@ -176,6 +226,27 @@ PopupWindow {
             }
 
             root.startCloseTransition()
+        }
+    }
+
+    Timer {
+        id: openDebounceTimer
+        interval: root.openDebounceInterval
+        onTriggered: {
+            if (!root.hasPendingOpen || !root.pendingWidget || !root.pendingDetails) {
+                return
+            }
+
+            const widget = root.pendingWidget
+            const details = root.pendingDetails
+            const widgetHovered = widget.isHovered === true
+            if (!widgetHovered) {
+                root.cancelDebouncedOpen()
+                return
+            }
+
+            root.cancelDebouncedOpen()
+            root.openDetailsNow(widget, details)
         }
     }
 
