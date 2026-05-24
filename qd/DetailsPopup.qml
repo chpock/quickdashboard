@@ -29,6 +29,14 @@ PopupWindow {
 
     required property int dashboardAlign
 
+    // State model:
+    // - currentWidget/currentDetails/targetDetails describe the active popup target.
+    // - pendingWidget/pendingDetails/hasPendingOpen describe a debounced open request.
+    // - queuedWidget/queuedDetails describe a switch request while another details popup
+    //   is still visible (close current first, then open queued target).
+    // - hasPendingClose + closeDetailsTimer describe a close request that keeps probing
+    //   hover state until both widget and popup are no longer hovered.
+    // - closeEpoch invalidates stale close probes when a newer open/cancel action wins.
     property W.Base currentWidget: null
     property Component currentDetails: null
     property Component targetDetails: null
@@ -37,6 +45,7 @@ PopupWindow {
     property W.Base pendingWidget: null
     property Component pendingDetails: null
     property bool hasPendingOpen: false
+    property bool hasPendingClose: false
     property int closeEpoch: 0
     property real progress: 0
     property int openDuration: 160
@@ -109,18 +118,27 @@ PopupWindow {
     }
 
     function closeDetails(widget, widgetHovered) {
+        // If the exact widget that had a debounced open request just lost hover,
+        // cancel the pending open so it does not open after the pointer already left.
         if (hasPendingOpen && (!widget || widget === pendingWidget)) {
             cancelDebouncedOpen()
         }
 
         if (!visible) {
+            hasPendingClose = false
+            closeDetailsTimer.stop()
             return
         }
 
+        // Ignore "some other widget lost hover" notifications.
+        // Only the current widget/popup pair can close the active details window.
         if (widget && widget !== currentWidget && widgetHovered === false) {
             return
         }
 
+        // Start/refresh one close request sequence.
+        // The timer will keep probing until both hover flags are false.
+        hasPendingClose = true
         closeDetailsTimer.epoch = closeEpoch
         closeDetailsTimer.restart()
     }
@@ -152,6 +170,7 @@ PopupWindow {
         targetDetails = null
         isClosing = false
         popupHovered = false
+        hasPendingClose = false
         queuedWidget = null
         queuedDetails = null
         lastCloseTimestamp = Date.now()
@@ -173,6 +192,9 @@ PopupWindow {
     }
 
     function cancelCloseDetails() {
+        // Cancel the currently scheduled close sequence.
+        // Incrementing closeEpoch invalidates already-armed timer callbacks.
+        hasPendingClose = false
         closeEpoch += 1
         closeDetailsTimer.stop()
     }
@@ -183,6 +205,7 @@ PopupWindow {
     }
 
     function queueDebouncedOpen(widget, details) {
+        // Record deferred open state and arm debounce timer.
         pendingWidget = widget
         pendingDetails = details
         hasPendingOpen = true
@@ -190,6 +213,7 @@ PopupWindow {
     }
 
     function cancelDebouncedOpen() {
+        // Clear deferred open state (no delayed open should fire after this point).
         hasPendingOpen = false
         pendingWidget = null
         pendingDetails = null
@@ -212,19 +236,25 @@ PopupWindow {
     Timer {
         id: closeDetailsTimer
         interval: 150
+        // Snapshot of root.closeEpoch captured when this close probe was scheduled.
         property int epoch: -1
         onTriggered: {
-            if (epoch != root.closeEpoch) {
+            // Ignore stale probes from older close requests.
+            if (epoch != root.closeEpoch || !root.hasPendingClose) {
                 return
             }
 
             const widgetHovered = root.currentWidget
                 && root.currentWidget.isHovered === true
             if (root.popupHovered || widgetHovered) {
-                root.cancelCloseDetails()
+                // Hover is still active. Keep the same close request alive and check again.
+                // Important: do not invalidate closeEpoch here, otherwise the next probe
+                // becomes stale and the popup can get stuck visible.
+                restart()
                 return
             }
 
+            root.hasPendingClose = false
             root.startCloseTransition()
         }
     }
@@ -233,6 +263,7 @@ PopupWindow {
         id: openDebounceTimer
         interval: root.openDebounceInterval
         onTriggered: {
+            // Open debounce only executes the latest pending request.
             if (!root.hasPendingOpen || !root.pendingWidget || !root.pendingDetails) {
                 return
             }
@@ -275,8 +306,11 @@ PopupWindow {
         onHoveredChanged: {
             root.popupHovered = hovered
             if (hovered) {
+                // Entering popup cancels any scheduled close for the current epoch.
                 root.cancelCloseDetails()
             } else {
+                // Leaving popup starts/refreshes close probing; it will close once both
+                // popup and current widget are not hovered.
                 root.closeDetails()
             }
         }
