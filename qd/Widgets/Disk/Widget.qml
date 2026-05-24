@@ -49,6 +49,7 @@ Widget.Base {
         id: mount
         spacing: 0
 
+        property bool isCompact: false
         readonly property var config: root._fragments.mount
         required property var modelData
 
@@ -87,6 +88,8 @@ Widget.Base {
                 )
             anchors.left: parent.left
             anchors.right: parent.right
+
+            visible: !mount.isCompact
 
             E.Text {
                 id: details
@@ -135,10 +138,10 @@ Widget.Base {
         model: root.providerDisk.mountModel
 
         Mount {
+            isCompact:  root._isVariantCompact
             anchors.left: parent?.left
             anchors.right: parent?.right
         }
-
     }
 
     component RateItem: Item {
@@ -197,5 +200,27 @@ Widget.Base {
         }
 
     }
+
+    Component {
+        id: detailsComponent
+
+        Widget.Details {
+            // qmllint disable incompatible-type
+            base: root
+            // qmllint enable incompatible-type
+            implicitWidth: root.width
+
+            Repeater {
+                model: root.providerDisk.mountModel
+
+                Mount {
+                    anchors.left: parent?.left
+                    anchors.right: parent?.right
+                }
+            }
+        }
+    }
+
+    _details: _isVariantNormal ? null : detailsComponent
 
 }
