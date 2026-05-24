@@ -46,8 +46,6 @@ Widget.Base {
         }
     }
 
-    property real wirelessIfaceWidth: 0
-
     component WirelessIface: Item {
         id: wireless_iface
 
@@ -67,10 +65,6 @@ Widget.Base {
 
             text: parent.modelData.iface
             anchors.left: parent.left
-            onImplicitWidthChanged: {
-                if (implicitWidth > root.wirelessIfaceWidth)
-                    root.wirelessIfaceWidth = implicitWidth
-            }
         }
 
         E.Text {
@@ -95,18 +89,10 @@ Widget.Base {
         }
     }
 
-    Repeater {
-        model: root.providerWirelessDevices.ifaceModel
-
-        WirelessIface {
-            anchors.left: parent.left
-            anchors.right: parent.right
-        }
-    }
-
     component Latency: Item {
         id: latency
 
+        property bool isCompact: false
         readonly property var config: root._fragments.latency
 
         property string hoveredMarkName: ''
@@ -114,7 +100,7 @@ Widget.Base {
 
         implicitHeight:
             Math.max(title.implicitHeight, value.implicitHeight) +
-                details.implicitHeight
+                (isCompact ? 0 : details.implicitHeight)
 
         E.TextTitle {
             id: title
@@ -143,6 +129,7 @@ Widget.Base {
             id: details
             theme: root._theme
             config: latency.config.details
+            visible: !latency.isCompact
 
             text:
                 marksHoverHandler.hovered
@@ -157,6 +144,7 @@ Widget.Base {
         Row {
             id: marks
 
+            visible: !latency.isCompact
             anchors.top: details.top
             anchors.topMargin: latency.config.details.padding.top + latency.config.marks.padding.top
             anchors.bottom: details.bottom
@@ -213,11 +201,6 @@ Widget.Base {
 
     }
 
-    Latency {
-        anchors.left: parent.left
-        anchors.right: parent.right
-    }
-
     component DNS: Item {
         id: dns
 
@@ -254,11 +237,6 @@ Widget.Base {
             value: root.providerNetwork.dnsCheckTime
             anchors.right: parent.right
         }
-    }
-
-    DNS {
-        anchors.left: parent.left
-        anchors.right: parent.right
     }
 
     component Gateway: Item {
@@ -303,11 +281,6 @@ Widget.Base {
         }
     }
 
-    Gateway {
-        anchors.left: parent.left
-        anchors.right: parent.right
-    }
-
     component RateItem: Item {
         id: item
 
@@ -347,6 +320,68 @@ Widget.Base {
         }
 
     }
+
+    Repeater {
+        model: root.providerWirelessDevices.ifaceModel
+
+        WirelessIface {
+            anchors.left: parent?.left
+            anchors.right: parent?.right
+        }
+    }
+
+    Latency {
+        isCompact: root._isVariantCompact
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+
+    DNS {
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+
+    Gateway {
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+
+    Component {
+        id: detailsComponent
+
+        Widget.Details {
+            // qmllint disable incompatible-type
+            base: root
+            // qmllint enable incompatible-type
+            implicitWidth: root.width
+
+            Repeater {
+                model: root.providerWirelessDevices.ifaceModel
+
+                WirelessIface {
+                    anchors.left: parent?.left
+                    anchors.right: parent?.right
+                }
+            }
+
+            Latency {
+                anchors.left: parent.left
+                anchors.right: parent.right
+            }
+
+            DNS {
+                anchors.left: parent.left
+                anchors.right: parent.right
+            }
+
+            Gateway {
+                anchors.left: parent.left
+                anchors.right: parent.right
+            }
+        }
+    }
+
+    _details: _isVariantNormal ? null : detailsComponent
 
     Row {
         id: rates

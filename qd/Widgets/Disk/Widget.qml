@@ -138,7 +138,7 @@ Widget.Base {
         model: root.providerDisk.mountModel
 
         Mount {
-            isCompact:  root._isVariantCompact
+            isCompact: root._isVariantCompact
             anchors.left: parent?.left
             anchors.right: parent?.right
         }
