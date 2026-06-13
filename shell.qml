@@ -1,3 +1,5 @@
+//@ pragma AppId org.quickdashboard
+
 pragma ComponentBehavior: Bound
 
 import Quickshell
@@ -10,7 +12,7 @@ QuickDashboard {
 
     // theme: "debug-theme.json"
 
-    DashboardMain {
+    DashboardDefault {
         // screen: Quickshell.screens[0]
         screen: Quickshell.screens[0]
         align: Dashboard.AlignRight
