@@ -1,0 +1,61 @@
+#!/bin/sh
+
+set -e
+
+SELF_DIR="$(cd "$(dirname "$0")"; pwd)"
+QD_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/quickdashboard"
+SOURCE_DIR="/usr/share/quickdashboard"
+
+err() {
+    echo "ERROR: $1" >&2
+    exit 1
+}
+
+provision() {
+    TYPE="$1"
+    NAME="$2"
+    if [ ! -e "$SOURCE_DIR/$NAME" ]; then
+        err "could not find '$NAME' in the source dir '$SOURCE_DIR"
+    fi
+    if [ ! -e "$QD_ROOT/$NAME" ]; then
+        if [ "$TYPE" = "file" ]; then
+            if ! cp "$SOURCE_DIR/$NAME" "$QD_ROOT/$NAME"; then
+                err "failed to copy the file from '$SOURCE_DIR/$NAME' to '$QD_ROOT/$NAME'"
+            fi
+        elif [ "$TYPE" = "link" ]; then
+            if ! ln -s "$SOURCE_DIR/$NAME" "$QD_ROOT"; then
+                err "failed to create the link for '$SOURCE_DIR/$NAME' in '$QD_ROOT'"
+            fi
+        else
+            err "unknown type '$TYPE'"
+        fi
+        return
+    fi
+    if [ "$TYPE" = "file" ]; then
+        if [ ! -f "$QD_ROOT/$NAME" ] || [ ! -r "$QD_ROOT/$NAME" ]; then
+            err "'${QD_ROOT}/${NAME}' is not a file or is unreadable"
+        fi
+    elif [ "$TYPE" = "link" ]; then
+        if [ ! -L "$QD_ROOT/$NAME" ]; then
+            err "'${QD_ROOT}/${NAME}' is not a symlink"
+        fi
+    else
+        err "unknown type '$TYPE'"
+    fi
+}
+
+if [ -e "$SELF_DIR/../shell.qml" ] && [ -d "$SELF_DIR/../qd" ]; then
+    SOURCE_DIR="$SELF_DIR/.."
+fi
+
+if [ ! -e "$QD_ROOT" ]; then
+    mkdir -p "$QD_ROOT"
+elif [ ! -d "$QD_ROOT" ]; then
+    err "quickdashboard root '$QD_ROOT' exists and is not a directory"
+fi
+
+provision file "shell.qml"
+provision file "DashboardDefault.qml"
+provision link "qd"
+
+exec quickshell --path "$QD_ROOT"
