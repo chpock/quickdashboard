@@ -132,7 +132,7 @@ Singleton {
             bar {
                 color {
                     active:   'blue'
-                    inactive: '#26FFFFFF'
+                    inactive: 'white_bright%10'
                 }
                 height: 4
             }
@@ -152,7 +152,7 @@ Singleton {
         bar {
             color {
                 active:   'blue'
-                inactive: '#26FFFFFF'
+                inactive: 'white_bright%10'
             }
             padding {
                 left:   0
