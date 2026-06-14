@@ -27,7 +27,14 @@ function toPlainValue(value) {
     }
 
     if (Array.isArray(value)) {
-        return value.map(item => toPlainValue(item))
+        return value.map(item => {
+            const plainItem = toPlainValue(item)
+            return plainItem === undefined ? null : plainItem
+        })
+    }
+
+    if (typeof value === 'function') {
+        return undefined
     }
 
     if (typeof value !== 'object') {
@@ -42,12 +49,102 @@ function toPlainValue(value) {
         const propValue = value[prop]
         if (typeof propValue === 'function') continue
 
-        result[prop] = toPlainValue(propValue)
+        const plainValue = toPlainValue(propValue)
+        if (plainValue === undefined) continue
+
+        result[prop] = plainValue
     }
 
     return result
 }
 
+function isSimpleJsonValue(value) {
+    return value === null || value === undefined || typeof value !== 'object'
+}
+
+function indent(level) {
+    return ' '.repeat(level * 2)
+}
+
+function formatJsonValue(value, level) {
+    if (Array.isArray(value)) {
+        return formatJsonArray(value, level)
+    }
+
+    if (!isSimpleJsonValue(value)) {
+        return formatJsonObject(value, level)
+    }
+
+    const jsonValue = JSON.stringify(value)
+    return jsonValue === undefined ? 'null' : jsonValue
+}
+
+function formatJsonArray(value, level) {
+    if (value.length === 0) {
+        return '[]'
+    }
+
+    const itemIndent = indent(level + 1)
+    const items = value.map(item => `${itemIndent}${formatJsonValue(item, level + 1)}`)
+
+    return `[
+${items.join(',\n')}
+${indent(level)}]`
+}
+
+function formatJsonObject(value, level) {
+    const entries = Object.keys(value).map(key => ({ key, value: value[key] }))
+
+    if (entries.length === 0) {
+        return '{}'
+    }
+
+    const simpleEntries = []
+    const arrayEntries = []
+    const objectEntries = []
+
+    for (const entry of entries) {
+        if (Array.isArray(entry.value)) {
+            arrayEntries.push(entry)
+        } else if (isSimpleJsonValue(entry.value)) {
+            simpleEntries.push(entry)
+        } else {
+            objectEntries.push(entry)
+        }
+    }
+
+    const orderedEntries = [...simpleEntries, ...arrayEntries, ...objectEntries]
+    const keyIndent = indent(level + 1)
+    const alignedKeyWidth = simpleEntries.reduce((maxWidth, entry) => {
+        return Math.max(maxWidth, JSON.stringify(entry.key).length)
+    }, 0)
+    const formattedEntries = []
+
+    for (const entry of orderedEntries) {
+        const key = JSON.stringify(entry.key)
+        const formattedValue = formatJsonValue(entry.value, level + 1)
+        const isSimpleEntry = isSimpleJsonValue(entry.value)
+        let formattedEntry
+
+        if (isSimpleEntry) {
+            const padding = ' '.repeat(alignedKeyWidth - key.length)
+            formattedEntry = `${keyIndent}${key}${padding} : ${formattedValue}`
+        } else {
+            formattedEntry = `${keyIndent}${key}: ${formattedValue}`
+        }
+
+        if (!isSimpleEntry && formattedEntries.length > 0) {
+            formattedEntry = `\n${formattedEntry}`
+        }
+
+        formattedEntries.push(formattedEntry)
+    }
+
+    return `{
+${formattedEntries.join(',\n')}
+${indent(level)}}`
+}
+
 function toPrettyJson(value) {
-    return JSON.stringify(toPlainValue(value), null, 4)
+    return formatJsonValue(toPlainValue(value), 0)
 }
