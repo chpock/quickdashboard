@@ -28,6 +28,8 @@ sha256sums=('SHA256_PLACEHOLDER')
 package() {
     cd "$srcdir/$pkgname-$pkgver"
 
+    sed -i "s/^VERSION=.*/VERSION=$pkgver/" "bin/quickdashboard"
+
     install -Dm755 "bin/quickdashboard" "$pkgdir/usr/bin/quickdashboard"
     install -Dm644 "LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 

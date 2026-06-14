@@ -20,6 +20,26 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Set version
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: |
+          RELEASE_VERSION="${RELEASE_VERSION#v}"
+          sed -i "s/^\(VERSION\)=.*/\1=$RELEASE_VERSION/" bin/quickdashboard
+
+      - name: Check version
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: |
+          if ! VERSION="$(./bin/quickdashboard --version | awk '{print $NF}')"; then
+              echo "ERROR: failed to get version."
+              exit 1
+          fi
+          if [ "v$VERSION" != "$RELEASE_VERSION" ]; then
+              echo "ERROR: version mismatch: 'v$VERSION' != '$RELEASE_VERSION'"
+              exit 1
+          fi
+
       - name: Generate release notes from tags and commits
         run: |
           current_tag="$GITHUB_REF_NAME"
@@ -126,7 +146,6 @@ jobs:
             else
               echo "- No commits found in this range"
             fi
-            echo '```'
           } > RELEASE_NOTES.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
