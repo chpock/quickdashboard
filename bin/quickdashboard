@@ -58,4 +58,4 @@ provision file "shell.qml"
 provision file "DashboardDefault.qml"
 provision link "qd"
 
-exec quickshell --path "$QD_ROOT"
+exec quickshell --path "$QD_ROOT" "$@"

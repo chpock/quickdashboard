@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import qs.qd.Config as C
+import qs.qd.Helpers as H
 import qs.qd as QD
 
 Scope {
@@ -52,5 +53,7 @@ Scope {
             }
         }
     }
+
+    H.IpcHandlerDefaults {}
 
 }
