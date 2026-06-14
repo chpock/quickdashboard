@@ -73,8 +73,10 @@ fi
 provision file "theme.json"
 provision file "widget.json"
 provision file "defaults.json"
-provision file "DashboardDefault.qml"
-provision file "shell.qml"
+if [ ! -e "$QD_ROOT/shell.qml" ]; then
+    provision file "DashboardDefault.qml"
+    provision file "shell.qml"
+fi
 provision link "qd"
 
 exec quickshell --path "$QD_ROOT" "$@"
