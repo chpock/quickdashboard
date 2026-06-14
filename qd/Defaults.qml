@@ -85,21 +85,21 @@ Singleton {
         }
         color {
             text {
-                primary:    theme.palette.white_bright
-                secondary:  theme.palette.gray_bright
-                title:      theme.palette.megenta_bright
-                hightlight: theme.palette.yellow
+                primary:    "white_bright"
+                secondary:  "gray_bright"
+                title:      "megenta_bright"
+                hightlight: "yellow"
             }
             info {
-                primary:   theme.palette.blue
-                secondary: theme.palette.cyan
-                accent:    theme.palette.orange
+                primary:   "blue"
+                secondary: "cyan"
+                accent:    "orange"
             }
             severity {
-                ignore:   theme.palette.gray
-                good:     theme.palette.green
-                warning:  theme.palette.yellow_bright
-                critical: theme.palette.red_bright
+                ignore:   "gray"
+                good:     "green"
+                warning:  "yellow_bright"
+                critical: "red_bright"
             }
             widget {
                 background: '#20252b'

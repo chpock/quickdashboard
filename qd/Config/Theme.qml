@@ -58,7 +58,7 @@ Base {
                     var colorKind = value.substring(0, idx)
                     var colorName = value.substring(idx + 1)
                     if (colorKind in root.color && colorName in root.color[colorKind]) {
-                        value = root.color[colorKind][colorName]
+                        value = getColor(root.color[colorKind][colorName])
                     }
                 }
             }

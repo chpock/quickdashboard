@@ -21,21 +21,21 @@
     },
     "color": {
         "text": {
-            "primary": "#ecf0f1",
-            "secondary": "#95a5a6",
-            "title": "#9b59b6",
-            "hightlight": "#f39c12"
+            "primary": "white_bright",
+            "secondary": "gray_bright",
+            "title": "megenta_bright",
+            "hightlight": "yellow"
         },
         "info": {
-            "primary": "#2980b9",
-            "secondary": "#16a085",
-            "accent": "#d35400"
+            "primary": "blue",
+            "secondary": "cyan",
+            "accent": "orange"
         },
         "severity": {
-            "ignore": "#7f8c8d",
-            "good": "#27ae60",
-            "warning": "#f1c40f",
-            "critical": "#e74c3c"
+            "ignore": "gray",
+            "good": "green",
+            "warning": "yellow_bright",
+            "critical": "red_bright"
         },
         "widget": {
             "background": "#20252b",

@@ -10,9 +10,9 @@ import QtQuick
 QuickDashboard {
     id: root
 
-    theme: "theme.json"
-    widget: "widget.json"
-    defaults: "defaults.json"
+    theme: 'theme.json'
+    widget: 'widget.json'
+    defaults: 'defaults.json'
 
     DashboardDefault {
         // screen: Quickshell.screens[0]
