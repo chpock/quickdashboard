@@ -28,7 +28,7 @@ Currently available components:
 - Audio input/output volume (using pipewire)
 - Custom buttons for any actions
 - Clock
-- Usage/quota for AI providers (optional, only if **openusage-cli** is installed and configured)
+- Usage limits and quotas for AI providers (optional, only if **openusage-cli** is installed and configured)
 
 ## Dependencies
 
