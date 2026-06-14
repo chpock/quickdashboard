@@ -3,15 +3,15 @@
 ## Quick Facts
 - This repository is a Quickshell/QtQuick project (QML + small JS helpers), not a CMake/npm/python workspace.
 - This project uses Qt6; prefer Qt6 tooling paths explicitly where relevant.
-- Main runtime entrypoint is `shell.qml`, which creates `QuickDashboard` and then `DashboardMain`.
+- Main runtime entrypoint is `shell.qml`, which creates `QuickDashboard` and then `DashboardDefault`.
 
 ## Commands (Verified Here)
 - Run dashboard: `qs -c quickdashboard`
-- Lint all QML: `shopt -s globstar nullglob && /usr/lib/qt6/bin/qmllint shell.qml DashboardMain.qml qd/**/*.qml`
+- Lint all QML: `shopt -s globstar nullglob && /usr/lib/qt6/bin/qmllint shell.qml DashboardDefault.qml qd/**/*.qml`
 - Lint one file: `/usr/lib/qt6/bin/qmllint qd/Widgets/Calendar/Widget.qml`
 
 ## Real Structure (What Wires What)
-- `shell.qml` -> `qd/QuickDashboard.qml` (`QuickDashboard`) -> `DashboardMain.qml` (`Dashboard`).
+- `shell.qml` -> `qd/QuickDashboard.qml` (`QuickDashboard`) -> `DashboardDefault.qml` (`Dashboard`).
 - `qd/Widgets/*.qml` are thin module entry wrappers; implementation lives in `qd/Widgets/<Name>/Widget.qml`.
 - `qd/Providers/*.qml` are singleton loaders exposing `instance`; they load `<Name>/Provider.qml` or `<Name>/MockProvider.qml` based on `QD.Settings.isDemo`.
 - `qd/Services/*.qml` are singleton data sources backed by `Process` + timers (`Dgop`, `Ping`, `Ip`, `Getent`, `Khal`, etc.).
