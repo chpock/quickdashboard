@@ -4,27 +4,35 @@ set -e
 
 SELF_DIR="$(cd "$(dirname "$0")"; pwd)"
 QD_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/quickdashboard"
-SOURCE_DIR="/usr/share/quickdashboard"
 
 err() {
     echo "ERROR: $1" >&2
     exit 1
 }
 
+if [ -n "$QD_SOURCE_DIR" ]; then
+    # Validate QD_SOURCE_DIR and convert it to absolute directory
+    if ! QD_SOURCE_DIR="$(cd "$QD_SOURCE_DIR" && pwd)"; then
+        err "bad QD_SOURCE_DIR directory was specified."
+    fi
+else
+    QD_SOURCE_DIR="/usr/share/quickdashboard"
+fi
+
 provision() {
     TYPE="$1"
     NAME="$2"
-    if [ ! -e "$SOURCE_DIR/$NAME" ]; then
-        err "could not find '$NAME' in the source dir '$SOURCE_DIR"
+    if [ ! -e "$QD_SOURCE_DIR/$NAME" ]; then
+        err "could not find '$NAME' in the source dir '$QD_SOURCE_DIR"
     fi
     if [ ! -e "$QD_ROOT/$NAME" ]; then
         if [ "$TYPE" = "file" ]; then
-            if ! cp "$SOURCE_DIR/$NAME" "$QD_ROOT/$NAME"; then
-                err "failed to copy the file from '$SOURCE_DIR/$NAME' to '$QD_ROOT/$NAME'"
+            if ! cp "$QD_SOURCE_DIR/$NAME" "$QD_ROOT/$NAME"; then
+                err "failed to copy the file from '$QD_SOURCE_DIR/$NAME' to '$QD_ROOT/$NAME'"
             fi
         elif [ "$TYPE" = "link" ]; then
-            if ! ln -s "$SOURCE_DIR/$NAME" "$QD_ROOT"; then
-                err "failed to create the link for '$SOURCE_DIR/$NAME' in '$QD_ROOT'"
+            if ! ln -s "$QD_SOURCE_DIR/$NAME" "$QD_ROOT"; then
+                err "failed to create the link for '$QD_SOURCE_DIR/$NAME' in '$QD_ROOT'"
             fi
         else
             err "unknown type '$TYPE'"
@@ -45,8 +53,8 @@ provision() {
 }
 
 if [ -e "$SELF_DIR/../shell.qml" ] && [ -d "$SELF_DIR/../qd" ]; then
-    SOURCE_DIR="$(cd "$SELF_DIR/.."; pwd)"
-    exec quickshell --path "$SOURCE_DIR" "$@"
+    QD_SOURCE_DIR="$(cd "$SELF_DIR/.."; pwd)"
+    exec quickshell --path "$QD_SOURCE_DIR" "$@"
 fi
 
 if [ ! -e "$QD_ROOT" ]; then
