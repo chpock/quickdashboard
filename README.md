@@ -28,6 +28,7 @@ Currently available components:
 - Audio input/output volume (using pipewire)
 - Custom buttons for any actions
 - Clock
+- Usage/quota for AI providers (optional, only if **openusage-cli** is installed and configured)
 
 ## Dependencies
 
@@ -35,6 +36,7 @@ Currently available components:
 - Qt6 with charts support
 - [dgop](https://github.com/AvengeMedia/dgop)
 - *(optional)* [khal](https://khal.readthedocs.io/en/latest/)
+- *(optional)* [openusage-cli](https://github.com/chpock/openusage-cli)
 
 ## Installation
 
@@ -49,15 +51,14 @@ Currently available components:
 2. **Clone the repository**
 
    ```bash
-   mkdir -p ~/.config/quickshell
-   cd ~/.config/quickshell
    git clone https://github.com/chpock/quickdashboard.git
+   cd quickdashboard
    ```
 
 3. **Run**
 
    ```bash
-   qs -c quickdashboard
+   ./bin/quickdashboard
    ```
 
 ## Feedback
