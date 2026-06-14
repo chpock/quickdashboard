@@ -1,0 +1,148 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+
+  publish-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Generate release notes from tags and commits
+        run: |
+          current_tag="$GITHUB_REF_NAME"
+
+          # Get the last published GitHub release tag, not the last git tag.
+          # This handles cases where a previous tag failed to release.
+          previous_tag="$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)"
+
+          if [ -n "$previous_tag" ] && [ "$previous_tag" != "$current_tag" ]; then
+            commit_range="$previous_tag..$current_tag"
+            range_label="$previous_tag -> $current_tag"
+          else
+            previous_git_tag="$(git describe --tags --abbrev=0 --match 'v*.*.*' "${current_tag}^" 2>/dev/null || true)"
+            if [ -n "$previous_git_tag" ]; then
+              commit_range="$previous_git_tag..$current_tag"
+              range_label="$previous_git_tag -> $current_tag"
+            else
+              commit_range="$current_tag"
+              range_label="initial release"
+            fi
+          fi
+
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "$tmp_dir"' EXIT
+
+          touch \
+            "$tmp_dir/features.txt" \
+            "$tmp_dir/fixes.txt" \
+            "$tmp_dir/performance.txt" \
+            "$tmp_dir/refactoring.txt" \
+            "$tmp_dir/docs.txt" \
+            "$tmp_dir/tests.txt" \
+            "$tmp_dir/build.txt" \
+            "$tmp_dir/ci.txt" \
+            "$tmp_dir/chore.txt" \
+            "$tmp_dir/other.txt"
+
+          git log --no-merges --pretty=format:'%s|%h' "$commit_range" > "$tmp_dir/commits.txt"
+
+          awk -F'|' -v tmp_dir="$tmp_dir" '
+            function append(file_name, line) {
+              print line >> (tmp_dir "/" file_name)
+            }
+
+            {
+              subject = $1
+              short_sha = $2
+              if (subject == "") {
+                next
+              }
+
+              entry = "- " subject " (" short_sha ")"
+
+              if (subject ~ /^feat(\([[:alnum:]_.\/-]+\))?!?:[[:space:]]/) {
+                append("features.txt", entry)
+              } else if (subject ~ /^fix(\([[:alnum:]_.\/-]+\))?!?:[[:space:]]/) {
+                append("fixes.txt", entry)
+              } else if (subject ~ /^perf(\([[:alnum:]_.\/-]+\))?!?:[[:space:]]/) {
+                append("performance.txt", entry)
+              } else if (subject ~ /^refactor(\([[:alnum:]_.\/-]+\))?!?:[[:space:]]/) {
+                append("refactoring.txt", entry)
+              } else if (subject ~ /^docs(\([[:alnum:]_.\/-]+\))?!?:[[:space:]]/) {
+                append("docs.txt", entry)
+              } else if (subject ~ /^test(\([[:alnum:]_.\/-]+\))?!?:[[:space:]]/) {
+                append("tests.txt", entry)
+              } else if (subject ~ /^build(\([[:alnum:]_.\/-]+\))?!?:[[:space:]]/) {
+                append("build.txt", entry)
+              } else if (subject ~ /^ci(\([[:alnum:]_.\/-]+\))?!?:[[:space:]]/) {
+                append("ci.txt", entry)
+              } else if (subject ~ /^chore(\([[:alnum:]_.\/-]+\))?!?:[[:space:]]/) {
+                append("chore.txt", entry)
+              } else {
+                append("other.txt", entry)
+              }
+            }
+          ' "$tmp_dir/commits.txt"
+
+          append_section() {
+            section_title="$1"
+            section_file="$2"
+            if [ -s "$section_file" ]; then
+              echo
+              echo "#### $section_title"
+              cat "$section_file"
+            fi
+          }
+
+          {
+            echo "## Release $current_tag"
+            echo
+            echo "### Changelog"
+            echo "Range: $range_label"
+            if [ -s "$tmp_dir/commits.txt" ]; then
+              append_section "Features" "$tmp_dir/features.txt"
+              append_section "Fixes" "$tmp_dir/fixes.txt"
+              append_section "Performance" "$tmp_dir/performance.txt"
+              append_section "Refactoring" "$tmp_dir/refactoring.txt"
+              append_section "Documentation" "$tmp_dir/docs.txt"
+              append_section "Tests" "$tmp_dir/tests.txt"
+              append_section "Build" "$tmp_dir/build.txt"
+              append_section "CI" "$tmp_dir/ci.txt"
+              append_section "Chore" "$tmp_dir/chore.txt"
+              append_section "Other" "$tmp_dir/other.txt"
+            else
+              echo "- No commits found in this range"
+            fi
+            echo
+            echo "### Checksums (SHA256)"
+            echo '```text'
+            for file in dist/*; do
+              [ -f "$file" ] || continue
+              read -r checksum _ < <(sha256sum "$file")
+              printf '%s  %s\n' "$checksum" "$(basename "$file")"
+            done
+            echo '```'
+          } > RELEASE_NOTES.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show generated release notes
+        run: cat RELEASE_NOTES.md
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: RELEASE_NOTES.md
