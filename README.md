@@ -33,7 +33,7 @@ Currently available components:
 ## Dependencies
 
 - [Quickshell](https://quickshell.org/)
-- Qt6 with charts support
+- Qt6 with graphs support (`qt6-graphs` on Arch Linux)
 - [dgop](https://github.com/AvengeMedia/dgop)
 - *(optional)* [khal](https://khal.readthedocs.io/en/latest/)
 - *(optional)* [openusage-cli](https://github.com/chpock/openusage-cli)
@@ -45,7 +45,7 @@ Currently available components:
    For Arch Linux, you can install the required packages with:
 
    ```bash
-   pacman -S quickshell qt6-charts dgop
+   pacman -S quickshell qt6-graphs dgop
    ```
 
 2. **Clone the repository**
