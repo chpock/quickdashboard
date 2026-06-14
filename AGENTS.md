@@ -2,12 +2,13 @@
 
 ## Quick Facts
 - This repository is a Quickshell/QtQuick project (QML + small JS helpers), not a CMake/npm/python workspace.
+- This project uses Qt6; prefer Qt6 tooling paths explicitly where relevant.
 - Main runtime entrypoint is `shell.qml`, which creates `QuickDashboard` and then `DashboardMain`.
 
 ## Commands (Verified Here)
 - Run dashboard: `qs -c quickdashboard`
-- Lint all QML: `shopt -s globstar nullglob && qmllint shell.qml DashboardMain.qml qd/**/*.qml`
-- Lint one file: `qmllint qd/Widgets/Calendar/Widget.qml`
+- Lint all QML: `shopt -s globstar nullglob && /usr/lib/qt6/bin/qmllint shell.qml DashboardMain.qml qd/**/*.qml`
+- Lint one file: `/usr/lib/qt6/bin/qmllint qd/Widgets/Calendar/Widget.qml`
 
 ## Real Structure (What Wires What)
 - `shell.qml` -> `qd/QuickDashboard.qml` (`QuickDashboard`) -> `DashboardMain.qml` (`Dashboard`).
