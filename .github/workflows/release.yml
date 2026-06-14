@@ -126,14 +126,6 @@ jobs:
             else
               echo "- No commits found in this range"
             fi
-            echo
-            echo "### Checksums (SHA256)"
-            echo '```text'
-            for file in dist/*; do
-              [ -f "$file" ] || continue
-              read -r checksum _ < <(sha256sum "$file")
-              printf '%s  %s\n' "$checksum" "$(basename "$file")"
-            done
             echo '```'
           } > RELEASE_NOTES.md
         env:
