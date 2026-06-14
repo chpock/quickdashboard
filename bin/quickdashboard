@@ -45,7 +45,8 @@ provision() {
 }
 
 if [ -e "$SELF_DIR/../shell.qml" ] && [ -d "$SELF_DIR/../qd" ]; then
-    SOURCE_DIR="$SELF_DIR/.."
+    SOURCE_DIR="$(cd "$SELF_DIR/.."; pwd)"
+    exec quickshell --path "$SOURCE_DIR" "$@"
 fi
 
 if [ ! -e "$QD_ROOT" ]; then
@@ -54,8 +55,11 @@ elif [ ! -d "$QD_ROOT" ]; then
     err "quickdashboard root '$QD_ROOT' exists and is not a directory"
 fi
 
-provision file "shell.qml"
+provision file "theme.json"
+provision file "widget.json"
+provision file "defaults.json"
 provision file "DashboardDefault.qml"
+provision file "shell.qml"
 provision link "qd"
 
 exec quickshell --path "$QD_ROOT" "$@"
