@@ -79,6 +79,6 @@ if [ ! -e "$QD_ROOT/shell.qml" ]; then
 fi
 provision link "qd"
 
-[ -e "$QD_ROOT/.qmlls.ini" ] || touch "$QD_ROOT/.qmlls.ini"
+[ -e "$QD_ROOT/.qmlls.ini" ] || [ -L "$QD_ROOT/.qmlls.ini" ] || touch "$QD_ROOT/.qmlls.ini"
 
 exec quickshell --path "$QD_ROOT" "$@"
