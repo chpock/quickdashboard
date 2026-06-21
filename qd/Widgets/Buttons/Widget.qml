@@ -37,6 +37,8 @@ Widget.Base {
 
     property var buttons: []
 
+    signal actionRequested(E.Icon button)
+
     Row {
         anchors.left: parent.left
         anchors.right: parent.right
@@ -60,11 +62,21 @@ Widget.Base {
                     icon: container.modelData.icon
                     isActive: process.running
 
+                    readonly property var action: container.modelData.action
+                    readonly property var command: container.modelData.command
+                    property var currentState
+
                     onClicked: {
-                        if (container.modelData.detached) {
-                            process.startDetached()
+                        if (action) {
+                            root.actionRequested(button)
+                        } else if (command) {
+                            if (container.modelData.detached) {
+                                process.startDetached()
+                            } else {
+                                process.running = true
+                            }
                         } else {
-                            process.running = true
+                            console.warn('[Widgets/Buttons]', 'no action or command is defined for this button')
                         }
                     }
                 }

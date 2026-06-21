@@ -27,7 +27,7 @@ import QtCore
 Singleton {
     id: root
 
-    readonly property bool isDemo: false
+    property bool isDemo: false
 
     Settings {
         id: stateStore
