@@ -28,9 +28,7 @@ import qs.qd.Services as Service
 Singleton {
     id: root
 
-    signal updateInfoPing(var data, real value)
-    signal updateListPing(var data)
-    signal updateListPingGateway(var data)
+    signal pingInfoUpdated()
 
     // ping interval in seconds
     property int interval: 3
@@ -38,12 +36,12 @@ Singleton {
     property int timeout: 3000
 
     property var pingHostsList: [
-        { name: 'Google DNS',     host: '8.8.8.8', isGateway: false, },
-        { name: 'Cloudflare DNS', host: '1.1.1.1', isGateway: false, },
-        { name: 'Quad9 DNS',      host: '9.9.9.9', isGateway: false, },
+        { name: 'Google DNS',     host: '8.8.8.8', isGateway: false, value: Infinity, updateEpoch: 0, },
+        { name: 'Cloudflare DNS', host: '1.1.1.1', isGateway: false, value: Infinity, updateEpoch: 0, },
+        { name: 'Quad9 DNS',      host: '9.9.9.9', isGateway: false, value: Infinity, updateEpoch: 0, },
     ]
     property var gatewayHostsList: []
-    readonly property var hostsList: [
+    readonly property var pingInfo: [
         ...pingHostsList,
         ...gatewayHostsList,
     ]
@@ -56,6 +54,8 @@ Singleton {
                 name: '',
                 host: gateway,
                 isGateway: true,
+                value: Infinity,
+                updateEpoch: 0,
                 isDefault: isDefault,
             })
             isDefault = false
@@ -75,13 +75,23 @@ Singleton {
     }
 
     Instantiator {
-        model: root.hostsList
+        model: root.pingInfo
         Scope {
             id: pinger
 
             required property var modelData
+            required property int index
             readonly property string name: modelData.name
             readonly property string host: modelData.host
+
+            function updateValue(value) {
+                const currentPingInfo = root.pingInfo[index]
+                if (currentPingInfo.value !== value) {
+                    currentPingInfo.value = value
+                    currentPingInfo.updateEpoch++
+                    root.pingInfoUpdated()
+                }
+            }
 
             Timer {
                 id: startupTimer
@@ -108,6 +118,7 @@ Singleton {
                     onRead: line => {
                         timeoutTimer.stop()
                         let errmsg = ''
+                        let value = Infinity
                         const timePos = line.indexOf('time=')
                         if (timePos === -1) {
                             // skip the first line from ping's output as it is an output header
@@ -122,20 +133,19 @@ Singleton {
                             } else {
                                 part = part.slice(0, endPos)
                                 part = part.replace(',', '.')
-                                const value = Number.parseFloat(part)
+                                value = Number.parseFloat(part)
                                 if (!Number.isFinite(value)) {
                                     errmsg = `unable to parse float '${part}'`
-                                } else {
-                                    root.updateInfoPing(pinger.modelData, value)
+                                    value = Infinity
                                 }
                             }
                         }
                         if (errmsg !== '') {
                             console.error('[Services/Ping]', 'error while parse ping output:', errmsg, '; line:', line)
-                            root.updateInfoPing(pinger.modelData, Infinity)
                         }
                         pingProc.lineNumber++
                         timeoutTimer.start()
+                        pinger.updateValue(value)
                     }
                 }
                 // qmllint disable signal-handler-parameters
@@ -151,7 +161,7 @@ Singleton {
                             console.log('[Services/Ping]', 'restart ping in 5 seconds...')
                             restartTimer.start()
                         }
-                        root.updateInfoPing(pinger.modelData, Infinity)
+                        pinger.updateValue(Infinity)
                     }
                     lineNumber = 0
                 }
@@ -187,19 +197,11 @@ Singleton {
                 repeat: false
                 onTriggered: {
                     console.warn('[Services/Ping]', 'timeout reached in ping for', pinger.host)
-                    root.updateInfoPing(pinger.modelData, Infinity)
+                    pinger.updateValue(Infinity)
                 }
             }
 
         }
-    }
-
-    onPingHostsListChanged: {
-        root.updateListPing(root.pingHostsList)
-    }
-
-    onGatewayHostsListChanged: {
-        root.updateListPingGateway(root.gatewayHostsList)
     }
 
 }

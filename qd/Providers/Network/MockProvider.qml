@@ -119,7 +119,11 @@ Provider {
             latencyHostsModel.updateElements(root._latency)
             for (let idx = 0; idx < root._latency.length; ++idx) {
                 const value = root._latency[idx].time
-                latencyHostsModel.latencyValues[idx] = value
+                const entry = {
+                    value: value,
+                    updateEpoch: -1,
+                }
+                latencyHostsModel.latencyValues[idx] = entry
                 latencyHostsModel.setProperty(idx, 'time', value)
             }
             root.refreshLatency()

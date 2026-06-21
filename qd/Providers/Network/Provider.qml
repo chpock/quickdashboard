@@ -40,6 +40,7 @@ Scope {
     readonly property var gatewayDefault: QtObject {
         property string host: ''
         property real latency: Infinity
+        property var updateEpoch: -1
     }
 
     readonly property alias latencyHostsModel: latencyHostsModelObj
@@ -53,6 +54,8 @@ Scope {
     Component.onCompleted: {
         if (root.hasService) {
             Service.Dgop.subscribe('infoNetwork')
+            latencyHostsModelObj.updateElements(Service.Ping.pingHostsList)
+            root.syncPingInfo(Service.Ping.pingInfo)
         }
     }
 
@@ -75,28 +78,46 @@ Scope {
     Connections {
         target: Service.Ping
         enabled: root.hasService
-        function onUpdateInfoPing(data, value) {
-            if (data.isGateway) {
-                if (data.isDefault) {
-                    root.gatewayDefault.host = data.host
-                    root.gatewayDefault.latency = value
-                }
-                return
-            }
-            const idx = latencyHostsModelObj.knownHosts.indexOf(data.host)
-            if (idx === -1) return
-            latencyHostsModelObj.latencyValues[idx] = value
-            latencyHostsModelObj.setProperty(idx, 'time', value)
-            root.refreshLatency()
-        }
-        function onUpdateListPing(data) {
-            latencyHostsModelObj.updateElements(data)
-        }
-        function onUpdateListPingGateway(data) {
-            if (!data.length) {
+        function onGatewayHostsListChanged() {
+            if (!Service.Ping.gatewayHostsList.length) {
                 root.gatewayDefault.host = ''
                 root.gatewayDefault.latency = Infinity
+                root.gatewayDefault.updateEpoch = -1
             }
+        }
+        function onPingHostsListChanged() {
+            latencyHostsModelObj.updateElements(Service.Ping.pingHostsList)
+        }
+        function onPingInfoUpdated() {
+            root.syncPingInfo(Service.Ping.pingInfo)
+        }
+    }
+
+    function syncPingInfo(data) {
+        let needRefresh = false
+        for (const pingInfo of data) {
+            if (pingInfo.isGateway) {
+                if (pingInfo.isDefault && pingInfo.updateEpoch !== root.gatewayDefault.updateEpoch) {
+                    root.gatewayDefault.host = pingInfo.host
+                    root.gatewayDefault.latency = pingInfo.value
+                    root.gatewayDefault.updateEpoch = pingInfo.updateEpoch
+                }
+                continue
+            }
+            const idx = latencyHostsModelObj.knownHosts.indexOf(pingInfo.host)
+            if (idx === -1) {
+                continue
+            }
+            if (latencyHostsModelObj.latencyValues[idx].updateEpoch === pingInfo.updateEpoch) {
+                continue
+            }
+            latencyHostsModelObj.latencyValues[idx].value = pingInfo.value
+            latencyHostsModelObj.latencyValues[idx].updateEpoch = pingInfo.updateEpoch
+            latencyHostsModelObj.setProperty(idx, 'time', pingInfo.value)
+            needRefresh = true
+        }
+        if (needRefresh) {
+            root.refreshLatency()
         }
     }
 
@@ -105,7 +126,7 @@ Scope {
         let bestPingHost = ''
         let bestPingTime = Infinity
         for (let i = 0; i < latencyHostsModelObj.knownHosts.length; ++i) {
-            const value = latencyHostsModelObj.latencyValues[i]
+            const value = latencyHostsModelObj.latencyValues[i].value
             if (Number.isFinite(value) && (!Number.isFinite(bestPingTime) || value < bestPingTime)) {
                 bestPingTime = value
                 bestPingHost = latencyHostsModelObj.knownHosts[i]
@@ -130,13 +151,17 @@ Scope {
                 const host = data[idx].host
                 const name = data[idx].name
                 updatedKnownHosts.push(host)
+                const entry = {
+                    value: Infinity,
+                    updateEpoch: -1,
+                }
                 if (idx < latencyHostsModelObj.count) {
                     if (knownHosts[idx] === host) continue
                     set(idx, { name: name, host: host, time: Infinity })
-                    latencyValues[idx] = Infinity
+                    latencyValues[idx] = entry
                 } else {
                     append({ name: name, host: host, time: Infinity })
-                    latencyValues.push(Infinity)
+                    latencyValues.push(entry)
                 }
                 updated = true
             }
@@ -149,12 +174,6 @@ Scope {
             // subscribed to its changed)
             knownHosts = updatedKnownHosts
             root.refreshLatency()
-        }
-
-        Component.onCompleted: {
-            if (root.hasService) {
-                updateElements(Service.Ping.hostsList)
-            }
         }
     }
 
