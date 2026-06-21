@@ -26,20 +26,17 @@ Provider {
 
     hasService: false
 
-    readonly property var _wlan_ifaces: [
-        {
-            iface:       'wlan0',
+    readonly property var _mockIfaceData: ({
+        wlan0: {
             ssid:        'SkyNet_WiFi_5G',
-            signal:      97,
+            rssi:        -46,
             isConnected: true,
+            updateEpoch: 0,
         },
-    ]
+    })
 
     Component.onCompleted: {
-        Qt.callLater(() => {
-            for (const item of root._wlan_ifaces) {
-                root.ifaceModel.append(item)
-            }
-        })
+        root.syncIfaceList(Object.keys(root._mockIfaceData))
+        root.syncIfaceInfo(root._mockIfaceData)
     }
 }

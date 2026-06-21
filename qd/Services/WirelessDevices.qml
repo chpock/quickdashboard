@@ -28,10 +28,9 @@ Singleton {
     id: root
 
     signal available()
-    signal updateInfoIface(string name, var data)
-    signal updateListIface(var data)
 
     property var ifacesList: []
+    property var ifacesInfo: ({})
     property bool running: false
 
     Timer {
@@ -60,7 +59,6 @@ Singleton {
                     root.running = true
                     root.available()
                 }
-                root.updateListIface(ifacesListNew)
                 root.ifacesList = ifacesListNew
             }
         }
@@ -113,12 +111,17 @@ Singleton {
                                 ssid = "unknown error"
                             }
                         }
+                        const ifaceName = iface.modelData
+                        const updateEpoch = 1 + (root.ifacesInfo.hasOwnProperty(ifaceName) ? root.ifacesInfo[ifaceName].updateEpoch : 0)
                         const callbackData = {
-                            "rssi": rssi,
-                            "ssid": ssid,
-                            "isConnected": isConnected,
+                            rssi: rssi,
+                            ssid: ssid,
+                            isConnected: isConnected,
+                            updateEpoch: updateEpoch,
                         }
-                        root.updateInfoIface(iface.modelData, callbackData)
+                        root.ifacesInfo = Object.assign({}, root.ifacesInfo, {
+                            [ifaceName]: callbackData,
+                        })
                     }
                 }
                 // qmllint disable signal-handler-parameters

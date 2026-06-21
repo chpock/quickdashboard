@@ -33,54 +33,77 @@ Scope {
 
     property bool hasService: true
 
+    function syncIfaceList(data) {
+        root.ifaceModelList = []
+        for (let i = 0; i < data.length; ++i) {
+            const ifaceName = data[i]
+            const modelData = {
+                iface: ifaceName,
+                ssid: 'Waiting for data...',
+                signal: 0,
+                isConnected: false,
+                updateEpoch: -1,
+            }
+            root.ifaceModelList.push(ifaceName)
+            if (i < ifaceModelObj.count) {
+                ifaceModelObj.set(i, modelData)
+            } else {
+                ifaceModelObj.append(modelData)
+            }
+        }
+        if (data.length < ifaceModelObj.count) {
+            ifaceModelObj.remove(data.length, ifaceModelObj.count - data.length)
+        }
+    }
+
+    function syncIfaceInfo(data) {
+        for (const ifaceName in data) {
+            const ifaceData = data[ifaceName]
+            const idx = root.ifaceModelList.indexOf(ifaceName)
+            if (idx === -1 || ifaceModelObj.get(idx).updateEpoch === ifaceData.updateEpoch) {
+                continue
+            }
+            ifaceModelObj.set(idx, {
+                ssid: ifaceData.ssid,
+                isConnected: ifaceData.isConnected,
+                signal: Utils.rssiToPercent(ifaceData.rssi),
+                updateEpoch: ifaceData.updateEpoch,
+            })
+        }
+    }
+
     Connections {
         target: Service.WirelessDevices
         enabled: root.hasService
-        function onUpdateInfoIface(name, data) {
-            const idx = root.ifaceModelList.indexOf(name)
-            // If we don't have this interface in ifaceModelObj
-            if (idx === -1) return
-            ifaceModelObj.set(idx, {
-                ssid: data.ssid,
-                isConnected: data.isConnected,
-                signal: Utils.rssiToPercent(data.rssi),
-            })
+        function onIfacesInfoChanged() {
+            root.syncIfaceInfo(Service.WirelessDevices.ifacesInfo)
         }
-        function onUpdateListIface(data) {
-            root.ifaceModelList = []
-            for (let i = 0; i < data.length; ++i) {
-                const ifaceName = data[i]
-                const modelData = {
-                    iface: ifaceName,
-                    ssid: 'Waiting for data...',
-                    signal: 0,
-                    isConnected: false,
-                }
-                root.ifaceModelList.push(ifaceName)
-                if (i < ifaceModelObj.count) {
-                    ifaceModelObj.set(i, modelData)
-                } else {
-                    ifaceModelObj.append(modelData)
-                }
-            }
-            if (data.length < ifaceModelObj.count) {
-                ifaceModelObj.remove(data.length, ifaceModelObj.count - data.length)
-            }
+        function onIfacesListChanged() {
+            root.syncIfaceList(Service.WirelessDevices.ifacesList)
+        }
+    }
+
+    Component.onCompleted: {
+        if (root.hasService && Service.WirelessDevices.running) {
+            root.syncIfaceList(Service.WirelessDevices.ifacesList)
+            root.syncIfaceInfo(Service.WirelessDevices.ifacesInfo)
         }
     }
 
     ListModel {
         id: ifaceModelObj
         Component.onCompleted: {
-            if (root.hasService) {
+            if (root.hasService && !root.ifaceModelList.length) {
                 let stateCount = QD.Settings.stateGet('Provider.WirelessDevices.ListModel.count', 0)
                 const sampleData = {
                     iface: '',
                     ssid: '',
                     signal: 0,
                     isConnected: false,
+                    updateEpoch: -1,
                 }
-                while (stateCount-- > 0) {
+                const initialCount = ifaceModelObj.count
+                while (stateCount-- > initialCount) {
                     append(sampleData)
                 }
             }
