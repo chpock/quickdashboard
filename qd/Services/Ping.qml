@@ -48,22 +48,30 @@ Singleton {
         ...gatewayHostsList,
     ]
 
+    function syncListGateway(data) {
+        const gatewayHostsList = []
+        let isDefault = true
+        for (const gateway of data) {
+            gatewayHostsList.push({
+                name: '',
+                host: gateway,
+                isGateway: true,
+                isDefault: isDefault,
+            })
+            isDefault = false
+        }
+        root.gatewayHostsList = gatewayHostsList
+    }
+
     Connections {
         target: Service.Ip
-        function onUpdateListGateway(data) {
-            const gatewayHostsList = []
-            let isDefault = true
-            for (const gateway of data) {
-                gatewayHostsList.push({
-                    name: '',
-                    host: gateway,
-                    isGateway: true,
-                    isDefault: isDefault,
-                })
-                isDefault = false
-            }
-            root.gatewayHostsList = gatewayHostsList
+        function onGatewaysListChanged() {
+            root.syncListGateway(Service.Ip.gatewaysList)
         }
+    }
+
+    Component.onCompleted: {
+        root.syncListGateway(Service.Ip.gatewaysList)
     }
 
     Instantiator {

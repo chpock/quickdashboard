@@ -27,8 +27,6 @@ import QtQuick
 Singleton {
     id: root
 
-    signal updateListGateway(var data)
-
     property var gatewaysList: []
 
     property int gwListRefreshInterval: 10000
@@ -77,7 +75,6 @@ Singleton {
             if (exitCode !== 0) {
                 console.warn('[Services/Ip@gwListProc]', 'exited with code:', exitCode)
             } else if (updateRequired || root.gatewaysList.length !== gatewaysList.length) {
-                root.updateListGateway(gatewaysList)
                 root.gatewaysList = gatewaysList
             }
             gatewaysList = []
