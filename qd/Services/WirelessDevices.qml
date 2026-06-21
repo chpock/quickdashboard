@@ -102,7 +102,7 @@ Singleton {
                                 if (line.startsWith("\tsignal:")) {
                                     let rssiString = line.substring(line.indexOf(':') + 2)
                                     rssiString = rssiString.slice(0, rssiString.indexOf(' '))
-                                    rssi = parseInt(rssi)
+                                    rssi = parseInt(rssiString)
                                 } else if (line.startsWith("\tSSID:")) {
                                     ssid = line.substring(line.indexOf(':') + 2)
                                 }
