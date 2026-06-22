@@ -59,8 +59,8 @@ Scope {
     Connections {
         target: Service.Khal
         enabled: root.hasService
-        function onUpdateEvents(data) {
-            root.eventsAll = data
+        function onEventsChanged() {
+            root.eventsAll = Service.Khal.events
             root.updateModels()
         }
         function onAvailable() {
@@ -155,6 +155,7 @@ Scope {
             while (stateCount-- > 0) {
                 append(sampleData)
             }
+            updateModels()
         }
         onCountChanged: {
             QD.Settings.stateSet('Provider.Calendar.ListModel.count', count)
@@ -167,17 +168,19 @@ Scope {
 
     Component.onCompleted: {
         if (root.hasService) {
-
             running = QD.Settings.stateGet('Provider.Calendar.running', false)
-
             try {
                 calendarColors = JSON.parse(QD.Settings.stateGet('Provider.Calendar.calendarColors', '{}'))
             }
             catch (e) {
                 calendarColors = {}
             }
-
             calendarColorsLoaded = true
+
+            if (Service.Khal.running) {
+                root.eventsAll = Service.Khal.events
+                root.updateModels()
+            }
         }
     }
 

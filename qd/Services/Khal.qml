@@ -35,9 +35,10 @@ Singleton {
     property bool correctDatetimeEpoch: false
     property bool vdirsyncerAvailable: false
 
-    signal updateEvents(var data)
     signal available()
     signal unavailable()
+
+    property var events: []
 
     Timer {
         id: startupTimer
@@ -278,7 +279,7 @@ Singleton {
             if (exitCode !== 0) {
                 console.error('[Service.Khal/checkProc]', 'khal finished with exit code:', exitCode)
             } else {
-                root.updateEvents(checkProc.output)
+                root.events = checkProc.output
             }
             checkProc.output = []
         }
