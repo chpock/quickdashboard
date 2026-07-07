@@ -30,8 +30,8 @@ Singleton {
     property bool running: false
     property bool openusageAvailable: false
     property var closestResetData: null
+    property var providersState: null
 
-    signal updateProviders(var data)
     signal available()
     signal unavailable()
 
@@ -138,10 +138,10 @@ Singleton {
 
         root.closestResetData = closestResetDate
 
-        root.updateProviders({
+        root.providersState = {
             data: result,
             notice: notice,
-        })
+        }
     }
 
     Process {
