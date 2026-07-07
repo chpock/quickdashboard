@@ -117,6 +117,13 @@ Provider {
             }))
 
             for (const item of providers_data) {
+                const mainLineIndex = root.getMainLineIndex(item.lines)
+                item.lines = item.lines.map((line, index) => Object.assign({}, line, {
+                    main: index === mainLineIndex,
+                }))
+            }
+
+            for (const item of providers_data) {
                 root.providersModel.append(item)
             }
         })

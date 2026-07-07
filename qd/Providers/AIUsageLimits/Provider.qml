@@ -36,6 +36,27 @@ Scope {
     property var latestProviders: []
     property var latestProvidersLines: ({})
 
+    function getMainLineIndex(lines) {
+        if (!lines || lines.length === 0) {
+            return -1
+        }
+
+        let mainLineIndex = 0
+
+        for (let i = 1; i < lines.length; ++i) {
+            const candidateLine = lines[i]
+            const currentMainLine = lines[mainLineIndex]
+
+            if (candidateLine.periodDurationSeconds < currentMainLine.periodDurationSeconds) {
+                mainLineIndex = i
+            } else if (candidateLine.periodDurationSeconds === currentMainLine.periodDurationSeconds && candidateLine.percent > currentMainLine.percent) {
+                mainLineIndex = i
+            }
+        }
+
+        return mainLineIndex
+    }
+
     function syncProvidersState(stateData) {
         if (!stateData) {
             return
@@ -100,6 +121,8 @@ Scope {
 
             if (lines.length) {
 
+                const mainLineIndex = root.getMainLineIndex(lines)
+
                 const providerModel = providersModelObj.get(i)
                 const linesModel = providerModel.lines
                 const currentLines = []
@@ -117,6 +140,7 @@ Scope {
                         periodDurationSeconds: line.periodDurationSeconds,
                         percent: line.percent,
                         resetsAt: line.resetsAt,
+                        main: j === mainLineIndex,
                     }
 
                     currentLines.push({
@@ -207,6 +231,7 @@ Scope {
 
                     const providerData = currentLatestProviders[i]
                     const lines = currentLatestProvidersLines[providerData.id]
+                    const mainLineIndex = root.getMainLineIndex(lines)
 
                     const modelData = {
                         id: providerData.id,
@@ -229,6 +254,7 @@ Scope {
                             periodDurationSeconds: line.periodDurationSeconds,
                             percent: -1,
                             resetsAt: currentDate,
+                            main: j === mainLineIndex,
                         }
 
                         linesModel.append(linesModelData)

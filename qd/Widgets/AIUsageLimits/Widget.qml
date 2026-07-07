@@ -71,6 +71,8 @@ Widget.Base {
         readonly property bool initialized: modelData.percent >= 0
         property bool isCompact: false
 
+        visible: !isCompact || modelData.main
+
         implicitHeight:
             Math.max(
                 label.implicitHeight,
