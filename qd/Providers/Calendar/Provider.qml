@@ -32,6 +32,9 @@ Scope {
     property bool running: false
     readonly property alias eventsUpcomingModel: eventsUpcomingModelObj
     readonly property alias eventsTodayModel: eventsTodayModelObj
+    readonly property int eventsUpcomingDefaultCount: 3
+    readonly property int eventsUpcomingMinCount: 0
+    readonly property int eventsUpcomingMaxCount: 10
 
     property var eventsAll: []
     property var sampleData: ({
@@ -113,10 +116,10 @@ Scope {
 
     function eventsUpcomingChangeAmount(direction) {
         if (direction < 0) {
-            if (eventsUpcomingModel.count > 0) {
+            if (eventsUpcomingModel.count > root.eventsUpcomingMinCount) {
                 eventsUpcomingModel.remove(eventsUpcomingModel.count - 1, 1)
             }
-        } else if (direction > 0 && eventsUpcomingModel.count < 10) {
+        } else if (direction > 0 && eventsUpcomingModel.count < root.eventsUpcomingMaxCount) {
             eventsUpcomingModel.append(sampleData)
             updateModels()
         }
@@ -150,15 +153,34 @@ Scope {
 
     ListModel {
         id: eventsUpcomingModelObj
-        Component.onCompleted: {
-            let stateCount = QD.Settings.stateGet('Provider.Calendar.ListModel.count', 3)
-            while (stateCount-- > 0) {
-                append(sampleData)
+
+        property bool stateCountInitialized: false
+        readonly property string stateCountKey: 'Provider.Calendar.ListModel.count'
+
+        function getStateCount() {
+            let stateCount = Number(QD.Settings.stateGet(stateCountKey, root.eventsUpcomingDefaultCount))
+            if (!Number.isFinite(stateCount)) {
+                stateCount = root.eventsUpcomingDefaultCount
             }
-            updateModels()
+            stateCount = Math.trunc(stateCount)
+            if (stateCount < root.eventsUpcomingMinCount) {
+                return root.eventsUpcomingMinCount
+            }
+            if (stateCount > root.eventsUpcomingMaxCount) {
+                return root.eventsUpcomingMaxCount
+            }
+            return stateCount
         }
+
+        function setStateCount() {
+            QD.Settings.stateSet(stateCountKey, count)
+        }
+
         onCountChanged: {
-            QD.Settings.stateSet('Provider.Calendar.ListModel.count', count)
+            if (!stateCountInitialized) {
+                return
+            }
+            setStateCount()
         }
     }
 
@@ -167,6 +189,13 @@ Scope {
     }
 
     Component.onCompleted: {
+        let stateCount = eventsUpcomingModelObj.getStateCount()
+
+        while (eventsUpcomingModel.count < stateCount) {
+            eventsUpcomingModel.append(sampleData)
+        }
+        eventsUpcomingModelObj.stateCountInitialized = true
+
         if (root.hasService) {
             running = QD.Settings.stateGet('Provider.Calendar.running', false)
             try {
@@ -179,9 +208,10 @@ Scope {
 
             if (Service.Khal.running) {
                 root.eventsAll = Service.Khal.events
-                root.updateModels()
             }
         }
+
+        root.updateModels()
     }
 
     onRunningChanged: {
