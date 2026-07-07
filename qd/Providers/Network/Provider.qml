@@ -56,6 +56,7 @@ Scope {
             Service.Dgop.subscribe('infoNetwork')
             latencyHostsModelObj.updateElements(Service.Ping.pingHostsList)
             root.syncPingInfo(Service.Ping.pingInfo)
+            root.syncInfoNetwork(Service.Dgop.infoNetwork)
         }
     }
 
@@ -68,11 +69,18 @@ Scope {
     Connections {
         target: Service.Dgop
         enabled: root.hasService
-        function onUpdateInfoNetwork(data) {
-            root.rate.download = data.rxrate
-            root.rate.upload = data.txrate
-            root.updateNetworkRate(data)
+        function onInfoNetworkChanged() {
+            root.syncInfoNetwork(Service.Dgop.infoNetwork)
         }
+    }
+
+    function syncInfoNetwork(data) {
+        if (!data) {
+            return
+        }
+        root.rate.download = data.rxrate
+        root.rate.upload = data.txrate
+        root.updateNetworkRate(data)
     }
 
     Connections {

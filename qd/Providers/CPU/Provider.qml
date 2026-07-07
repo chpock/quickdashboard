@@ -43,6 +43,8 @@ Scope {
         if (hasService) {
             Service.Dgop.subscribe('infoCPU')
             Service.Dgop.subscribe('processesByCPU')
+            root.syncInfoCPU(Service.Dgop.infoCPU)
+            processListModelObj.updateData(Service.Dgop.processesByCPU)
         }
     }
 
@@ -53,28 +55,35 @@ Scope {
         }
     }
 
+    function syncInfoCPU(data) {
+        if (!data) {
+            return
+        }
+        root.model = data.model
+        root.cores = data.count
+        root.frequency = data.frequency
+        root.usage = data.usage
+        root.temperature = data.temperature
+
+        const infoCPU = {
+            frequency: data.frequency,
+            temperature: data.temperature,
+            usage: data.usage,
+        }
+
+        root.updateUsage(infoCPU)
+        root.updateCoresUsage(data.coreUsage)
+    }
+
 
     Connections {
         target: Service.Dgop
         enabled: root.hasService
-        function onUpdateInfoCPU(data) {
-            root.model = data.model
-            root.cores = data.count
-            root.frequency = data.frequency
-            root.usage = data.usage
-            root.temperature = data.temperature
-
-            const infoCPU = {
-                frequency: data.frequency,
-                temperature: data.temperature,
-                usage: data.usage,
-            }
-
-            root.updateUsage(infoCPU)
-            root.updateCoresUsage(data.coreUsage)
+        function onInfoCPUChanged() {
+            root.syncInfoCPU(Service.Dgop.infoCPU)
         }
-        function onUpdateProcessesByCPU(data) {
-            processListModelObj.updateData(data)
+        function onProcessesByCPUChanged() {
+            processListModelObj.updateData(Service.Dgop.processesByCPU)
         }
     }
 
@@ -82,6 +91,9 @@ Scope {
         id: processListModelObj
 
         function updateData(data) {
+            if (!data) {
+                return
+            }
             for (let i = 0; i < count; ++i) {
                 const row = get(i)
                 if (i < data.length) {

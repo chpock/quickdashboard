@@ -43,6 +43,8 @@ Scope {
         if (root.hasService) {
             Service.Dgop.subscribe('infoDisk')
             Service.Dgop.subscribe('infoMounts')
+            root.syncInfoDisk(Service.Dgop.infoDisk)
+            root.syncInfoMounts(Service.Dgop.infoMounts)
         }
     }
 
@@ -53,41 +55,55 @@ Scope {
         }
     }
 
+    function syncInfoDisk(data) {
+        if (!data) {
+            return
+        }
+        root.rate.read = data.readrate
+        root.rate.write = data.writerate
+        root.updateDiskRate(data)
+    }
+
+    function syncInfoMounts(data) {
+        if (!data) {
+            return
+        }
+        const foundMounts = []
+        for (let item of data) {
+            const mount = item.mount
+            const idx = root.mountModelList.indexOf(mount)
+            if (idx === -1) {
+                mountModelObj.append(item)
+                root.mountModelList.push(mount)
+            } else {
+                mountModelObj.set(idx, item)
+            }
+            foundMounts.push(mount)
+        }
+        if (foundMounts.length !== root.mountModelList.length) {
+            for (let i = root.mountModelList.length - 1; i >= 0; --i) {
+                if (foundMounts.indexOf(root.mountModelList[i]) === -1)
+                    mountModelObj.remove(i, 1)
+            }
+            root.mountModelList = foundMounts
+        }
+    }
+
     Connections {
         target: Service.Dgop
         enabled: root.hasService
-        function onUpdateInfoDisk(data) {
-            root.rate.read = data.readrate
-            root.rate.write = data.writerate
-            root.updateDiskRate(data)
+        function onInfoDiskChanged() {
+            root.syncInfoDisk(Service.Dgop.infoDisk)
         }
-        function onUpdateInfoMounts(data) {
-            const foundMounts = []
-            for (let item of data) {
-                const mount = item.mount
-                const idx = root.mountModelList.indexOf(mount)
-                if (idx === -1) {
-                    mountModelObj.append(item)
-                    root.mountModelList.push(mount)
-                } else {
-                    mountModelObj.set(idx, item)
-                }
-                foundMounts.push(mount)
-            }
-            if (foundMounts.length !== root.mountModelList.length) {
-                for (let i = root.mountModelList.length - 1; i >= 0; --i) {
-                    if (foundMounts.indexOf(root.mountModelList[i]) === -1)
-                        mountModelObj.remove(i, 1)
-                }
-                root.mountModelList = foundMounts
-            }
+        function onInfoMountsChanged() {
+            root.syncInfoMounts(Service.Dgop.infoMounts)
         }
     }
 
     ListModel {
         id: mountModelObj
         Component.onCompleted: {
-            if (root.hasService) {
+            if (root.hasService && !root.mountModelList.length) {
                 let stateCount = QD.Settings.stateGet('Provider.Disk.ListModel.count', 0)
                 const sampleData = {
                     device: '',
@@ -97,7 +113,8 @@ Scope {
                     used:  0,
                     avail: 0,
                 }
-                while (stateCount-- > 0) {
+                const initialCount = mountModelObj.count
+                while (stateCount-- > initialCount) {
                     append(sampleData)
                     root.mountModelList.push('')
                 }

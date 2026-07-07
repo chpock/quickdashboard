@@ -41,6 +41,8 @@ Scope {
         if (hasService) {
             Service.Dgop.subscribe('infoMemory')
             Service.Dgop.subscribe('processesByRAM')
+            root.syncInfoMemory(Service.Dgop.infoMemory)
+            processListModelObj.updateData(Service.Dgop.processesByRAM)
         }
     }
 
@@ -51,24 +53,31 @@ Scope {
         }
     }
 
+    function syncInfoMemory(data) {
+        if (!data) {
+            return
+        }
+        root.ramTotal = data.total * 1024
+        root.ramAvailable = data.available * 1024
+
+        root.swapTotal = data.swaptotal * 1024
+        root.swapIsInstalled = data.swaptotal !== 0
+        if (root.swapIsInstalled) {
+            root.swapFree = data.swapfree * 1024
+        } else {
+            root.swapFree = 0
+            root.swapFreePercent = 0
+        }
+    }
+
     Connections {
         target: Service.Dgop
         enabled: root.hasService
-        function onUpdateInfoMemory(data) {
-            root.ramTotal = data.total * 1024
-            root.ramAvailable = data.available * 1024
-
-            root.swapTotal = data.swaptotal * 1024
-            root.swapIsInstalled = data.swaptotal !== 0
-            if (root.swapIsInstalled) {
-                root.swapFree = data.swapfree * 1024
-            } else {
-                root.swapFree = 0
-                root.swapFreePercent = 0
-            }
+        function onInfoMemoryChanged() {
+            root.syncInfoMemory(Service.Dgop.infoMemory)
         }
-        function onUpdateProcessesByRAM(data) {
-            processListModelObj.updateData(data)
+        function onProcessesByRAMChanged() {
+            processListModelObj.updateData(Service.Dgop.processesByRAM)
         }
     }
 
@@ -76,6 +85,9 @@ Scope {
         id: processListModelObj
 
         function updateData(data) {
+            if (!data) {
+                return
+            }
             for (let i = 0; i < count; ++i) {
                 const row = get(i)
                 if (i < data.length) {

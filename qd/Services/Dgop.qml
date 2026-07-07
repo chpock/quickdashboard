@@ -49,13 +49,13 @@ Singleton {
 
     property int limitProcessAmount: 0
 
-    signal updateInfoCPU(var data)
-    signal updateInfoMemory(var data)
-    signal updateInfoNetwork(var data)
-    signal updateInfoDisk(var data)
-    signal updateInfoMounts(var data)
-    signal updateProcessesByCPU(var data)
-    signal updateProcessesByRAM(var data)
+    property var infoCPU: null
+    property var infoMemory: null
+    property var infoNetwork: null
+    property var infoDisk: null
+    property var infoMounts: null
+    property var processesByCPU: null
+    property var processesByRAM: null
 
     // TODO: add ability to specify random port number by environment variable API_PORT.
     // Also, detect somehow that dgop failed to bind specified port and restart it with other port number.
@@ -141,7 +141,7 @@ Singleton {
     }
 
     Timer {
-        id: infoCPU
+        id: infoCPUTimer
         interval: 1000
         repeat: true
         running: root.running && root.subscribers.infoCPU > 0
@@ -149,7 +149,7 @@ Singleton {
     }
 
     Timer {
-        id: infoMemory
+        id: infoMemoryTimer
         interval: 1000
         repeat: true
         running: root.running && root.subscribers.infoMemory > 0
@@ -157,7 +157,7 @@ Singleton {
     }
 
     Timer {
-        id: infoNetwork
+        id: infoNetworkTimer
         interval: 1000
         repeat: true
         running: root.running && root.subscribers.infoNetwork > 0
@@ -165,7 +165,7 @@ Singleton {
     }
 
     Timer {
-        id: infoDisk
+        id: infoDiskTimer
         interval: 1000
         repeat: true
         running: root.running && root.subscribers.infoDisk > 0
@@ -173,7 +173,7 @@ Singleton {
     }
 
     Timer {
-        id: processesByCPU
+        id: processesByCPUTimer
         interval: 5000
         repeat: true
         running: root.running && root.subscribers.processesByCPU > 0
@@ -181,7 +181,7 @@ Singleton {
     }
 
     Timer {
-        id: processesByRAM
+        id: processesByRAMTimer
         // Get the list of processes by RAM once every 10 seconds, as this is
         // an expensive operation.
         interval: 10000
@@ -191,7 +191,7 @@ Singleton {
     }
 
     Timer {
-        id: infoMounts
+        id: infoMountsTimer
         interval: 10000
         repeat: true
         running: root.running && root.subscribers.infoMounts > 0
@@ -311,7 +311,7 @@ Singleton {
         }, function(data) {
             if (!data) return
             cursorInfoCPU = data.data.cursor
-            root.updateInfoCPU(data.data)
+            root.infoCPU = data.data
         })
     }
 
@@ -335,10 +335,11 @@ Singleton {
                 sum_readrate += diskData.readrate
                 sum_writerate += diskData.writerate
             }
-            root.updateInfoDisk({
+            const callbackData = {
                 readrate: readAvgDiskRate.push(Math.trunc(sum_readrate)),
                 writerate: writeAvgDiskRate.push(Math.trunc(sum_writerate)),
-            })
+            }
+            root.infoDisk = callbackData
         })
     }
 
@@ -371,7 +372,7 @@ Singleton {
                     used:   root.unformatBytes(item.used),
                     avail:  root.unformatBytes(item.avail),
                 }))
-            root.updateInfoMounts(callbackData)
+            root.infoMounts = callbackData
         })
     }
 
@@ -379,7 +380,7 @@ Singleton {
         if (!ready) return null
         return request('/gops/memory', {}, function(data) {
             if (!data) return
-            root.updateInfoMemory(data.data)
+            root.infoMemory = data.data
         })
     }
 
@@ -424,7 +425,7 @@ Singleton {
                     value: item.cpu,
                 }
             })
-            root.updateProcessesByCPU(callbackData)
+            root.processesByCPU = callbackData
         })
     }
 
@@ -449,7 +450,7 @@ Singleton {
                     value: item.memoryKB * 1024,
                 }
             })
-            root.updateProcessesByRAM(callbackData)
+            root.processesByRAM = callbackData
         })
     }
 
@@ -470,7 +471,7 @@ Singleton {
                 rxrate: rxAvgNetworkRate.push(Math.trunc(data.interfaces[0].rxrate)),
                 txrate: txAvgNetworkRate.push(Math.trunc(data.interfaces[0].txrate)),
             }
-            root.updateInfoNetwork(callbackData)
+            root.infoNetwork = callbackData
         })
     }
 
