@@ -41,10 +41,36 @@ Scope {
 
     Component.onCompleted: {
         if (root.hasService) {
+            const persistedStateCount = mountModelObj.getStateCount()
+
+            if (!root.mountModelList.length) {
+                let stateCount = persistedStateCount
+                const sampleData = {
+                    device: '',
+                    mount:  '',
+                    fstype: '',
+                    size:  0,
+                    used:  0,
+                    avail: 0,
+                }
+                const initialCount = mountModelObj.count
+                while (stateCount-- > initialCount) {
+                    mountModelObj.append(sampleData)
+                    root.mountModelList.push('')
+                }
+            }
+
             Service.Dgop.subscribe('infoDisk')
             Service.Dgop.subscribe('infoMounts')
             root.syncInfoDisk(Service.Dgop.infoDisk)
             root.syncInfoMounts(Service.Dgop.infoMounts)
+
+            mountModelObj.stateCountInitialized = true
+            if (mountModelObj.realCountKnown) {
+                if (persistedStateCount < 0 || persistedStateCount !== mountModelObj.count) {
+                    mountModelObj.setStateCount()
+                }
+            }
         }
     }
 
@@ -68,6 +94,7 @@ Scope {
         if (!data) {
             return
         }
+        mountModelObj.realCountKnown = true
         const foundMounts = []
         for (let item of data) {
             const mount = item.mount
@@ -102,28 +129,28 @@ Scope {
 
     ListModel {
         id: mountModelObj
-        Component.onCompleted: {
-            if (root.hasService && !root.mountModelList.length) {
-                let stateCount = QD.Settings.stateGet('Provider.Disk.ListModel.count', 0)
-                const sampleData = {
-                    device: '',
-                    mount:  '',
-                    fstype: '',
-                    size:  0,
-                    used:  0,
-                    avail: 0,
-                }
-                const initialCount = mountModelObj.count
-                while (stateCount-- > initialCount) {
-                    append(sampleData)
-                    root.mountModelList.push('')
-                }
+
+        property bool stateCountInitialized: false
+        property bool realCountKnown: false
+        readonly property string stateCountKey: 'Provider.Disk.ListModel.count'
+
+        function getStateCount() {
+            let stateCount = Number(QD.Settings.stateGet(stateCountKey, -1))
+            if (!Number.isFinite(stateCount) || stateCount < 0) {
+                return -1
             }
+            return Math.trunc(stateCount)
         }
+
+        function setStateCount() {
+            QD.Settings.stateSet(stateCountKey, count)
+        }
+
         onCountChanged: {
-            if (root.hasService) {
-                QD.Settings.stateSet('Provider.Disk.ListModel.count', count)
+            if (!root.hasService || !stateCountInitialized || !realCountKnown) {
+                return
             }
+            setStateCount()
         }
     }
 

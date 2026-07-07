@@ -34,6 +34,7 @@ Scope {
     property bool hasService: true
 
     function syncIfaceList(data) {
+        ifaceModelObj.realCountKnown = true
         root.ifaceModelList = []
         for (let i = 0; i < data.length; ++i) {
             const ifaceName = data[i]
@@ -84,17 +85,11 @@ Scope {
     }
 
     Component.onCompleted: {
-        if (root.hasService && Service.WirelessDevices.running) {
-            root.syncIfaceList(Service.WirelessDevices.ifacesList)
-            root.syncIfaceInfo(Service.WirelessDevices.ifacesInfo)
-        }
-    }
+        if (root.hasService) {
+            const persistedStateCount = ifaceModelObj.getStateCount()
 
-    ListModel {
-        id: ifaceModelObj
-        Component.onCompleted: {
-            if (root.hasService && !root.ifaceModelList.length) {
-                let stateCount = QD.Settings.stateGet('Provider.WirelessDevices.ListModel.count', 0)
+            if (!root.ifaceModelList.length) {
+                let stateCount = persistedStateCount
                 const sampleData = {
                     iface: '',
                     ssid: '',
@@ -104,14 +99,49 @@ Scope {
                 }
                 const initialCount = ifaceModelObj.count
                 while (stateCount-- > initialCount) {
-                    append(sampleData)
+                    ifaceModelObj.append(sampleData)
+                }
+            }
+
+            if (Service.WirelessDevices.running) {
+                root.syncIfaceList(Service.WirelessDevices.ifacesList)
+                root.syncIfaceInfo(Service.WirelessDevices.ifacesInfo)
+            }
+
+            ifaceModelObj.stateCountInitialized = true
+
+            if (ifaceModelObj.realCountKnown) {
+                if (persistedStateCount < 0 || persistedStateCount !== ifaceModelObj.count) {
+                    ifaceModelObj.setStateCount()
                 }
             }
         }
-        onCountChanged: {
-            if (root.hasService) {
-                QD.Settings.stateSet('Provider.WirelessDevices.ListModel.count', count)
+    }
+
+    ListModel {
+        id: ifaceModelObj
+
+        property bool stateCountInitialized: false
+        property bool realCountKnown: false
+        readonly property string stateCountKey: 'Provider.WirelessDevices.ListModel.count'
+
+        function getStateCount() {
+            let stateCount = Number(QD.Settings.stateGet(stateCountKey, -1))
+            if (!Number.isFinite(stateCount) || stateCount < 0) {
+                return -1
             }
+            return Math.trunc(stateCount)
+        }
+
+        function setStateCount() {
+            QD.Settings.stateSet(stateCountKey, count)
+        }
+
+        onCountChanged: {
+            if (!root.hasService || !stateCountInitialized || !realCountKnown) {
+                return
+            }
+            setStateCount()
         }
     }
 
