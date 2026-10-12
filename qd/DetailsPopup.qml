@@ -124,6 +124,10 @@ PopupWindow {
             cancelDebouncedOpen()
         }
 
+        if (widget === queuedWidget && widgetHovered === false) {
+            clearQueuedTarget()
+        }
+
         if (!visible) {
             hasPendingClose = false
             closeDetailsTimer.stop()
@@ -175,7 +179,7 @@ PopupWindow {
         queuedDetails = null
         lastCloseTimestamp = Date.now()
 
-        if (nextWidget && nextDetails) {
+        if (nextWidget && nextDetails && nextWidget.isHovered) {
             openDetailsNow(nextWidget, nextDetails)
         }
     }
