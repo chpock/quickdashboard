@@ -27,10 +27,24 @@ Scope {
     id: root
 
     readonly property list<MprisPlayer> availablePlayers: Mpris.players.values
+    // Track playback separately so starting it is noticed even if activePlayer stays the same.
+    readonly property MprisPlayer playingPlayer: availablePlayers.find(p => p.isPlaying) ?? null
+    // In-memory history only; intentionally reset when this provider is recreated.
+    property MprisPlayer lastPlayingPlayer: null
+    // Keep the last playing player on pause/stop instead of jumping to an older stopped one.
+    // If it disappears, fall back to the first controllable player that can play.
     readonly property MprisPlayer activePlayer:
-        availablePlayers.find(p => p.isPlaying)
+        playingPlayer
+        ?? (availablePlayers.includes(lastPlayingPlayer) ? lastPlayingPlayer : null)
         ?? availablePlayers.find(p => p.canControl && p.canPlay)
         ?? null
+
+    onPlayingPlayerChanged: {
+        // No player playing (pause/stop) must not erase the previous selection.
+        if (playingPlayer) {
+            lastPlayingPlayer = playingPlayer
+        }
+    }
 
     property bool hasPlayer: activePlayer !== null
     property bool isPaused: activePlayer?.playbackState === MprisPlaybackState.Paused
