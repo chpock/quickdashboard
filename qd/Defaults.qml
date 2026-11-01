@@ -370,6 +370,7 @@ Singleton {
             background: defaults.text.background
             text:       defaults.text.text
             color:      defaults.text.color
+            value_null: 'null'
         }
         text_datetime {
             font {

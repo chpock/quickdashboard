@@ -34,7 +34,10 @@ Item {
     property var style
     readonly property C.TextDuration _config: (config._styles_loaded && style && config.getStyle(style)) || config
 
-    property int seconds: {
+    property var seconds: {
+        if (targetDate === null || targetDate === undefined) {
+            return null
+        }
         const result = (targetDate.getTime() - baseDate.getTime()) / 10 ** 3
         return (!allowNegative && result < 0) ? 0 : result
     }
@@ -52,8 +55,14 @@ Item {
         theme: root.theme
 
         property string duration: {
-            const sign = root.seconds < 0 ? '-' : ''
-            const delta = Math.abs(root.seconds)
+
+            if (root.seconds === null || root.seconds === undefined) {
+                return root._config.value_null
+            }
+
+            const total_seconds = Math.round(root.seconds)
+            const sign = total_seconds < 0 ? '-' : ''
+            const delta = Math.abs(total_seconds)
             const days = Math.floor(delta / 86400)
             const hours = Math.floor((delta % 86400) / 3600)
             if (days > 0) {

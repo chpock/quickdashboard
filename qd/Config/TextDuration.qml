@@ -46,6 +46,7 @@ BaseStyled {
     property var color:      _defaults?.color
     property var background: _defaults?.background
     property var text:       _defaults?.text
+    property var value_null: _defaults?.value_null
 
     styles: _defaults?.styles
 
