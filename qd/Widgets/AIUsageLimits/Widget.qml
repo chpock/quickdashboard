@@ -69,6 +69,8 @@ Widget.Base {
         required property var modelData
         readonly property var config: root._fragments.line
         readonly property bool initialized: modelData.percent >= 0
+        // The service represents unknown reset dates with the epoch.
+        readonly property var resetsAt: modelData.resetsAt.getTime() === 0 ? null : modelData.resetsAt
         property bool isCompact: false
 
         visible: !isCompact || modelData.main
@@ -123,7 +125,7 @@ Widget.Base {
             config: line.config.resets_compact
 
             visible: line.initialized && line.isCompact
-            targetDate: parent.modelData.resetsAt
+            targetDate: line.resetsAt
             allowNegative: false
             anchors.right: parent.right
             anchors.bottom: label.bottom
@@ -158,7 +160,7 @@ Widget.Base {
             config: line.config.resets.time
 
             visible: line.initialized && !line.isCompact
-            targetDate: parent.modelData.resetsAt
+            targetDate: line.resetsAt
             allowNegative: false
             anchors.top: bar.bottom
             anchors.right: parent.right

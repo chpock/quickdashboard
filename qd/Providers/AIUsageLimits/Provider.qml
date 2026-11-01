@@ -240,7 +240,6 @@ Scope {
                     JSON.parse(QD.Settings.stateGet('Provider.AIUsageLimits.latestProviders', '[]'))
                 const currentLatestProvidersLines =
                     JSON.parse(QD.Settings.stateGet('Provider.AIUsageLimits.latestProvidersLines', '{}'))
-                const currentDate = new Date()
 
                 for (let i = 0; i < currentLatestProviders.length; ++i) {
 
@@ -273,7 +272,7 @@ Scope {
                             label: line.label,
                             periodDurationSeconds: line.periodDurationSeconds,
                             percent: -1,
-                            resetsAt: currentDate,
+                            resetsAt: new Date(0),
                             main: j === mainLineIndex,
                         }
 

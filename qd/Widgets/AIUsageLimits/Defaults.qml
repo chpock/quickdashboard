@@ -145,20 +145,26 @@ Fragments {
             font {
                 size: 'small'
             }
-            color: 'text/secondary'
-            text: '[%1]'
+            color:      'text/secondary'
+            text:       '[%1]'
+            value_null: 'undef'
         }
         resets {
             label {
                 _defaults: widget._defaults.text
-                text: 'Resets in:'
+
+                text:  'Resets in:'
+                color: 'text/secondary'
+
                 font {
                     size: 'small'
                 }
-                color: 'text/secondary'
             }
             time {
                 _defaults: widget._defaults.text_duration
+
+                value_null: 'undefined'
+
                 thresholds {
                     enabled: false
                 }

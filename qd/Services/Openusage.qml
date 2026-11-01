@@ -130,14 +130,15 @@ Singleton {
             const providerAccount = provider.account
             const processedLines = (provider.lines || [])
                 .filter(line => {
-                    return line.format && line.format.kind === 'percent' && line.resetsAt !== null;
+                    return line.format && line.format.kind === 'percent';
                 })
                 .map(line => {
+                    // null becomes the epoch, preserving the provider model's date role.
                     const resetDate = new Date(line.resetsAt);
 
                     // We don't need closestResetDate in the cache mode as in this mode the aggressive
                     // check is always on.
-                    if (!root.cacheMode) {
+                    if (!root.cacheMode && resetDate.getTime() !== 0) {
                         if (closestResetDate === null || resetDate < closestResetDate) {
                             closestResetDate = resetDate
                         }
