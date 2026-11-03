@@ -286,6 +286,7 @@
     "color"                    : "white_bright",
     "background"               : "transparent",
     "text"                     : "?",
+    "value_null"               : "null",
 
     "font": {
       "size"      : "normal",
