@@ -24,33 +24,31 @@ import QtTest
 import qs.qd as QD
 import qs.qd.Config as C
 import qs.qd.Elements as E
+import "qd/Helpers/helpers.js" as Helpers
 
 TestCase {
     id: tests
     name: "Bar"
     visible: true
     width: 240
-    height: 40
+    height: 64
 
     readonly property string activeColor: "#0000ff"
     readonly property string inactiveColor: "#404040"
     readonly property string aboveColor: "#ff0000"
     readonly property string belowColor: "#00ff00"
+    readonly property string backgroundColor: "#010203"
     property var bar
+
+    Rectangle {
+        anchors.fill: parent
+        z: -1
+        color: tests.backgroundColor
+    }
 
     C.Bar {
         id: barConfig
         _defaults: QD.Defaults.defaults.bar
-        _custom: ({
-            height: 8,
-            padding: { left: 5, right: 5, top: 3, bottom: 3 },
-            color: {
-                active: tests.activeColor,
-                inactive: tests.inactiveColor,
-                aboveReference: tests.aboveColor,
-                belowReference: tests.belowColor,
-            },
-        })
     }
 
     C.Theme {
@@ -67,7 +65,22 @@ TestCase {
         }
     }
 
+    Component {
+        id: configComponent
+        C.Bar {}
+    }
+
     function init() {
+        barConfig._custom = {
+            height: 8,
+            padding: { left: 5, right: 5, top: 3, bottom: 3 },
+            color: { active: activeColor, inactive: inactiveColor },
+            target: {
+                height: 1,
+                padding: { top: 1, bottom: 0, left: 0, right: 0 },
+                color: { above: aboveColor, below: belowColor },
+            },
+        }
         bar = createTemporaryObject(barComponent, tests)
         verify(bar !== null)
     }
@@ -77,86 +90,120 @@ TestCase {
                     qtest_results.functionName, qtest_results.dataTag)
     }
 
-    function checkSegments(expected) {
-        const segments = Array.from(bar.children)
-            .filter(child => child.visible && child.width > 0 && child.height > 0)
-            .sort((a, b) => a.x - b.x)
-        compare(segments.length, expected.length)
-        let x = barConfig.padding.left
-        for (let i = 0; i < segments.length; ++i) {
-            const segment = segments[i]
-            const width = expected[i][0] * bar.effectiveWidth / 100
-            fuzzyCompare(segment.x, x, 0.000001)
-            fuzzyCompare(segment.width, width, 0.000001)
-            compare(segment.y, barConfig.padding.top)
-            compare(segment.height, barConfig.height)
-            compare(segment.color, Qt.color(expected[i][1]))
-            x += width
+    function checkPixel(image, scale, x, y, color) {
+        const actual = image.pixel(Math.floor((x + 0.5) * scale), Math.floor((y + 0.5) * scale))
+        const expected = Qt.color(color)
+        if (!Qt.colorEqual(actual, expected)) {
+            console.error("Bar pixel mismatch:", x, y, actual, expected,
+                          "value:", bar.value, "target:", bar.valueTarget, "width:", bar.width)
         }
-        fuzzyCompare(x, bar.width - barConfig.padding.right, 0.000001)
+        compare(actual, expected)
     }
 
-    function test_reference_data() {
+    function rectangles(item) {
+        let result = []
+        for (const child of item.children) {
+            if ("color" in child) result.push(child)
+            result = result.concat(rectangles(child))
+        }
+        return result
+    }
+
+    function checkRendering(filledPercent, expectedHeight, marker = null) {
+        compare(bar.implicitHeight, expectedHeight)
+        const items = rectangles(bar)
+        const fill = items.find(item => Qt.colorEqual(item.color, activeColor))
+        const inactive = items.find(item => Qt.colorEqual(item.color, inactiveColor))
+        const target = items.find(item => item !== fill && item !== inactive)
+        verify(fill !== undefined && inactive !== undefined && target !== undefined)
+        const mainWidth = Math.max(0, bar.width - 10)
+        const filledWidth = mainWidth * filledPercent / 100
+        compare(fill.x, 5)
+        compare(fill.y, 3)
+        compare(fill.height, 8)
+        fuzzyCompare(fill.width, filledWidth, 0.000001)
+        fuzzyCompare(inactive.x, 5 + filledWidth, 0.000001)
+        compare(inactive.y, 3)
+        compare(inactive.height, 8)
+        fuzzyCompare(inactive.width, mainWidth - filledWidth, 0.000001)
+        compare(target.visible, marker !== null)
+        if (marker !== null) {
+            const point = target.mapToItem(bar, 0, 0)
+            fuzzyCompare(point.x, marker.left, 0.000001)
+            fuzzyCompare(point.y, marker.top, 0.000001)
+            fuzzyCompare(target.width, marker.right - marker.left, 0.000001)
+            compare(target.height, marker.height)
+            compare(target.color, Qt.color(marker.color))
+        }
+
+        verify(waitForRendering(bar))
+        const image = grabImage(tests)
+        const scale = image.width / tests.width
+        // Sample interiors: fractional-edge rasterization belongs to Qt.
+        if (filledWidth > 0) checkPixel(image, scale, 5 + filledWidth / 2, 6, activeColor)
+        if (filledWidth < mainWidth) {
+            checkPixel(image, scale, 5 + filledWidth + (mainWidth - filledWidth) / 2, 6, inactiveColor)
+        }
+        if (marker !== null) {
+            const x = (marker.left + marker.right) / 2
+            checkPixel(image, scale, x, marker.top, marker.color)
+            checkPixel(image, scale, x, marker.top - 1, backgroundColor)
+        }
+    }
+
+    function marker(left, right, color, top = 12, height = 1) {
+        return { left: left, right: right, color: color, top: top, height: height }
+    }
+
+    function test_target_data() {
         return [
-            { tag: "default", omit: true, value: 60,
-              segments: [[60, activeColor], [40, inactiveColor]] },
-            { tag: "null", reference: null, value: 60,
-              segments: [[60, activeColor], [40, inactiveColor]] },
-            { tag: "undefined", reference: undefined, value: 60,
-              segments: [[60, activeColor], [40, inactiveColor]] },
-            { tag: "above", reference: 40, value: 60,
-              segments: [[40, activeColor], [20, aboveColor], [40, inactiveColor]] },
-            { tag: "below", reference: 60, value: 40,
-              segments: [[40, activeColor], [20, belowColor], [40, inactiveColor]] },
-            { tag: "equal", reference: 60, value: 60,
-              segments: [[60, activeColor], [40, inactiveColor]] },
-            { tag: "zero-reference", reference: 0, value: 60,
-              segments: [[60, aboveColor], [40, inactiveColor]] },
-            { tag: "zero-value", reference: 60, value: 0,
-              segments: [[60, belowColor], [40, inactiveColor]] },
-            { tag: "full-reference", reference: 100, value: 60,
-              segments: [[60, activeColor], [40, belowColor]] },
-            { tag: "full-value", reference: 60, value: 100,
-              segments: [[60, activeColor], [40, aboveColor]] },
-            { tag: "both-zero", reference: 0, value: 0,
-              segments: [[100, inactiveColor]] },
-            { tag: "both-full", reference: 100, value: 100,
-              segments: [[100, activeColor]] },
+            { tag: "default", omit: true, value: 60, height: 14 },
+            { tag: "null", target: null, value: 60, height: 14 },
+            { tag: "undefined", target: undefined, value: 60, height: 14 },
+            { tag: "seven-percent", target: null, value: 7, height: 14 },
+            { tag: "seven-to-fourteen", target: 14, value: 7, height: 16, marker: marker(19, 33, belowColor) },
+            { tag: "seven-to-fourteen-normalized", maximum: 1, target: 0.14, value: 0.07, fill: 7,
+              height: 16, marker: marker(19, 33, belowColor) },
+            { tag: "above", target: 40, value: 60, height: 16, marker: marker(85, 125, aboveColor) },
+            { tag: "below", target: 60, value: 40, height: 16, marker: marker(85, 125, belowColor) },
+            { tag: "equal", target: 60, value: 60, height: 16 },
+            { tag: "zero-target", target: 0, value: 60, height: 16, marker: marker(5, 125, aboveColor) },
+            { tag: "zero-value", target: 60, value: 0, height: 16, marker: marker(5, 125, belowColor) },
+            { tag: "full-target", target: 100, value: 60, height: 16, marker: marker(125, 205, belowColor) },
+            { tag: "full-value", target: 60, value: 100, height: 16, marker: marker(125, 205, aboveColor) },
+            { tag: "both-zero", target: 0, value: 0, height: 16 },
+            { tag: "both-full", target: 100, value: 100, height: 16 },
         ]
     }
 
-    function test_reference(data) {
+    function test_target(data) {
+        bar.valueMax = data.maximum ?? 100
         bar.value = data.value
-        if (!data.omit) bar.valueReference = data.reference
-        compare(bar.implicitHeight, 14)
-        checkSegments(data.segments)
-
-        verify(waitForRendering(bar))
-        const image = grabImage(bar)
-        let x = barConfig.padding.left
-        for (const segment of data.segments) {
-            const width = segment[0] * bar.effectiveWidth / 100
-            compare(image.pixel(Math.floor(x + width / 2), 6), Qt.color(segment[1]))
-            x += width
-        }
+        if (data.omit) compare(bar.valueTarget, null)
+        else bar.valueTarget = data.target
+        checkRendering(data.fill ?? data.value, data.height, data.marker ?? null)
     }
 
     function test_liveChanges() {
         bar.valueMax = 1
         bar.value = 0.6
-        bar.valueReference = 0.4
-        checkSegments([[40, activeColor], [20, aboveColor], [40, inactiveColor]])
-        bar.valueReference = 0.8
-        checkSegments([[60, activeColor], [20, belowColor], [20, inactiveColor]])
+        bar.valueTarget = 0.4
+        checkRendering(60, 16, marker(85, 125, aboveColor))
+        bar.valueTarget = 0.8
+        checkRendering(60, 16, marker(125, 165, belowColor))
         bar.value = 0.8
-        checkSegments([[80, activeColor], [20, inactiveColor]])
-        bar.valueReference = null
-        checkSegments([[80, activeColor], [20, inactiveColor]])
-        bar.valueReference = 0
+        checkRendering(80, 16)
+        bar.valueTarget = 0.6
+        checkRendering(80, 16, marker(125, 165, aboveColor))
+        bar.value = 0.6
+        checkRendering(60, 16)
+        bar.valueTarget = null
+        checkRendering(60, 14)
+        bar.valueTarget = 0
         bar.width = 110
-        checkSegments([[80, aboveColor], [20, inactiveColor]])
-        bar.valueReference = undefined
-        checkSegments([[80, activeColor], [20, inactiveColor]])
+        checkRendering(60, 16, marker(5, 65, aboveColor))
+        bar.valueTarget = undefined
+        checkRendering(60, 14)
     }
 
     function test_nonPositiveMaximum_data() {
@@ -165,29 +212,70 @@ TestCase {
 
     function test_nonPositiveMaximum(data) {
         bar.value = 60
-        bar.valueReference = 40
+        bar.valueTarget = 40
         bar.valueMax = data.maximum
-        checkSegments([[100, inactiveColor]])
+        checkRendering(0, 16)
     }
 
-    function test_colorInheritance() {
-        const inherited = Qt.createQmlObject(
-            'import qs.qd.Config as C; C.BarColor {}', tests)
-        inherited._defaults = barConfig.color
-        compare(inherited.aboveReference, aboveColor)
-        compare(inherited.belowReference, belowColor)
-        inherited._custom = { aboveReference: "severity/good", belowReference: "severity/warning" }
-        compare(barTheme.getColor(inherited.aboveReference), barTheme.getColor("severity/good"))
-        compare(barTheme.getColor(inherited.belowReference), barTheme.getColor("severity/warning"))
+    function test_targetGeometryAndColors_data() {
+        return [{ tag: "above", value: 60, target: 40, color: "#ff00ff" },
+                { tag: "below", value: 40, target: 60, color: "#00ffff" }]
+    }
+
+    function test_targetGeometryAndColors(data) {
+        barConfig.target._custom = {
+            height: 3,
+            padding: { top: 2, bottom: 4, left: 10, right: 20 },
+            color: { above: "#ff00ff", below: "#00ffff" },
+        }
+        bar.value = data.value
+        bar.valueTarget = data.target
+        checkRendering(data.value, 23, marker(85, 125, data.color, 13, 3))
+    }
+
+    function test_insufficientWidth() {
+        bar.value = 60
+        bar.valueTarget = 40
+        bar.width = 8
+        compare(bar.effectiveWidth, 0)
+        checkRendering(60, 16)
+        bar.width = 210
+        barConfig.target.padding._custom = { left: 120, right: 120 }
+        checkRendering(60, 16, marker(85, 125, aboveColor))
+    }
+
+    function test_targetInheritance() {
+        const inherited = createTemporaryObject(configComponent, tests, { _defaults: barConfig })
+        verify(inherited !== null)
+        compare(inherited.target.height, 1)
+        compare(inherited.target.padding.top, 1)
+        compare(inherited.target.color.above, aboveColor)
+        compare(inherited.target.color.below, belowColor)
+        inherited._custom = {
+            target: { height: 3, padding: { top: 2 }, color: { above: "#ff00ff" } },
+        }
+        compare(inherited.target.height, 3)
+        compare(inherited.target.padding.top, 2)
+        compare(inherited.target.padding.left, 0)
+        compare(inherited.target.color.above, "#ff00ff")
+        compare(inherited.target.color.below, belowColor)
         inherited._custom = undefined
-        compare(inherited.aboveReference, aboveColor)
-        compare(inherited.belowReference, belowColor)
-        inherited.destroy()
+        compare(inherited.target.height, 1)
+        compare(inherited.target.padding.top, 1)
+        compare(inherited.target.color.above, aboveColor)
+        compare(inherited.target.color.below, belowColor)
     }
 
-    function test_defaultColors() {
-        compare(QD.Defaults.defaults.bar.color.aboveReference, "severity/warning")
-        compare(QD.Defaults.defaults.bar.color.belowReference, "severity/good")
+    function test_defaultConfig() {
+        const config = QD.Defaults.defaults.bar
+        compare(config.target.height, 1)
+        compare(config.target.padding.top, 1)
+        compare(config.target.padding.bottom, 0)
+        compare(config.target.padding.left, 0)
+        compare(config.target.padding.right, 0)
+        compare(config.target.color.above, "severity/critical")
+        compare(config.target.color.below, "severity/good")
+        compare(Object.keys(Helpers.toPlainValue(config.color)).sort(), ["active", "inactive"])
     }
 
     onCompletedChanged: {

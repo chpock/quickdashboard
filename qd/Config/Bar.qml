@@ -32,5 +32,8 @@ Base {
     readonly property Padding padding: Padding {
         _defaults: root._defaults?.padding ?? null
     }
+    readonly property BarTarget target: BarTarget {
+        _defaults: root._defaults?.target ?? null
+    }
     property var height: _defaults?.height
 }

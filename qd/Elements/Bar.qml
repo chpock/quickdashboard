@@ -30,19 +30,14 @@ Item {
 
     property real valueMax: 100.0
     property real value: 0
-    property var valueReference: null
+    // Desired current value; null/undefined omit the target indicator and its space.
+    property var valueTarget: null
 
     readonly property real effectiveWidth: Math.max(0, width - root.config.padding.left - root.config.padding.right)
-    readonly property real _valuePosition:
-        valueMax <= 0 ? 0 : effectiveWidth * value / valueMax
-    readonly property real _referencePosition:
-        valueReference === null || valueReference === undefined
-            ? _valuePosition
-            : valueMax <= 0 ? 0 : effectiveWidth * valueReference / valueMax
 
-    implicitHeight: config.height + config.padding.top + config.padding.bottom
+    implicitHeight: config.height + config.padding._vertical + targetIndicator.implicitHeight
 
-    // Active segment: up to value, or min(value, valueReference) when comparing.
+    // Active segment: the actual value.
     Rectangle {
         id: foreground
 
@@ -51,31 +46,39 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: root.config.padding.top
         height: root.config.height
-        width: Math.min(root._valuePosition, root._referencePosition)
+        width: root.valueMax <= 0 ? 0 : root.effectiveWidth * root.value / root.valueMax
         color: root.theme.getColor(root.config.color.active)
     }
 
-    // Difference segment: the range between value and valueReference.
+    // Inactive segment: the remaining range above the actual value.
     Rectangle {
-        id: reference
-
         anchors.left: foreground.right
         anchors.top: foreground.top
         height: root.config.height
-        width: Math.abs(root._valuePosition - root._referencePosition)
-        color: root.theme.getColor(
-            root.value > root.valueReference
-                ? root.config.color.aboveReference
-                : root.config.color.belowReference
-        )
+        width: Math.max(0, root.effectiveWidth - foreground.width)
+        color: root.theme.getColor(root.config.color.inactive)
     }
 
-    // Inactive segment: the remaining range above both values.
+    // Target indicator spans actual and desired values on the main bar's scale.
+    // Keep its space when values coincide to prevent layout jumps.
     Rectangle {
-        anchors.left: reference.right
-        anchors.top: foreground.top
-        height: root.config.height
-        width: Math.max(0, root.effectiveWidth - foreground.width - reference.width)
-        color: root.theme.getColor(root.config.color.inactive)
+        id: targetIndicator
+
+        readonly property bool _hasTarget: root.valueTarget !== null && root.valueTarget !== undefined
+        readonly property real targetPosition:
+            !_hasTarget || root.valueMax <= 0 ? foreground.width : root.effectiveWidth * root.valueTarget / root.valueMax
+
+        implicitHeight: _hasTarget ? root.config.target.height + root.config.target.padding._vertical : 0
+        visible: _hasTarget && width > 0
+        x: foreground.x + Math.min(foreground.width, targetPosition)
+        anchors.top: foreground.bottom
+        anchors.topMargin: root.config.target.padding.top
+        width: Math.abs(foreground.width - targetPosition)
+        height: root.config.target.height
+        color: root.theme.getColor(
+            root.value > root.valueTarget
+                ? root.config.target.color.above
+                : root.config.target.color.below
+        )
     }
 }

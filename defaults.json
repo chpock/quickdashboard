@@ -28,10 +28,8 @@
     "height" : 4,
 
     "color": {
-      "active"         : "blue",
-      "inactive"       : "white_bright%10",
-      "aboveReference" : "severity/warning",
-      "belowReference" : "severity/good"
+      "active"   : "blue",
+      "inactive" : "white_bright%10"
     },
 
     "padding": {
@@ -39,6 +37,22 @@
       "bottom" : 0,
       "left"   : 0,
       "right"  : 0
+    },
+
+    "target": {
+      "height" : 1,
+
+      "color": {
+        "above" : "severity/critical",
+        "below" : "severity/good"
+      },
+
+      "padding": {
+        "top"    : 1,
+        "bottom" : 0,
+        "left"   : 0,
+        "right"  : 0
+      }
     }
   },
 

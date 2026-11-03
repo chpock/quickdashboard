@@ -28,6 +28,7 @@ Widget.Base {
     id: root
 
     readonly property var providerAIUsageLimits: Provider.AIUsageLimits.instance
+    readonly property var providerSystemClock: Provider.SystemClock.instance
 
     _fragments: Fragments {
         _defaults: Defaults {
@@ -138,6 +139,17 @@ Widget.Base {
 
             value: line.initialized ? parent.modelData.percent : 0
             valueMax: 1.0
+            valueTarget: {
+                if (!line.initialized || line.resetsAt === null || line.modelData.periodDurationSeconds <= 0) {
+                    // Match the actual value instead of null to reserve the target's space
+                    // and keep the row height stable while plan data is unavailable.
+                    return bar.value
+                }
+                // The period starts one full duration before the next reset.
+                const remainingSeconds =
+                    (line.resetsAt.getTime() - root.providerSystemClock.dateMinutes.getTime()) / 1000
+                return Math.max(0, Math.min(1, 1 - remainingSeconds / line.modelData.periodDurationSeconds))
+            }
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: label.bottom
