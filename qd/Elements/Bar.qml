@@ -30,26 +30,19 @@ Item {
 
     property real valueMax: 100.0
     property real value: 0
+    property var valueReference: null
 
     readonly property real effectiveWidth: Math.max(0, width - root.config.padding.left - root.config.padding.right)
+    readonly property real _valuePosition:
+        valueMax <= 0 ? 0 : effectiveWidth * value / valueMax
+    readonly property real _referencePosition:
+        valueReference === null || valueReference === undefined
+            ? _valuePosition
+            : valueMax <= 0 ? 0 : effectiveWidth * valueReference / valueMax
 
     implicitHeight: config.height + config.padding.top + config.padding.bottom
 
-    // Background (empty part)
-    Rectangle {
-        id: background
-
-        anchors.left: parent.left
-        anchors.leftMargin: root.config.padding.left
-        anchors.right: parent.right
-        anchors.rightMargin: root.config.padding.right
-        anchors.top: parent.top
-        anchors.topMargin: root.config.padding.top
-        height: root.config.height
-        color: root.theme.getColor(root.config.color.inactive)
-    }
-
-    // Foreground (filled part)
+    // Active segment: up to value, or min(value, valueReference) when comparing.
     Rectangle {
         id: foreground
 
@@ -58,10 +51,31 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: root.config.padding.top
         height: root.config.height
-        width:
-            root.valueMax <= 0
-                ? 0
-                : root.effectiveWidth * root.value / root.valueMax
+        width: Math.min(root._valuePosition, root._referencePosition)
         color: root.theme.getColor(root.config.color.active)
+    }
+
+    // Difference segment: the range between value and valueReference.
+    Rectangle {
+        id: reference
+
+        anchors.left: foreground.right
+        anchors.top: foreground.top
+        height: root.config.height
+        width: Math.abs(root._valuePosition - root._referencePosition)
+        color: root.theme.getColor(
+            root.value > root.valueReference
+                ? root.config.color.aboveReference
+                : root.config.color.belowReference
+        )
+    }
+
+    // Inactive segment: the remaining range above both values.
+    Rectangle {
+        anchors.left: reference.right
+        anchors.top: foreground.top
+        height: root.config.height
+        width: Math.max(0, root.effectiveWidth - foreground.width - reference.width)
+        color: root.theme.getColor(root.config.color.inactive)
     }
 }

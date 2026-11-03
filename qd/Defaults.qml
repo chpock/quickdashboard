@@ -151,8 +151,10 @@ Singleton {
         }
         bar {
             color {
-                active:   'blue'
-                inactive: 'white_bright%10'
+                active:         'blue'
+                inactive:       'white_bright%10'
+                aboveReference: 'severity/warning'
+                belowReference: 'severity/good'
             }
             padding {
                 left:   0
